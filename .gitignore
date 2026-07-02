@@ -1,0 +1,38 @@
+# OS/editor noise
+.DS_Store
+.idea/
+.vscode/
+
+# Python/cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Secrets and local sessions
+.env
+.env.*
+cookies/
+chrome-profile*/
+*cookies*.json
+*cookie*.json
+*token*
+*secret*
+*.pem
+
+# Recruiting data and private artifacts
+candidates*.json
+*_candidates.json
+exports/
+logs/
+reports/
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.crx
+
+# Local generated backups
+*.bak
+*.backup
+*.tmp

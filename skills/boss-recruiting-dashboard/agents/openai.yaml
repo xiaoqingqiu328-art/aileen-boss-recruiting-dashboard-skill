@@ -1,0 +1,7 @@
+interface:
+  display_name: "BOSS Recruiting Dashboard"
+  short_description: "批量筛选候选人、AI 评分并维护招聘漏斗"
+  default_prompt: "Use $boss-recruiting-dashboard to improve my local BOSS recruiting dashboard and screening rules."
+
+policy:
+  allow_implicit_invocation: true
