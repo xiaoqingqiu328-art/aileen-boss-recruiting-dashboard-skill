@@ -6,6 +6,8 @@
 ![AI Assisted](https://img.shields.io/badge/AI-assisted-7c3aed)
 ![Human In The Loop](https://img.shields.io/badge/human--in--the--loop-safe-0369a1)
 ![Codex Skill](https://img.shields.io/badge/Codex-Skill-111827)
+![GitHub stars](https://img.shields.io/github/stars/xiaoqingqiu328-art/aileen-boss-recruiting-dashboard-skill?style=social)
+![GitHub forks](https://img.shields.io/github/forks/xiaoqingqiu328-art/aileen-boss-recruiting-dashboard-skill?style=social)
 
 ## Why This Exists
 
@@ -61,6 +63,18 @@ Then use it in Codex:
 ```text
 Use $boss-recruiting-dashboard to improve my local BOSS recruiting dashboard and screening rules.
 ```
+
+
+## Want To Know If People Use It
+
+As the repository owner, you can track adoption without adding invasive analytics:
+
+- **Stars**: quick signal that people like or save the skill
+- **Forks**: signal that people want to customize it
+- **Issues**: users can open an `I use this skill` issue to share how they use it
+- **GitHub Insights → Traffic**: repository views and clones, visible to maintainers only
+
+If this skill helps you, please star the repo or open a short usage issue. That feedback helps prioritize future templates and screening workflows.
 
 ## Skill Contents
 

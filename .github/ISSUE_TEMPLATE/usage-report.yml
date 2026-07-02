@@ -1,0 +1,37 @@
+name: I use this skill
+description: Tell us how you use the BOSS Recruiting Dashboard Skill
+title: "I use this skill: "
+labels: ["usage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for using this skill. Please do not share private company names, candidate data, phone numbers, emails, resumes, cookies, API keys, or screenshots with personal information.
+  - type: dropdown
+    id: workflow
+    attributes:
+      label: What are you using it for?
+      options:
+        - Candidate screening dashboard
+        - Accounting/finance recruiting rules
+        - AI scoring prompts
+        - Chrome extension workflow
+        - GitHub-safe packaging
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: What changed for you?
+      description: Share a short, privacy-safe result or use case.
+      placeholder: Example: It helped me convert a pasted candidate list into clear screening buckets.
+    validations:
+      required: false
+  - type: textarea
+    id: request
+    attributes:
+      label: What would make it better?
+      placeholder: Example: More finance role templates, more bucket definitions, or safer import workflows.
+    validations:
+      required: false
