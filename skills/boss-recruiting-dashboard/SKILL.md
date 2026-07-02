@@ -1,6 +1,6 @@
 ---
 name: boss-recruiting-dashboard
-description: Build, audit, customize, or operate a privacy-safe BOSS/Zhipin recruiting dashboard and Chrome-extension workflow for high-volume candidate screening. Use when Codex is asked to work on a local recruiting HTML dashboard, batch candidate parsing from BOSS pages, AI candidate scoring, greeting scripts, follow-up status funnels, accounting/finance-only matching rules, bookmarklet-based unread extraction, Chrome extension scanning, or GitHub-ready packaging of this recruiting assistant without exposing private company, candidate, cookie, or API-key data.
+description: Build, audit, customize, or operate a privacy-safe BOSS/Zhipin recruiting dashboard and Chrome-extension workflow for high-volume candidate screening across any hiring role. Use when Codex is asked to work on a local recruiting HTML dashboard, batch candidate parsing from BOSS pages, AI candidate scoring, greeting scripts, follow-up status funnels, configurable role templates, hard-match keyword rules, exclusion rules, bookmarklet-based unread extraction, Chrome extension scanning, or GitHub-ready packaging of this recruiting assistant without exposing private company, candidate, cookie, or API-key data.
 ---
 
 # BOSS Recruiting Dashboard
@@ -11,9 +11,10 @@ Use this skill to help maintain and improve a local-first recruiting assistant f
 
 1. A recruiter manually copies candidate or unread-chat text from a real logged-in browser.
 2. A local HTML dashboard parses, deduplicates, classifies, scores, and tracks candidates.
-3. AI scoring and greeting generation are optional and user-configured.
-4. Follow-up status is managed in a funnel from pending to hired/rejected.
-5. Browser automation that touches BOSS should stay conservative because account-safety risk is high.
+3. Screening rules are configurable for the active hiring role.
+4. AI scoring and greeting generation are optional and user-configured.
+5. Follow-up status is managed in a funnel from pending to hired/rejected.
+6. Browser automation that touches BOSS should stay conservative because account-safety risk is high.
 
 Keep all public-facing output generic. Do not expose private company names, brands, candidate records, cookies, local Chrome profiles, API keys, or screenshots containing real personal data.
 
@@ -29,14 +30,15 @@ When asked to analyze or modify the dashboard, first identify which surface is i
 Read only the reference file needed for the task:
 
 - For implemented product capabilities and workflows, read `references/dashboard-workflows.md`.
-- For screening rule design, especially accounting/finance-only matching, read `references/rule-configuration.md`.
+- For screening rule design, role templates, hard-match gates, and exclusion rules, read `references/rule-configuration.md`.
 - For public sharing and privacy redaction, read `references/privacy-and-release.md`.
 
 ## Operating Principles
 
 - Prefer local-first, human-in-the-loop workflows over unattended scraping or message sending.
 - Keep BOSS interactions as user-driven copy/paste, bookmarklet extraction, or explicitly confirmed extension actions unless the user asks for automation and accepts the risk.
-- Treat AI output as a ranking aid, not an authority. Rules should still enforce hard constraints such as accounting/finance-only matching, age, education, internships, and exclusion keywords.
+- Treat AI output as a ranking aid, not an authority. Rules should still enforce hard constraints such as role keyword gates, age, education, internships, location, and exclusion keywords.
+- Make role logic configurable rather than hard-coded to one position. A finance role, operations role, sales role, customer service role, admin role, or technical role should all be expressible through templates.
 - Persist recruiter settings locally via `localStorage` for the standalone HTML dashboard.
 - Preserve candidate data on edits. Back up the dashboard before structural migrations.
 - Never commit or include `cookies/`, `chrome-profile*/`, logs with real candidate data, exported candidate JSON, screenshots, API keys, or local personal paths in a GitHub release.
@@ -48,7 +50,7 @@ Read only the reference file needed for the task:
 1. Locate the rules defaults and `classify(candidate)` logic in the dashboard HTML.
 2. Add a visible settings entry if the rule should be recruiter-editable.
 3. Store settings with a versioned `localStorage` key.
-4. Ensure AI grades cannot bypass hard filters. For example, if accounting-only mode is enabled, candidates without accounting/finance hits must not enter strong match or backup buckets even if AI returns A/B.
+4. Ensure AI grades cannot bypass hard filters. For example, if a role requires a keyword gate, candidates without required role signals must not enter strong match or backup buckets even if AI returns A/B.
 5. Re-render all candidate buckets after saving settings.
 6. Run a JavaScript syntax check by extracting the inline script and using `node --check`.
 
@@ -64,11 +66,12 @@ Read only the reference file needed for the task:
 
 Check these in order:
 
-1. Whether the active job mode matches the role, such as accounting/finance-only versus ecommerce-operations.
-2. Whether localStorage contains old rule settings overriding new defaults.
-3. Whether AI grades are overriding hard filters.
-4. Whether parsing is missing important resume sections, causing candidates to fall into "needs details".
-5. Whether status filters or bucket filters are hiding rows.
+1. Whether the active role template matches the current hiring position.
+2. Whether required keywords, preferred keywords, and exclusion keywords are configured correctly.
+3. Whether localStorage contains old rule settings overriding new defaults.
+4. Whether AI grades are overriding hard filters.
+5. Whether parsing is missing important resume sections, causing candidates to fall into "needs details".
+6. Whether status filters or bucket filters are hiding rows.
 
 ## Validation Checklist
 

@@ -27,7 +27,8 @@ Position the tool as a local-first recruiter productivity assistant:
 
 - Batch candidate screening from copied BOSS/Zhipin text.
 - AI-assisted scoring and greeting drafts.
-- Configurable role-specific filters, including accounting/finance-only matching.
+- Configurable filters for any hiring role.
+- Role templates with required, preferred, negative, and manual-review keywords.
 - Follow-up funnel and outreach workbench.
 - Privacy-conscious: data stays local unless the user configures an AI provider.
 
@@ -38,3 +39,4 @@ Avoid claiming fully automated scraping or unattended message sending. Safer wor
 - "Copy/paste import"
 - "Recruiter-controlled outreach"
 - "AI-assisted screening"
+- "Configurable role templates"

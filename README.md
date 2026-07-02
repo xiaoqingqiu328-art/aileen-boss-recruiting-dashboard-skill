@@ -1,10 +1,11 @@
-# BOSS Recruiting Dashboard Skill
+# Aileen BOSS Recruiting Dashboard Skill
 
-> A privacy-safe Codex skill for building and improving a local-first BOSS/Zhipin recruiting dashboard.
+> A privacy-safe Codex skill for building and improving local-first BOSS/Zhipin recruiting dashboards for any role.
 
 ![Local First](https://img.shields.io/badge/local--first-yes-10b981)
 ![AI Assisted](https://img.shields.io/badge/AI-assisted-7c3aed)
 ![Human In The Loop](https://img.shields.io/badge/human--in--the--loop-safe-0369a1)
+![Any Role](https://img.shields.io/badge/roles-configurable-f59e0b)
 ![Codex Skill](https://img.shields.io/badge/Codex-Skill-111827)
 ![GitHub stars](https://img.shields.io/github/stars/xiaoqingqiu328-art/aileen-boss-recruiting-dashboard-skill?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/xiaoqingqiu328-art/aileen-boss-recruiting-dashboard-skill?style=social)
@@ -25,8 +26,9 @@ This skill helps Codex maintain a safer workflow: **copy candidate data manually
 
 - Batch candidate parsing from copied BOSS/Zhipin pages
 - Local candidate dashboard with deduplication
-- Configurable screening rules
-- Accounting/finance-only hard matching
+- Configurable screening rules for any role
+- Role templates for sales, operations, finance, customer service, admin, technical, and custom jobs
+- Hard-match keyword gates and exclusion rules
 - AI-assisted candidate scoring
 - Personalized greeting drafts
 - Follow-up funnel tracking
@@ -46,6 +48,7 @@ Recommended wording:
 - AI-assisted screening
 - copy/paste import
 - account-safety conscious
+- configurable for any role
 
 Avoid promising unattended scraping or automatic mass messaging. Those workflows can be fragile and risky on BOSS/Zhipin.
 
@@ -64,7 +67,6 @@ Then use it in Codex:
 Use $boss-recruiting-dashboard to improve my local BOSS recruiting dashboard and screening rules.
 ```
 
-
 ## Want To Know If People Use It
 
 As the repository owner, you can track adoption without adding invasive analytics:
@@ -72,9 +74,10 @@ As the repository owner, you can track adoption without adding invasive analytic
 - **Stars**: quick signal that people like or save the skill
 - **Forks**: signal that people want to customize it
 - **Issues**: users can open an `I use this skill` issue to share how they use it
-- **GitHub Insights → Traffic**: repository views and clones, visible to maintainers only
+- **GitHub Insights -> Traffic**: repository views and clones, visible to maintainers only
+- **Releases**: downloadable zip packages show download counts per release asset
 
-If this skill helps you, please star the repo or open a short usage issue. That feedback helps prioritize future templates and screening workflows.
+If this skill helps you, please star the repo or open a short usage issue. That feedback helps prioritize future role templates and screening workflows.
 
 ## Skill Contents
 
@@ -92,7 +95,7 @@ skills/boss-recruiting-dashboard/
 ## Example Prompts
 
 ```text
-Use $boss-recruiting-dashboard to add an accounting-only screening mode.
+Use $boss-recruiting-dashboard to add a configurable role template for my current hiring position.
 ```
 
 ```text
@@ -100,7 +103,7 @@ Use $boss-recruiting-dashboard to audit my dashboard before I share it on GitHub
 ```
 
 ```text
-Use $boss-recruiting-dashboard to redesign my candidate buckets for a finance role.
+Use $boss-recruiting-dashboard to redesign my candidate buckets for a customer service role.
 ```
 
 ```text

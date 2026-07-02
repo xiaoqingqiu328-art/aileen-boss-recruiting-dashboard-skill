@@ -13,13 +13,21 @@ body:
       label: What are you using it for?
       options:
         - Candidate screening dashboard
-        - Accounting/finance recruiting rules
+        - Configurable role templates
         - AI scoring prompts
         - Chrome extension workflow
         - GitHub-safe packaging
         - Other
     validations:
       required: true
+  - type: textarea
+    id: role
+    attributes:
+      label: What kind of role are you hiring for?
+      description: Optional. Keep it generic and privacy-safe.
+      placeholder: Example: customer service, ecommerce operations, sales, finance, admin, technical, or custom role.
+    validations:
+      required: false
   - type: textarea
     id: outcome
     attributes:
@@ -32,6 +40,6 @@ body:
     id: request
     attributes:
       label: What would make it better?
-      placeholder: Example: More finance role templates, more bucket definitions, or safer import workflows.
+      placeholder: Example: More role templates, more bucket definitions, or safer import workflows.
     validations:
       required: false

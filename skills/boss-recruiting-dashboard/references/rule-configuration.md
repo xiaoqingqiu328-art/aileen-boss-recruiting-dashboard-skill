@@ -1,47 +1,58 @@
 # Rule Configuration
 
-## Accounting/Finance-Only Mode
+## Role Templates
 
-For accounting roles, matching should be strict:
+The dashboard should support any hiring role. Treat job fit as configuration, not as a single hard-coded position.
 
-- Only candidates with accounting or finance signals should count as matching.
-- Non-accounting ecommerce operators should not enter strong match or backup buckets.
-- AI grades must not override the accounting/finance hard gate.
+A role template should include:
 
-Suggested accounting/finance match terms:
+- Role name shown in the settings panel and top summary band.
+- Required keywords that must appear for a candidate to count as a match.
+- Preferred keywords that increase confidence but are not mandatory.
+- Exclusion keywords that force manual review or rejection.
+- Hard filters such as age, education, experience, location, internship status, and full-time degree requirements.
+- Bucket thresholds for strong match, backup, needs details, manual review, and not a fit.
 
-- 会计, 财务, 电商会计, 电商财务, 网店会计, 跨境财务
-- 出纳, 总账, 成本会计, 税务, 报税, 开票, 发票
-- 应收, 应付, 往来账, 对账, 结算, 核算, 审计
-- 财务分析, 财务BP, ERP, 金蝶, 用友, 管家婆
-- 初级会计, 中级会计, 注册会计, CPA
+Suggested starter templates:
+
+- Finance/accounting: accounting, finance, tax, invoice, settlement, reconciliation, ERP.
+- Ecommerce operations: PDD, Taobao, Tmall, JD, Douyin, Kuaishou, Xiaohongshu, Amazon, Temu.
+- Customer service: customer support, after-sales, online chat, complaints, service scripts.
+- Sales: business development, sales conversion, client follow-up, negotiation, CRM.
+- Admin/HR: administration, attendance, payroll, recruitment coordination, office support.
+- Technical: frontend, backend, data, testing, operations, product, project delivery.
+- Custom: recruiter-defined required, preferred, and exclusion keywords.
+
+## Hard-Match Gate
+
+When a role requires specific signals, AI grades must not bypass the hard gate.
 
 Implementation pattern:
 
 ```js
-const requireAccounting = rules.jobMode === "accounting" || rules.requireAccounting;
-const accountingHits = matchedWords(candidateText, activeAccountingWords());
-const hasAccountingMatch = accountingHits.length > 0;
+const requiredHits = matchedWords(candidateText, activeRequiredWords());
+const hasRequiredRoleMatch = !rules.requireRoleKeyword || requiredHits.length > 0;
 
-if (requireAccounting && !hasAccountingMatch) {
+if (!hasRequiredRoleMatch) {
   bucket = "不符合";
 }
 
-if (candidate.aiGrade && requireAccounting && !hasAccountingMatch) {
+if (candidate.aiGrade && !hasRequiredRoleMatch) {
   bucket = "不符合";
 }
 ```
 
-## Ecommerce-General Mode
+Use this same pattern for any role, not just finance/accounting. For example, a customer service role may require customer-support signals, while an operations role may require platform-operation signals.
 
-Use ecommerce-general mode only when the role can accept ecommerce operators across platforms:
+## Keyword Groups
 
-- 拼多多 / PDD
-- 天猫 / 淘宝
-- 京东
-- 抖音 / 快手 / 小红书 / 唯品会
-- 亚马逊 / Temu / cross-border platforms
-- 电商会计 / 财务
+Use separate groups so recruiters can tune the role without code changes:
+
+- **Required keywords**: must match when the role needs a hard gate.
+- **Preferred keywords**: add score or confidence.
+- **Negative keywords**: reject or lower score.
+- **Manual review keywords**: do not reject automatically; move to human review.
+- **Equivalent terms**: synonyms and platform names, including Chinese/English variants.
 
 ## Hard Filters
 
@@ -60,6 +71,7 @@ Manual review flags:
 - Entrepreneurship/self-employed history
 - Work instability or long gap
 - Ambiguous education timeline
+- Salary, commute, or schedule mismatch
 
 ## UI Requirements
 
@@ -69,3 +81,5 @@ If adding a rule, add all four pieces:
 2. A visible input in the rules settings panel.
 3. Load/save logic for that input.
 4. A short summary in the top rule band.
+
+The UI should make the active role obvious and allow recruiters to switch or edit templates without changing code.
