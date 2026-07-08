@@ -1,130 +1,92 @@
-# Aileen BOSS Recruiting Dashboard Skill
+# 本地招聘筛选看板
 
-> A privacy-safe Codex skill for building and improving local-first BOSS/Zhipin recruiting dashboards for any role.
+一个可离线打开的本地招聘筛选工具。适合把招聘平台页面中手动复制出来的候选人列表粘贴进看板，再按岗位规则、关键词、学历、经验、活跃时间和 AI 评分做本地筛选。
 
-![Local First](https://img.shields.io/badge/local--first-yes-10b981)
-![AI Assisted](https://img.shields.io/badge/AI-assisted-7c3aed)
-![Human In The Loop](https://img.shields.io/badge/human--in--the--loop-safe-0369a1)
-![Any Role](https://img.shields.io/badge/roles-configurable-f59e0b)
-![Codex Skill](https://img.shields.io/badge/Codex-Skill-111827)
-![GitHub stars](https://img.shields.io/github/stars/xiaoqingqiu328-art/aileen-boss-recruiting-dashboard-skill?style=social)
-![GitHub forks](https://img.shields.io/github/forks/xiaoqingqiu328-art/aileen-boss-recruiting-dashboard-skill?style=social)
+> 重要提示：本项目不是 BOSS 直聘或任何招聘平台的官方工具。建议只用于“手动复制内容后的本地筛选”，不要用于自动采集、批量访问、自动打招呼或绕过平台验证。
 
-## Why This Exists
+## 快速使用
 
-Recruiting on BOSS/Zhipin gets painful fast:
+1. 下载本仓库 ZIP 并解压。
+2. 用 Chrome 或 Edge 打开 `dashboard/recruiting-dashboard.html`。
+3. 在招聘平台页面手动复制候选人列表内容。
+4. 粘贴到看板的输入框，点击解析。
+5. 在“筛选规则设置”里调整岗位、关键词、学历、经验、淘汰条件。
+6. 查看“强匹配 / 候补精选 / 待补详情 / 需人工复核 / 不符合”等分类。
 
-- hundreds or thousands of candidates to screen
-- repeated copy/paste judgment work
-- scattered follow-up status
-- risky automation that can trigger account restrictions
-- role-specific filters that are hard to keep consistent
+## 推荐工作流
 
-This skill helps Codex maintain a safer workflow: **copy candidate data manually, screen locally, use AI for judgment support, and keep outreach recruiter-controlled.**
+- 在平台里手动搜索岗位关键词。
+- 每次只复制当前页面可见内容到本地看板。
+- 在本地看板完成分类、AI 评分、备注和跟进状态管理。
+- 对强匹配候选人，再回平台手动查找姓名并人工联系。
 
-## What It Helps You Build
+这样对账号最稳妥：看板只处理你已经复制到本机的文本，不主动访问平台页面。
 
-- Batch candidate parsing from copied BOSS/Zhipin pages
-- Local candidate dashboard with deduplication
-- Configurable screening rules for any role
-- Role templates for sales, operations, finance, customer service, admin, technical, and custom jobs
-- Hard-match keyword gates and exclusion rules
-- AI-assisted candidate scoring
-- Personalized greeting drafts
-- Follow-up funnel tracking
-- Bookmarklet-based unread conversation extraction
-- Chrome-extension-assisted page scanning
-- GitHub-safe packaging without leaking private data
+## 自定义岗位规则
 
-## Safety Positioning
+普通使用者可以直接在页面里的“筛选规则设置”调整：
 
-This is not positioned as a black-box auto-scraper.
+- 当前岗位模式
+- 核心命中词
+- 自定义排除关键词
+- 自定义加分关键词
+- 年龄、学历、经验、应届/实习等硬性条件
 
-Recommended wording:
+开发者可以改 `dashboard/recruiting-dashboard.html` 里的这些位置：
 
-- local-first
-- recruiter-controlled
-- human-in-the-loop
-- AI-assisted screening
-- copy/paste import
-- account-safety conscious
-- configurable for any role
+- `RULES_DEFAULTS`：默认筛选规则
+- `OVERSEAS_SOCIAL_KEYWORDS_DEFAULT`：示例岗位关键词
+- `RULES.directions`：各方向关键词词典
+- `buildScoringPrompt`：AI 评分提示词
+- `classifyCandidate`：本地规则分类逻辑
 
-Avoid promising unattended scraping or automatic mass messaging. Those workflows can be fragile and risky on BOSS/Zhipin.
+改完后直接刷新 HTML 页面即可。
 
-## Install As A Codex Skill
+## AI 评分
 
-Copy the skill folder into your Codex skills directory:
+页面支持配置兼容 OpenAI 接口格式的模型服务，例如 DeepSeek 或其他兼容服务。API Key 只应保存在你自己的浏览器本地，不要提交到 GitHub。
 
-```bash
-mkdir -p ~/.codex/skills
-cp -R skills/boss-recruiting-dashboard ~/.codex/skills/
-```
+公开仓库里不要放：
 
-Then use it in Codex:
+- API key 或 `.env`
+- Chrome 登录状态
+- BOSS cookie / storage state
+- 候选人数据库
+- 候选人姓名、微信、电话、聊天记录、简历截图
+- `chrome-profile-*`、`cookies/`、`logs/`、`candidates_db.json`
 
-```text
-Use $boss-recruiting-dashboard to improve my local BOSS recruiting dashboard and screening rules.
-```
+## 平台风险说明
 
-## Want To Know If People Use It
+招聘平台通常会监控异常访问。以下行为可能触发账号、IP 或功能限制：
 
-As the repository owner, you can track adoption without adding invasive analytics:
+- 自动采集候选人
+- 批量打开详情页
+- 高频刷新或翻页
+- 自动点击、自动打招呼、自动发送消息
+- 批量提取未读消息
+- 使用书签脚本扫描大量页面内容
+- 尝试绕过安全验证
 
-- **Stars**: quick signal that people like or save the skill
-- **Forks**: signal that people want to customize it
-- **Issues**: users can open an `I use this skill` issue to share how they use it
-- **GitHub Insights -> Traffic**: repository views and clones, visible to maintainers only
-- **Releases**: downloadable zip packages show download counts per release asset
+因此本公开版默认推荐：
 
-If this skill helps you, please star the repo or open a short usage issue. That feedback helps prioritize future role templates and screening workflows.
+- 只做本地筛选
+- 只手动复制粘贴
+- 只人工联系候选人
+- 遇到安全验证或访问受限时立即停止操作并等待恢复
 
-## Skill Contents
+仓库中历史遗留的 Python/插件/自动化脚本仅作为旧代码参考，不建议直接运行；运行前请自行确认平台规则、账号风险和数据合规要求。
+
+## 文件说明
 
 ```text
-skills/boss-recruiting-dashboard/
-├── SKILL.md
-├── agents/
-│   └── openai.yaml
-└── references/
-    ├── dashboard-workflows.md
-    ├── privacy-and-release.md
-    └── rule-configuration.md
+dashboard/recruiting-dashboard.html   公开版本地看板入口
+search_profile.example.yaml           示例岗位配置
+SAFETY.md                             隐私与平台安全说明
+RELEASE_CHECKLIST.md                  发布前检查清单
 ```
 
-## Example Prompts
+## 发布前检查
 
-```text
-Use $boss-recruiting-dashboard to add a configurable role template for my current hiring position.
-```
+上传 GitHub 前建议先看 `RELEASE_CHECKLIST.md`，确认没有把私密文件一起传上去。
 
-```text
-Use $boss-recruiting-dashboard to audit my dashboard before I share it on GitHub.
-```
-
-```text
-Use $boss-recruiting-dashboard to redesign my candidate buckets for a customer service role.
-```
-
-```text
-Use $boss-recruiting-dashboard to check whether AI grades can bypass hard filters.
-```
-
-## Public Release Checklist
-
-Before publishing any recruiting assistant code, remove:
-
-- company names and brand names
-- real candidate data
-- screenshots with personal information
-- API keys and model provider tokens
-- cookies and session files
-- Chrome profile folders
-- local logs and exported candidate JSON
-- absolute local paths
-
-This repository contains only the neutral Codex skill guidance. It does not include real candidate data, credentials, browser profiles, or private company details.
-
-## License
-
-MIT
+最重要的一句：公开仓库只放程序和示例规则，不放真实账号、真实候选人、真实 Cookie、真实聊天记录。

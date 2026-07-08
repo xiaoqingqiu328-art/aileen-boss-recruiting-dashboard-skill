@@ -1,38 +1,74 @@
-# OS/editor noise
-.DS_Store
-.idea/
-.vscode/
-
-# Python/cache
-__pycache__/
-*.pyc
-.pytest_cache/
-
-# Secrets and local sessions
+# Local user config and secrets
+search_profile.yaml
 .env
 .env.*
-cookies/
-chrome-profile*/
-*cookies*.json
-*cookie*.json
-*token*
-*secret*
+*.key
 *.pem
 
-# Recruiting data and private artifacts
-candidates*.json
-*_candidates.json
-exports/
+# Candidate and business data
+candidates_db.json
+seen_candidates.json
+local_*.json
+storage_state.json
+**/storage_state.json
+*.xlsx
+*.csv
+
+# Browser login state / cookies / profiles
+cookies/
+chrome-profile/
+chrome-profile*/
+**/Cookies
+**/Cookies-journal
+**/Local State
+**/Login Data
+**/Login Data-journal
+**/Preferences
+**/Secure Preferences
+**/Session Storage/
+**/Local Storage/
+**/Network/
+
+# Runtime output and private screenshots
 logs/
-reports/
-screenshots/
+backups/
+*.bak
+*.bak-*
+*.backup
+*.log
 *.png
 *.jpg
 *.jpeg
 *.webp
+*.gif
 *.crx
 
-# Local generated backups
-*.bak
-*.backup
-*.tmp
+# Optional / legacy automation artifacts; keep out of public releases by default
+boss-extension-optimized/
+extension/
+skills/
+boss_userscript.user.js
+get_cookies.py
+local_api.py
+read_inbox.py
+inbox_manager.py
+run_daily.py
+test_auto.py
+setup_schedule.sh
+*.command
+*内部分享.md
+*处理手册.md
+dashboard/*看板.html
+dashboard/原型备份-prototype.html
+
+# Python / Node
+__pycache__/
+*.pyc
+.venv/
+venv/
+node_modules/
+
+# macOS / editors
+.DS_Store
+.idea/
+.vscode/

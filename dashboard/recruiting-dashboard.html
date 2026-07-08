@@ -1,0 +1,3500 @@
+<!DOCTYPE html>
+<!--
+═══════════════════════════════════════════════════════════════
+  本地招聘筛选看板
+  创建: 2026-06-15
+  说明: 本地运行的 HR 候选人筛选工具，无需网络、无需 API、零成本。
+  许可: 个人/团队免费使用。未经允许不得用于商业转售。
+═══════════════════════════════════════════════════════════════
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>本地招聘筛选看板</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f6f8fb; color: #1f2937; }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 22px 18px 60px; }
+  h1 { margin: 0 0 4px; font-size: 24px; }
+  .sub { color: #6b7280; font-size: 13px; margin-bottom: 18px; }
+  .rule-band { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .rule { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px 12px; font-size: 13px; }
+  .rule strong { color: #111827; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .kpi { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px 14px; cursor: pointer; transition: all 0.15s; }
+  .kpi:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); border-color: #00a6a7; }
+  .kpi.active-bucket { border: 2px solid #00a6a7; background: #ecfdf5; }
+  .label { color: #6b7280; font-size: 12px; }
+  .value { font-size: 26px; font-weight: 750; margin-top: 4px; }
+  .strong { color: #047857; }
+  .pending { color: #2563eb; }
+  .manual { color: #d97706; }
+  .bad { color: #dc2626; }
+  .panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px; margin-bottom: 14px; }
+  .panel h2 { margin: 0 0 8px; font-size: 16px; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; align-items: center; }
+  button { border: 1px solid #d1d5db; background: #fff; color: #374151; border-radius: 6px; padding: 7px 12px; cursor: pointer; font-size: 13px; }
+  button.primary { background: #00a6a7; color: #fff; border-color: #00a6a7; }
+  button.danger { background: #fff; color: #dc2626; border-color: #fca5a5; }
+  button.active { background: #111827; color: #fff; border-color: #111827; }
+  button:hover { opacity: 0.9; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { border-bottom: 1px solid #eef2f7; padding: 10px 8px; vertical-align: top; text-align: left; }
+  th { color: #6b7280; font-weight: 600; background: #fafafa; position: sticky; top: 0; }
+  .bucket-tag { display: inline-block; padding: 2px 8px; border-radius: 4px; color: #fff; font-size: 11px; font-weight: 600; }
+  .bucket-强匹配 { background: #047857; }
+  .bucket-候补精选 { background: #0891b2; }
+  .bucket-待补详情 { background: #2563eb; }
+  .bucket-需人工复核 { background: #d97706; }
+  .bucket-不符合 { background: #9ca3af; }
+  .tag { display: inline-block; border-radius: 4px; padding: 1px 6px; margin: 0 3px 3px 0; background: #eef2ff; color: #3730a3; font-size: 11px; }
+  .reason { color: #991b1b; font-size: 12px; }
+  textarea { width: 100%; min-height: 130px; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px; font-family: -apple-system, "PingFang SC", monospace; font-size: 12px; line-height: 1.6; }
+  .hint { color: #6b7280; font-size: 12px; line-height: 1.6; margin: 8px 0; }
+  .stat-bar { display: flex; gap: 12px; margin-bottom: 8px; font-size: 13px; }
+  .stat-bar b { color: #00a6a7; }
+  .manual-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-bottom: 10px; }
+  .manual-form input, .manual-form select { padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 5px; font-size: 13px; }
+  .helper-callout { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #78350f; margin-top: 8px; }
+  .collector-panel { background: #fff; border: 2px solid #0369a1; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+  .collector-panel h2 { margin: 0 0 8px; font-size: 16px; color: #0369a1; }
+  .collector-grid { display: grid; grid-template-columns: 1.5fr repeat(3, minmax(120px, 1fr)); gap: 8px; align-items: end; }
+  .collector-grid label { display: block; color: #6b7280; font-size: 12px; margin-bottom: 4px; font-weight: 600; }
+  .collector-grid input, .collector-grid textarea, .collector-grid select { width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 7px 9px; font-size: 13px; font-family: inherit; min-height: auto; }
+  .collector-grid textarea { height: 36px; resize: vertical; line-height: 1.4; }
+  .collector-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+  .collector-status { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; color: #1e3a8a; padding: 8px 10px; font-size: 12px; line-height: 1.5; margin-top: 8px; }
+  .collector-status.error { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+  .collector-status.ok { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+  .collector-progress { display:none; margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; }
+  .collector-progress.active { display:block; }
+  .collector-progress-head { display:flex; justify-content:space-between; gap:10px; color:#334155; font-size:12px; margin-bottom:6px; }
+  .collector-progress-track { height:8px; background:#e2e8f0; border-radius:999px; overflow:hidden; }
+  .collector-progress-fill { height:100%; width:0%; background:#00a6a7; transition:width .25s; }
+  .collector-quality { display:none; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin-top:10px; }
+  .collector-quality.active { display:grid; }
+  .collector-q-card { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; }
+  .collector-q-label { color:#64748b; font-size:11px; margin-bottom:4px; }
+  .collector-q-value { color:#0f172a; font-size:20px; font-weight:750; }
+  .collector-suggestions { display:none; margin-top:10px; background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:10px 12px; color:#7c2d12; font-size:12px; line-height:1.7; }
+  .collector-suggestions.active { display:block; }
+  @media (max-width: 860px) { .collector-grid { grid-template-columns: 1fr; } }
+  /* 今日工作面板 */
+  .today-panel { background: linear-gradient(135deg, #0369a1 0%, #00a6a7 100%); color: #fff; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
+  .today-panel h3 { margin: 0 0 10px; font-size: 16px; opacity: 0.95; }
+  .today-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .today-card { background: rgba(255,255,255,.16); border-radius: 8px; padding: 10px 12px; }
+  .today-card-label { font-size: 11px; opacity: 0.85; margin-bottom: 3px; }
+  .today-card-value { font-size: 22px; font-weight: 750; }
+  .today-card-hint { font-size: 11px; opacity: 0.75; margin-top: 2px; }
+  .today-card.urgent { background: rgba(254,202,87,.25); }
+  .today-card.action { background: rgba(72,219,180,.25); cursor: pointer; }
+  .today-card.action:hover { background: rgba(72,219,180,.4); }
+  /* 漏斗图 */
+  .funnel-row { display: flex; align-items: center; gap: 8px; margin: 4px 0; font-size: 12px; color: #fff; }
+  .funnel-bar { background: rgba(255,255,255,.3); border-radius: 3px; overflow: hidden; height: 16px; flex: 1; position: relative; }
+  .funnel-fill { background: #fff; height: 100%; transition: width 0.3s; }
+  .funnel-label { width: 70px; flex-shrink: 0; }
+  .funnel-num { width: 30px; text-align: right; font-weight: 600; }
+  /* A4: 详情展开行 */
+  .detail-row td { background: #f9fafb; padding: 14px 20px; border-bottom: 2px solid #e5e7eb; }
+  .detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .detail-item { background: #fff; border: 1px solid #e5e7eb; border-radius: 6px; padding: 8px 12px; font-size: 13px; }
+  .detail-item .k { color: #6b7280; font-size: 11px; margin-bottom: 2px; }
+  .detail-item .v { color: #111827; }
+  .detail-section { margin-bottom: 12px; }
+  .detail-section h4 { margin: 0 0 6px; font-size: 13px; color: #374151; }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .custom-tag { background: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 4px; font-size: 12px; cursor: pointer; }
+  .custom-tag .x { color: #dc2626; margin-left: 4px; }
+  .add-tag-input { border: 1px dashed #9ca3af; border-radius: 4px; padding: 3px 8px; font-size: 12px; width: 90px; }
+  .note-area { width: 100%; min-height: 60px; border: 1px solid #d1d5db; border-radius: 6px; padding: 8px; font-size: 13px; resize: vertical; }
+  .raw-text-toggle { color: #0369a1; font-size: 11px; cursor: pointer; text-decoration: underline; }
+  .raw-text-content { background: #f3f4f6; padding: 8px; border-radius: 4px; font-size: 11px; color: #4b5563; max-height: 200px; overflow-y: auto; white-space: pre-wrap; margin-top: 4px; display: none; }
+  .expand-icon { display: inline-block; transition: transform 0.2s; color: #6b7280; cursor: pointer; padding: 0 4px; }
+  .expand-icon.open { transform: rotate(90deg); color: #0369a1; }
+  /* B1: AI 评分 */
+  .ai-config-panel { background: #fff; border: 2px solid #00a6a7; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; position: relative; }
+  .ai-config-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .ai-config-header h3 { margin: 0; font-size: 15px; color: #0369a1; }
+  .ai-config-body { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
+  .ai-config-body.open { display: block; }
+  .ai-config-grid { display: grid; grid-template-columns: 120px 1fr; gap: 8px 12px; align-items: center; font-size: 13px; }
+  .ai-config-grid input, .ai-config-grid select { padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 5px; font-size: 13px; width: 100%; }
+  .ai-config-grid label { color: #6b7280; font-weight: 600; }
+  .ai-status-ok { color: #047857; font-size: 12px; }
+  .ai-status-fail { color: #dc2626; font-size: 12px; }
+  .ai-status-pending { color: #9ca3af; font-size: 12px; }
+  .ai-score-badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 11px; font-weight: 700; color: #fff; margin-left: 6px; }
+  .ai-score-A { background: #047857; }
+  .ai-score-B { background: #0369a1; }
+  .ai-score-C { background: #d97706; }
+  .ai-score-D { background: #9ca3af; }
+  .ai-score-block { background: #f0fdfa; border: 1px solid #5eead4; border-radius: 6px; padding: 8px 10px; margin: 8px 0; font-size: 12px; }
+  .ai-loading { display: inline-block; width: 12px; height: 12px; border: 2px solid #d1d5db; border-top-color: #00a6a7; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 4px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ai-btn { background: #00a6a7; color: #fff; border: none; border-radius: 5px; padding: 5px 10px; font-size: 12px; cursor: pointer; }
+  .ai-btn:disabled { background: #d1d5db; cursor: not-allowed; }
+  .greeting-output { background: #f0fdfa; border: 1px solid #5eead4; border-radius: 6px; padding: 10px; margin-top: 8px; font-size: 13px; line-height: 1.7; color: #134e4a; }
+  /* 处理模式遮罩 */
+  .process-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 9000; display: none; align-items: center; justify-content: center; }
+  .process-overlay.active { display: flex; }
+  .process-card { background: #fff; border-radius: 12px; padding: 24px; width: 560px; max-width: 95vw; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+  .process-card h2 { margin: 0 0 6px; font-size: 22px; }
+  .process-progress { color: #6b7280; font-size: 13px; margin-bottom: 14px; }
+  .process-person-name { font-size: 32px; font-weight: 750; color: #0369a1; margin: 16px 0 4px; word-break: break-all; }
+  .process-meta { color: #374151; font-size: 14px; margin-bottom: 12px; }
+  .process-detail { background: #f3f4f6; border-radius: 6px; padding: 10px 12px; font-size: 12px; color: #374151; max-height: 180px; overflow-y: auto; margin-bottom: 14px; line-height: 1.6; }
+  .process-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 16px; }
+  .process-actions button { padding: 12px; font-size: 14px; font-weight: 600; }
+  .process-actions button.big-primary { background: #00a6a7; color: #fff; border-color: #00a6a7; }
+  .process-actions button.skip { background: #f3f4f6; }
+  .process-actions button.done { background: #047857; color: #fff; border-color: #047857; }
+  /* 工作台快捷操作 */
+  .quick-copy-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .quick-copy-row button { padding: 10px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; border: 1px solid #d1d5db; background: #fff; }
+  .quick-copy-row button:hover { background: #f9fafb; }
+  .quick-mark-title { font-size: 11px; color: #6b7280; margin: 14px 0 6px; font-weight: 600; letter-spacing: .5px; }
+  .quick-mark-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .quick-mark-row button { padding: 12px 4px; font-size: 13px; font-weight: 700; color: #fff; border: none; border-radius: 6px; cursor: pointer; transition: transform .1s; }
+  .quick-mark-row button:hover { transform: translateY(-1px); filter: brightness(1.05); }
+  .qm-greeted { background: #0369a1; }
+  .qm-replied { background: #7c3aed; }
+  .qm-wechat { background: #059669; }
+  .qm-reject  { background: #dc2626; }
+  .qm-key { display: block; font-size: 10px; opacity: .8; margin-top: 2px; font-weight: 500; }
+  .process-bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+  .process-bottom-row button { padding: 9px; font-size: 12px; border-radius: 6px; cursor: pointer; border: 1px solid #d1d5db; background: #fff; color: #6b7280; }
+  .process-bottom-row button:hover { background: #f3f4f6; }
+  .process-close { float: right; background: none; border: none; font-size: 22px; cursor: pointer; color: #6b7280; padding: 0 4px; }
+  .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+  .status-pending { background: #d1d5db; }
+  .status-greeted { background: #047857; }
+  .status-skipped { background: #d97706; }
+  /* 跟进状态徽章 */
+  .status-badge { display: inline-block; padding: 2px 7px; border-radius: 10px; font-size: 11px; font-weight: 600; color: #fff; }
+  .sb-pending { background: #9ca3af; }
+  .sb-greeted { background: #0369a1; }
+  .sb-replied { background: #7c3aed; }
+  .sb-wechat { background: #059669; }
+  .sb-phone { background: #047857; }
+  .sb-interview { background: #d97706; }
+  .sb-offer { background: #b45309; }
+  .sb-hired { background: #166534; }
+  .sb-rejected { background: #dc2626; }
+  .sb-skipped { background: #d1d5db; color: #4b5563; }
+  .status-select { padding: 3px 6px; border-radius: 4px; border: 1px solid #d1d5db; font-size: 11px; background: #fff; cursor: pointer; }
+</style>
+</head>
+<body>
+<!-- 处理模式遮罩 -->
+<div class="process-overlay" id="processOverlay">
+  <div class="process-card">
+    <button class="process-close" id="processCloseBtn">×</button>
+    <div class="process-progress" id="processProgress">第 1 / 7 人</div>
+    <h2 style="margin:0">招聘工作台</h2>
+    <div class="process-person-name" id="processPersonName">—</div>
+    <div class="process-meta" id="processMeta">—</div>
+    <div class="process-detail" id="processDetail">—</div>
+    <div id="processAiArea" style="margin:10px 0"></div>
+
+    <div class="quick-copy-row">
+      <button id="qcCopyName">📋 复制姓名</button>
+      <button id="qcCopyGreeting">💬 复制 AI 话术</button>
+      <button id="qcOpenBoss" style="grid-column:span 2;background:#0369a1;color:#fff;border-color:#0369a1">🔗 在 BOSS 打开此人详情页</button>
+    </div>
+
+    <div class="quick-mark-title">▼ 一键标记 + 自动下一个</div>
+    <div class="quick-mark-row">
+      <button class="qm-greeted" id="qmGreeted">✓ 已打招呼<span class="qm-key">⌘+1</span></button>
+      <button class="qm-replied" id="qmReplied">💌 已回复<span class="qm-key">⌘+2</span></button>
+      <button class="qm-wechat" id="qmWechat">💚 已加微信<span class="qm-key">⌘+3</span></button>
+      <button class="qm-reject" id="qmReject">❌ 不合适<span class="qm-key">⌘+4</span></button>
+    </div>
+
+    <div class="process-bottom-row">
+      <button id="processSkipBtn">⏭ 跳过(不改状态)</button>
+      <button id="processPrevBtn">← 上一个</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <h1>本地招聘筛选看板</h1>
+  <div class="sub">通用本地候选人筛选工具 · 岗位和规则可在下方「筛选规则设置」中自定义</div>
+  <div style="color:#9ca3af;font-size:11px;margin-bottom:14px">本地工具 · 候选人数据和 AI Key 仅保存在当前浏览器本地</div>
+
+  <div class="rule-band">
+    <div class="rule"><strong>当前岗位：</strong><span id="ruleSummaryJob">海外内容增长 / 社媒转化运营</span></div>
+    <div class="rule"><strong>硬性条件：</strong><span id="ruleSummaryHard">1 年以上内容/社媒/运营经验，学历不限</span></div>
+    <div class="rule"><strong>命中条件：</strong><span id="ruleSummaryDirections">小红书/Instagram/Pinterest/内容种草/私信转化/AI工具/独立站/DTC 任一强相关</span></div>
+    <div class="rule"><strong>排除/复核：</strong><span id="ruleSummaryExclude">纯投放、纯客服、纯剪辑、无内容转化经验需复核；仅实习/在校默认淘汰</span></div>
+  </div>
+
+  <!-- B1/B2: AI 设置面板 -->
+  <div class="ai-config-panel">
+    <div class="ai-config-header" id="aiConfigToggle">
+      <h3>🤖 AI 智能评分 / 话术 <span id="aiStatusInline" class="ai-status-pending">· 未配置</span></h3>
+      <span id="aiConfigArrow" style="color:#9ca3af">▼ 展开设置</span>
+    </div>
+    <div class="ai-config-body" id="aiConfigBody">
+      <div class="ai-config-grid">
+        <label>服务商:</label>
+        <select id="aiProvider">
+          <option value="deepseek">DeepSeek(官网)· 推荐</option>
+          <option value="claude">Claude(Anthropic)</option>
+          <option value="qwen">通义千问</option>
+          <option value="kimi">Kimi(月之暗面)</option>
+          <option value="custom">自定义 OpenAI 兼容接口</option>
+        </select>
+
+        <label>模型名:</label>
+        <input id="aiModel" placeholder="如 deepseek-chat / deepseek-v4-pro" value="deepseek-chat">
+
+        <label>API Key:</label>
+        <input id="aiApiKey" type="password" placeholder="sk-... (你的 key 仅存于本地浏览器)" autocomplete="off">
+
+        <label>Endpoint:</label>
+        <input id="aiEndpoint" value="https://api.deepseek.com/v1/chat/completions">
+
+        <label>状态:</label>
+        <div>
+          <span id="aiStatus" class="ai-status-pending">未测试</span>
+          <button class="ai-btn" id="aiTestBtn" style="margin-left:8px">🔌 测试连接</button>
+          <button class="ai-btn" id="aiSaveBtn" style="margin-left:4px;background:#0369a1">💾 保存设置</button>
+        </div>
+      </div>
+      <div class="hint" style="margin-top:10px">
+        💡 <b>安全提示</b>:你的 API Key 仅存在你这台电脑的浏览器里,不会上传任何服务器。<br>
+        💰 <b>DeepSeek 价格</b>:100 个候选人评分约 ¥0.5,1000 个约 ¥5,极便宜。<br>
+        🔑 <b>没 Key?</b><a href="https://platform.deepseek.com/" target="_blank" style="color:#0369a1">去 DeepSeek 官网申请</a>(支付宝/微信充值)
+      </div>
+    </div>
+  </div>
+
+  <!-- ⚙️ 筛选规则设置面板 -->
+  <div class="ai-config-panel" style="border-color:#d97706">
+    <div class="ai-config-header" id="rulesToggle">
+      <h3 style="color:#92400e">⚙️ 筛选规则设置 <span id="rulesStatus" style="font-size:13px;color:#92400e">· 当前为默认规则</span></h3>
+      <span id="rulesArrow" style="color:#9ca3af">▼ 展开</span>
+    </div>
+    <div class="ai-config-body" id="rulesBody">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font-size:13px">
+        <!-- 左列:硬性条件 -->
+        <div>
+          <h4 style="color:#0369a1;margin:0 0 10px">📋 硬性条件</h4>
+          <div style="display:grid;grid-template-columns:130px 1fr;gap:8px 12px;align-items:center">
+            <label>年龄上限:</label>
+            <input type="number" id="ruleMaxAge" min="20" max="50" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px">
+            <label>最低学历:</label>
+            <select id="ruleMinDegree" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px">
+              <option value="bachelor">本科及以上</option>
+              <option value="junior">大专及以上</option>
+              <option value="any">不限</option>
+            </select>
+            <label>必须全日制本科:</label>
+            <label><input type="checkbox" id="ruleFulltime"> 是(排除自考/函授/专升本等)</label>
+            <label>最低经验年限:</label>
+            <input type="number" id="ruleMinExpYears" min="0" max="20" step="1" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px">
+            <label>本科最少读多少年:</label>
+            <input type="number" id="ruleMinBachelorYears" min="2" max="4" step="1" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px">
+          </div>
+
+          <h4 style="color:#0369a1;margin:18px 0 10px">❌ 自动淘汰</h4>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label><input type="checkbox" id="ruleExcludeFresh"> 应届/在校生(26-30届/应届/在校)</label>
+            <label><input type="checkbox" id="ruleExcludeIntern"> 仅实习(无正式工作)</label>
+            <label><input type="checkbox" id="ruleExcludeNonFulltime"> 非全日制本科(专升本/自考/函授等)</label>
+            <label><input type="checkbox" id="ruleExcludeJobHopping"> 频繁跳槽+长 gap(2+ 个稳定性问题)</label>
+            <label><input type="checkbox" id="ruleExcludeLongGap"> 离职超 6 个月直接淘汰(默认仅复核)</label>
+            <label><input type="checkbox" id="ruleExcludeLocal"> 指定本地/地区直接淘汰(默认仅复核)</label>
+            <label><input type="checkbox" id="ruleExcludeEntre"> 创业经历直接淘汰(默认仅复核)</label>
+          </div>
+        </div>
+
+        <!-- 右列:岗位与方向命中 -->
+        <div>
+          <h4 style="color:#0369a1;margin:0 0 10px">🎯 招聘岗位模式</h4>
+          <div style="display:grid;grid-template-columns:130px 1fr;gap:8px 12px;align-items:center;margin-bottom:12px">
+            <label>当前岗位:</label>
+            <select id="ruleJobMode" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px">
+              <option value="overseasSocial">海外社媒增长</option>
+              <option value="accounting">会计/财务专招</option>
+              <option value="ecommerce">电商运营综合</option>
+            </select>
+            <label>核心词强制命中:</label>
+            <label><input type="checkbox" id="ruleRequireAccounting"> 是,只命中核心词才算匹配</label>
+          </div>
+          <div id="accountingModeHint" style="background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:6px;padding:8px 10px;font-size:12px;line-height:1.6;margin-bottom:12px">
+            当前核心方向:海外内容增长、社媒转化、小红书、Instagram、Pinterest、独立站、AI 内容效率、目标行业内容。
+          </div>
+
+          <h4 style="color:#0369a1;margin:0 0 10px">🎯 命中方向(强匹配必须满足任一)</h4>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <label><input type="checkbox" id="dirPdd"> 🛍 拼多多</label>
+            <label><input type="checkbox" id="dirTmall"> 🐱 天猫/淘宝</label>
+            <label><input type="checkbox" id="dirJd"> 🛒 京东</label>
+            <label><input type="checkbox" id="dirDomestic"> 📱 小红书/抖音/内容平台</label>
+            <label><input type="checkbox" id="dirFacebook"> 🔵 Facebook/Meta</label>
+            <label><input type="checkbox" id="dirAmazon"> 🌎 Amazon/海外跨境</label>
+            <label><input type="checkbox" id="dirCrossBorder"> ✈ Wayfair/Shopify/DTC/海外平台</label>
+            <label><input type="checkbox" id="dirEcomAcc"> ⭐ 核心岗位词</label>
+          </div>
+
+          <h4 style="color:#0369a1;margin:18px 0 10px">⭐ 核心命中词</h4>
+          <textarea id="ruleAccountingKeywords" placeholder="一行一个,命中任一可作为岗位强相关信号&#10;例如:&#10;小红书&#10;Instagram&#10;独立站&#10;私信转化" style="width:100%;min-height:80px;padding:6px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;font-family:monospace"></textarea>
+
+          <h4 style="color:#0369a1;margin:18px 0 10px">🔤 自定义排除关键词</h4>
+          <textarea id="ruleCustomExclude" placeholder="一行一个,候选人简历里出现这些词直接淘汰&#10;例如:&#10;海归&#10;在职研究生&#10;管培生" style="width:100%;min-height:80px;padding:6px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;font-family:monospace"></textarea>
+
+          <h4 style="color:#0369a1;margin:18px 0 10px">⭐ 自定义加分关键词</h4>
+          <textarea id="ruleCustomBonus" placeholder="一行一个,候选人简历里出现这些词加分(AI 会注意)&#10;例如:&#10;211&#10;985&#10;双一流" style="width:100%;min-height:60px;padding:6px;border:1px solid #d1d5db;border-radius:4px;font-size:12px;font-family:monospace"></textarea>
+        </div>
+      </div>
+
+      <div style="margin-top:18px;display:flex;gap:10px;align-items:center">
+        <button class="ai-btn" id="rulesSaveBtn" style="background:#047857;padding:8px 16px">💾 保存设置并重新分类</button>
+        <button class="ai-btn" id="rulesResetBtn" style="padding:8px 16px">🔄 恢复默认</button>
+        <span style="color:#9ca3af;font-size:12px">💡 设置只在你浏览器本地保存,改了立刻生效</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- A2: 今日工作面板 -->
+  <div class="today-panel">
+    <h3>📊 今日工作摘要</h3>
+    <div class="today-grid" id="todayGrid"></div>
+    <div style="margin-top: 14px;">
+      <div style="font-size: 12px; opacity: 0.85; margin-bottom: 6px;">招聘转化漏斗:</div>
+      <div id="funnelChart"></div>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi" data-jump-bucket="全部"><div class="label">累计候选人</div><div class="value" id="kpiTotal">0</div></div>
+    <div class="kpi" data-jump-bucket="强匹配"><div class="label">✅ 强匹配 · 立刻打招呼</div><div class="value strong" id="kpiStrong">0</div></div>
+    <div class="kpi" data-jump-bucket="候补精选"><div class="label">🔵 候补精选 · B 级第二梯队</div><div class="value" style="color:#0891b2" id="kpiBackup">0</div></div>
+    <div class="kpi" data-jump-bucket="待补详情"><div class="label">📝 待补详情 · 待评分/补简历</div><div class="value pending" id="kpiPending">0</div></div>
+    <div class="kpi" data-jump-bucket="需人工复核"><div class="label">🔍 需人工复核 · 本地/创业</div><div class="value manual" id="kpiManual">0</div></div>
+    <div class="kpi" data-jump-bucket="不符合"><div class="label">❌ 不符合 · 已淘汰</div><div class="value bad" id="kpiBad">0</div></div>
+  </div>
+
+  <div class="collector-panel">
+    <h2>本地采集器 · 已暂停自动采集</h2>
+    <div class="hint">
+      自动访问招聘平台容易触发账号/IP 限制,当前已关闭自动采集入口。保留“从采集库导入”只读取本地历史数据,不会访问平台。
+    </div>
+    <div class="collector-grid">
+      <div>
+        <label>关键词,多个用逗号分隔</label>
+        <textarea id="collectorKeywords" placeholder="例如: 小红书运营, 海外社媒运营, 内容增长"></textarea>
+      </div>
+      <div>
+        <label>城市</label>
+        <input id="collectorCity" placeholder="例如: 上海">
+      </div>
+      <div>
+        <label>经验要求</label>
+        <input id="collectorExperience" placeholder="可不填">
+      </div>
+      <div>
+        <label>每个关键词采集人数</label>
+        <input id="collectorCount" type="number" min="10" max="300" value="50">
+      </div>
+    </div>
+    <div class="collector-actions">
+      <button id="collectorHealthBtn" disabled>测试连接</button>
+      <button id="collectorLoginBtn" disabled>检查/登录平台</button>
+      <button id="collectorShowBrowserBtn" disabled>打开验证窗口</button>
+      <button class="primary" id="collectorStartBtn" disabled>自动采集已关闭</button>
+      <label style="font-size:12px;color:#047857;font-weight:600"><input type="checkbox" id="collectorOnlyQualified" checked> 只导入合格候选人</label>
+      <label style="font-size:12px;color:#7c3aed;font-weight:600" title="使用顶部 AI 智能评分面板已配置的 DeepSeek,不会重复申请 Key">
+        <input type="checkbox" id="collectorAutoAiScore" checked> 自动 AI 评分
+        <span id="collectorAiKeyHint" style="font-size:11px;color:#9ca3af;font-weight:500">· 检测中...</span>
+      </label>
+      <label style="font-size:12px;color:#0369a1;font-weight:600" title="只对强匹配评分,跳过候补精选,可省 30-50% token">
+        <input type="checkbox" id="collectorScoreStrongOnly"> 仅评强匹配(省 token)
+      </label>
+      <label style="font-size:12px;color:#0369a1;font-weight:600" title="高风险功能,公开版不推荐开启">
+        <input type="checkbox" id="collectorAutoView" checked> 获取详情直达链接(高风险,不推荐)
+      </label>
+      <button id="collectorImportQualifiedBtn">从采集库导入合格</button>
+      <button id="collectorImportAllBtn">从采集库导入全部</button>
+      <span style="flex:1"></span>
+      <span style="font-size:12px;color:#6b7280">本地 API: <b>http://127.0.0.1:8765</b></span>
+    </div>
+    <div class="collector-status error" id="collectorStatus">自动采集已暂停: 为避免触发平台访问限制,请用手动搜索/粘贴简历内容的方式继续筛选。</div>
+    <div class="collector-progress" id="collectorProgress">
+      <div class="collector-progress-head">
+        <span id="collectorProgressLabel">等待开始</span>
+        <span id="collectorProgressValue">0%</span>
+      </div>
+      <div class="collector-progress-track"><div class="collector-progress-fill" id="collectorProgressFill"></div></div>
+    </div>
+    <div class="collector-quality" id="collectorQuality">
+      <div class="collector-q-card"><div class="collector-q-label">有效候选人率</div><div class="collector-q-value" id="collectorQualityRate">--</div></div>
+      <div class="collector-q-card"><div class="collector-q-label">本批强匹配</div><div class="collector-q-value" id="collectorQualityStrong">0</div></div>
+      <div class="collector-q-card"><div class="collector-q-label">重复/已采过</div><div class="collector-q-value" id="collectorQualityDup">0</div></div>
+      <div class="collector-q-card"><div class="collector-q-label">本批质量</div><div class="collector-q-value" id="collectorQualityGrade">--</div></div>
+    </div>
+    <div class="collector-suggestions" id="collectorSuggestions"></div>
+  </div>
+
+  <div class="panel">
+    <h2>① 粘贴招聘平台内容(自动识别推荐页 / 未读列表)</h2>
+    <div class="hint">
+      <b>📋 推荐页:</b> 招聘平台候选人页 → 手动复制 → 粘下面 → 解析(含年龄/学历/经验)<br>
+      <b>📬 未读列表:</b> 公开版不推荐自动提取未读,建议手动复制可见文本后粘贴<br>
+      <b>♻️ 累积去重:</b> 同一个人多次粘贴,系统自动跳过重复
+    </div>
+    <div style="background:#fef3c7;border:2px dashed #fcd34d;border-radius:8px;padding:12px;margin-top:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div style="font-size:13px;color:#78350f">
+        <b>🔖 提取未读对话工具(一次性设置):</b><br>
+        <span style="font-size:12px">书签功能只做辅助定位。自动提取/批量扫描可能触发平台限制,公开版不推荐使用。</span>
+      </div>
+      <a id="bookmarklet" href="javascript:void(0)" style="background:#6b7280;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;font-weight:600;font-size:13px;cursor:not-allowed;user-select:none">📋 未读提取已停用</a>
+      <a id="highlightBookmarklet" href="javascript:void(0)" style="background:#047857;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;font-weight:600;font-size:13px;cursor:grab;user-select:none">🎯 名单定位</a>
+    </div>
+    <textarea id="inputText" placeholder="把招聘平台页面手动复制的整段文字粘贴到这里。包含「姓名 + 活跃状态 + X岁 + X年 + 学历」格式的会被自动识别。"></textarea>
+    <div class="toolbar" style="margin-top: 10px;">
+      <button class="primary" id="parseBtn">🔍 解析并累加</button>
+      <button id="sampleBtn">载入示例</button>
+      <button id="clearTextBtn">清空输入框</button>
+      <span style="flex: 1"></span>
+      <button id="exportBtn">💾 导出候选人数据</button>
+      <button id="importBtn">📂 导入候选人数据</button>
+      <input type="file" id="importFile" accept=".json" style="display:none">
+      <button class="danger" id="resetBtn">🗑 重新开始（清空累积记录）</button>
+    </div>
+    <div class="helper-callout" id="parseResult">等待解析…</div>
+  </div>
+
+  <div class="panel">
+    <h2>② 手动添加候选人（看不清/想补一个）</h2>
+    <div class="manual-form">
+      <input placeholder="姓名" id="mName">
+      <input placeholder="年龄（如 28）" id="mAge" type="number">
+      <input placeholder="经验年限（如 3）" id="mExp" type="number">
+      <select id="mDegree">
+        <option value="">学历</option>
+        <option>本科</option>
+        <option>大专</option>
+        <option>硕士</option>
+        <option>博士</option>
+        <option>中专</option>
+      </select>
+      <input placeholder="期望岗位（如 海外社媒运营）" id="mJob">
+      <input placeholder="期望城市（如 上海）" id="mCity">
+      <input placeholder="活跃状态（如 刚刚活跃）" id="mActive">
+      <input placeholder="备注（粘贴优势/经历）" id="mNote">
+      <button class="primary" id="addManualBtn">➕ 添加</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="stat-bar">
+      <span>当前显示：<b id="currentCount">0</b> 人</span>
+      <span>本次解析新增：<b id="addedCount">0</b> 人</span>
+      <span>累积总数：<b id="totalCount">0</b> 人</span>
+      <span id="stageFilterHint" style="background:#fef3c7;padding:3px 8px;border-radius:4px;font-size:12px;color:#78350f;display:none"></span>
+    </div>
+    <div class="toolbar" id="filters"></div>
+    <div class="toolbar" style="margin-bottom:10px">
+      <button class="primary" id="startProcessBtn">▶ 进入处理模式（推荐）</button>
+      <button id="copyMatchedBtn">📋 复制全部姓名</button>
+      <button id="copyBossHighlightBtn" style="background:#0369a1;color:#fff;border-color:#0369a1">🎯 复制定位名单</button>
+      <button id="batchScoreBtn" style="background:#7c3aed;color:#fff;border-color:#7c3aed">🤖 AI 批量评分(当前桶)</button>
+      <button id="stopScoreBtn" style="background:#dc2626;color:#fff;border-color:#dc2626;display:none">⏸ 暂停评分</button>
+      <button id="retryFailedBtn" style="background:#d97706;color:#fff;border-color:#d97706;display:none">🔄 重试失败的</button>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 75px">分类</th>
+          <th style="width: 90px">姓名</th>
+          <th style="width: 130px">年龄·经验·学历</th>
+          <th style="width: 130px">期望/活跃</th>
+          <th>优势/经历摘要</th>
+          <th style="width: 180px">命中方向</th>
+          <th style="width: 200px">原因 / 建议</th>
+          <th style="width: 60px">操作</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <footer style="margin-top:32px;padding-top:18px;border-top:1px solid #e5e7eb;color:#9ca3af;font-size:12px;text-align:center;line-height:1.8">
+    <div style="font-weight:600;color:#6b7280">本地招聘筛选看板</div>
+    <div>仅供本地招聘筛选辅助使用 · 请遵守目标平台规则</div>
+    <div>本地运行 · 无需联网 · 零 Token 消耗 · 数据仅存于你的浏览器</div>
+    <div style="margin-top:6px">仅供个人/团队招聘使用，未经许可不得用于商业转售或品牌再包装</div>
+  </footer>
+</div>
+
+<script>
+// ============================================================
+// 用户可配置的筛选规则(可在 UI 调整,存 localStorage)
+// ============================================================
+const ACCOUNTING_KEYWORDS_DEFAULT = [
+  "会计", "财务", "电商会计", "电商财务", "网店会计", "跨境财务",
+  "出纳", "总账", "成本会计", "税务", "报税", "开票", "发票",
+  "应收", "应付", "往来账", "对账", "结算", "核算", "审计",
+  "财务分析", "财务BP", "财务bp", "ERP", "金蝶", "用友", "管家婆",
+  "初级会计", "中级会计", "注册会计", "CPA"
+];
+
+const OVERSEAS_SOCIAL_KEYWORDS_DEFAULT = [
+  "海外内容增长", "海外社媒", "社媒运营", "内容运营", "内容增长", "内容营销",
+  "小红书", "Instagram", "instagram", "IG", "Facebook", "facebook", "Meta", "Pinterest", "pinterest",
+  "独立站", "Shopify", "shopify", "DTC", "dtc", "品牌出海",
+  "种草", "笔记", "标题优化", "评论", "私信", "私域", "引流", "转化", "成交",
+  "买家秀", "UGC", "UGC短视频", "达人素材", "场景短视频", "产品细节展示", "before/after", "faq", "FAQ", "用户反馈", "数据复盘",
+  "AI工具", "ChatGPT", "deepseek", "Midjourney", "Canva",
+  "目标行业", "消费品", "家居", "母婴", "美妆", "生活方式",
+  "Amazon", "amazon", "Wayfair", "wayfair", "海外市场", "英文内容"
+];
+
+const RULES_DEFAULTS = {
+  jobMode: "overseasSocial",    // overseasSocial / accounting / ecommerce
+  requireAccounting: false,
+  accountingKeywords: OVERSEAS_SOCIAL_KEYWORDS_DEFAULT.join("\n"),
+  maxAge: 45,
+  minDegree: "any",             // bachelor / junior / any
+  requireFulltime: false,
+  minExpYears: 1,                // 最少 1 年经验
+  minBachelorYears: 0,
+  excludeFresh: true,
+  excludeIntern: true,
+  excludeNonFulltime: false,
+  excludeJobHopping: false,
+  excludeLongGap: false,         // 默认仅复核
+  excludeLocal: false,           // 默认仅复核
+  excludeEntre: false,           // 默认仅复核
+  enableDirections: {
+    pdd: false, tmall: false, jd: false, domestic: false,
+    amazon: true, crossBorder: true, ecommerceAccounting: true,
+    xhs: true, instagram: true, facebook: true, pinterest: true, dtc: true,
+    contentGrowth: true, conversion: true, aiContent: true, petHome: true,
+    tiktok: true,
+  },
+  customExclude: "纯客服\n电话销售\n纯直播主播\n纯剪辑\n纯投放优化师\n纯行政\n纯财务\n会计\n出纳\n总账",
+  customBonus: "目标行业\n消费品\n家居\n母婴\n美妆\n生活方式\n海外市场\n英文\nShopify\nDTC\n买家秀\nUGC\nUGC短视频\n达人素材\n场景短视频\n产品细节展示\nbefore/after\n私信转化\n评论转化\n线索跟进\nAI工具",
+};
+const RULES_STORAGE_KEY = "本地招聘筛选看板_规则_v1";
+function loadRules() {
+  try { return { ...RULES_DEFAULTS, ...JSON.parse(localStorage.getItem(RULES_STORAGE_KEY) || "{}") }; }
+  catch { return { ...RULES_DEFAULTS }; }
+}
+function saveRules(r) { localStorage.setItem(RULES_STORAGE_KEY, JSON.stringify(r)); }
+function splitRuleWords(value) {
+  return String(value || "").split(/[\\n,，、]+/).map(s => s.trim()).filter(Boolean);
+}
+function activeAccountingWords() {
+  return splitRuleWords(USER_RULES.accountingKeywords || RULES_DEFAULTS.accountingKeywords);
+}
+let USER_RULES = loadRules();
+
+// ============================================================
+// 招聘规则
+// ============================================================
+const RULES = {
+  directions: {
+    // 海外内容增长 / 社媒转化
+    xhs: ["小红书", "小红书运营", "薯店", "笔记", "种草", "爆文", "蒲公英"],
+    instagram: ["instagram", "Instagram", "IG", "ins", "reels", "story", "海外社媒"],
+    facebook: ["facebook", "Facebook", "FB", "Meta", "meta", "Facebook主页", "Facebook群组", "Facebook社群"],
+    pinterest: ["pinterest", "Pinterest", "pin", "pins"],
+    dtc: ["独立站", "Shopify", "shopify", "DTC", "dtc", "品牌出海", "站外引流", "官网", "产品页"],
+    contentGrowth: ["内容增长", "内容运营", "内容营销", "社媒运营", "新媒体运营", "内容策划", "选题", "标题优化", "文案", "买家秀", "UGC", "UGC短视频", "达人素材", "场景短视频", "产品细节展示", "before/after", "使用视频", "教育型内容", "FAQ", "素材库"],
+    conversion: ["转化", "成交", "咨询", "线索", "私信", "评论", "私域", "引流", "用户跟进", "客户跟进", "话术", "复购"],
+    aiContent: ["AI工具", "AI 工具", "ChatGPT", "chatgpt", "DeepSeek", "deepseek", "Midjourney", "Canva", "提示词", "翻译", "内容复用"],
+    petHome: ["目标行业", "消费品", "家居", "家具", "母婴", "美妆", "生活方式"],
+    // 国内电商平台(域内)
+    pdd: ["拼多多", "pdd", "多多", "拼多多运营"],
+    tmall: ["天猫", "淘宝", "淘系", "猫超", "天猫运营", "淘宝运营"],
+    jd: ["京东", "京喜", "京东运营", "JD"],
+    domestic: ["抖音", "抖店", "快手", "小红书", "唯品会", "网易考拉", "苏宁", "国美"],
+    // 跨境电商平台
+    amazon: ["亚马逊", "amazon", "fba", "跨境电商", "亚马逊运营", "Temu", "temu"],
+    crossBorder: ["Wayfair", "wayfair", "Shopee", "shopee", "速卖通", "Lazada", "lazada", "eBay", "ebay", "阿里国际", "敦煌网"],
+    tiktok: ["TikTok", "tiktok", "TK", "tk", "TikTok Shop", "tiktok shop", "短视频带货", "直播带货", "达人带货", "达人合作", "TikTok内容", "TK内容"],
+    // 电商会计/财务
+    ecommerceAccounting: ACCOUNTING_KEYWORDS_DEFAULT,
+  },
+  ecommerceExperience: ["社媒", "海外社媒", "内容运营", "内容增长", "新媒体", "小红书", "Instagram", "Facebook", "Meta", "Pinterest", "独立站", "Shopify", "DTC", "品牌出海", "跨境", "亚马逊", "Amazon", "Wayfair", "电商", "运营", "种草", "私信", "转化", "买家秀", "AI工具", "宠物", "家居"],
+  formalWorkSignals: ["工作经历", "在职", "离职", "上一份工作", "负责", "任职", "担任", "工作经验", "岗位经验", "运营专员", "运营主管", "内容运营", "新媒体运营", "社媒运营", "海外运营", "品牌运营", "用户运营"],
+  internshipOnlySignals: ["仅实习", "只有实习", "校招实习"],
+  // 应届/在校相关词:全部命中即触发排除(除非有正式工作经历)
+  excludeGraduateSignals: [
+    // 当年和未来届
+    "2026届", "26届", "2027届", "27届", "2028届", "28届", "2029届", "29届", "2030届", "30届",
+    // 应届相关(无"生"也算)
+    "应届毕业生", "应届生", "应届", "毕业生",
+    // 在校相关
+    "在校生", "在校", "在读", "校招",
+    // 找实习/找毕业实习
+    "找实习", "毕业实习", "实习生",
+  ],
+  allowGraduateSignals: ["2025届", "25届", "2024届", "2023届", "2022届"],
+  educationInclude: ["本科", "学士", "硕士", "研究生", "博士"],
+  educationExclude: [
+    "非全日制", "成人本科", "自考本科", "成考", "成人高考", "函授", "网络教育",
+    "继续教育", "国家开放大学", "电大", "夜大", "开放教育", "远程教育",
+    "在职研究生", "在职本科", "专升本", "专科升本", "国开",
+    "网教", "自考", "成教", "函授本科",
+  ],
+  educationBelow: ["大专", "专科", "中专", "高职", "技校"],
+  activeInclude: ["刚刚活跃", "今日活跃", "3日内活跃", "本周活跃", "2周内活跃", "本月活跃"],
+  localCheckSignals: [],
+  entrepreneurSignals: ["创业", "创始人", "合伙人", "自己开店", "个体户", "自营"],
+};
+
+function includesAny(text, words) {
+  const lower = String(text || "").toLowerCase();
+  return words.some(w => lower.includes(String(w).toLowerCase()));
+}
+function matchedWords(text, words) {
+  const lower = String(text || "").toLowerCase();
+  return words.filter(w => lower.includes(String(w).toLowerCase()));
+}
+
+function isFutureGraduateText(text) {
+  const s = String(text || "");
+  return /(2026|2027|2028|2029|2030)\s*届|(?:26|27|28|29|30)\s*届|(?:26|27|28|29|30)\s*年\s*应届|(?:26|27|28|29|30)\s*年\s*毕业|未毕业|在读|在校/.test(s);
+}
+
+function parseExperienceYears(c, fullText) {
+  const expText = String(c.exp || c.experienceYears || "");
+  if (/应届|在校|在读|未毕业|毕业生|无经验/.test(expText)) return 0;
+  if (isFutureGraduateText(expText)) return 0;
+  if (/10\s*年以上/.test(expText)) return 10;
+  const explicit = expText.match(/(\d+(?:\.\d+)?)\s*年(?:经验|工作经验|运营经验|内容经验|社媒经验)?/);
+  if (explicit) return Number(explicit[1]) || 0;
+  const body = String(fullText || "");
+  if (/应届|在校|在读|未毕业/.test(body) && !/工作经历|在职|离职|任职/.test(body)) return 0;
+  const bodyExplicit = body.match(/(\d+(?:\.\d+)?)\s*年(?:经验|工作经验|运营经验|内容经验|社媒经验)/);
+  return bodyExplicit ? (Number(bodyExplicit[1]) || 0) : 0;
+}
+
+// 检测非全日制本科(专升本、读 2 年的本科、自考成考函授网教等)
+function detectNonFulltimeBachelor(c, minBachelorYears = 3) {
+  const flags = [];
+  const fullText = [c.advantage, c.note, c.workHistory, c.education, c.raw, c.fullResume].filter(Boolean).join("\n");
+
+  // 1. 关键词:明确写了自考/成考/函授/网教/继续教育 等
+  const nonFulltimeWords = /(自考|成考|成人本科|成人高考|函授|网络教育|远程教育|继续教育|国家开放大学|电大|夜大|开放教育|在职研究生|在职本科|专升本|专科升本|国开|网教|成教)/;
+  const m1 = fullText.match(nonFulltimeWords);
+  if (m1) flags.push(`非全日制本科·含"${m1[0]}"`);
+
+  // 2. 教育经历分析:同时有大专 + 本科 → 大概率专升本
+  const eduSection = c.education || c.workHistory || c.raw || "";
+  const hasJunior = /大专|专科|高职|职业学院|职业技术学院/.test(eduSection);
+  const hasBachelor = /本科|学士|大学(?![专])/.test(eduSection);
+  if (hasJunior && hasBachelor) {
+    flags.push("疑似专升本(教育经历含大专+本科)");
+  }
+
+  // 3. 本科持续时间检测:全日制本科 4 年,读 2-3 年的大概率非全日制
+  // 匹配 "YYYY - YYYY [学校] ... 本科" 模式
+  const bachelorPattern = /(\d{4})\s*[-—~]\s*(\d{4})[^\n]{0,80}本科/g;
+  let m;
+  while ((m = bachelorPattern.exec(eduSection)) !== null) {
+    const years = parseInt(m[2]) - parseInt(m[1]);
+    if (years > 0 && years < minBachelorYears) {
+      flags.push(`本科只读 ${years} 年(要求 ≥ ${minBachelorYears} 年)`);
+      break;
+    }
+  }
+
+  return flags;
+}
+
+// 工作稳定性分析(解析工作经历,识别频繁跳槽/久未在职/大 gap)
+function analyzeWorkStability(workHistoryText) {
+  if (!workHistoryText) return { stable: true, flags: [], jobs: [], gapMonths: 0 };
+  // 提取工作经历:YYYY.MM - YYYY.MM 或 YYYY.MM - 至今
+  const pattern = /(\d{4})\.(\d{1,2})\s*[-—~]\s*(?:(\d{4})\.(\d{1,2})|至今)/g;
+  const jobs = [];
+  let m;
+  while ((m = pattern.exec(workHistoryText)) !== null) {
+    const startY = parseInt(m[1]);
+    const startM = parseInt(m[2]);
+    const isPresent = !m[3];
+    const endY = isPresent ? 2026 : parseInt(m[3]);  // 当前年(2026)
+    const endM = isPresent ? 6 : parseInt(m[4]);     // 当前月
+    const durationMonths = (endY - startY) * 12 + (endM - startM);
+    jobs.push({ startY, startM, endY, endM, durationMonths, isPresent });
+  }
+
+  const flags = [];
+  if (jobs.length === 0) return { stable: true, flags, jobs, gapMonths: 0 };
+
+  // 找最近一段工作(最大 endY+endM)
+  jobs.sort((a, b) => (b.endY * 12 + b.endM) - (a.endY * 12 + a.endM));
+  const latestJob = jobs[0];
+
+  // 1. 最近一份工作是否在 2026 年(还在职或 2026 年才离职)
+  const recentlyEmployed = latestJob.endY >= 2026 || latestJob.isPresent;
+  if (!recentlyEmployed) {
+    const gapMonths = (2026 - latestJob.endY) * 12 + (6 - latestJob.endM);
+    if (gapMonths > 12) flags.push(`离职超 1 年(最近${latestJob.endY}.${latestJob.endM}离职,gap ${Math.round(gapMonths/12*10)/10} 年)`);
+    else if (gapMonths > 6) flags.push(`离职 ${gapMonths} 月(超 6 月)`);
+  }
+
+  // 2. 频繁跳槽:近 3-5 年内有 3+ 段每段 < 12 个月
+  const shortJobs = jobs.filter(j => j.durationMonths > 0 && j.durationMonths < 12).length;
+  if (jobs.length >= 3 && shortJobs >= 3) {
+    flags.push(`频繁跳槽(${shortJobs} 段工作不足 1 年)`);
+  } else if (shortJobs >= 2 && jobs.length <= 4) {
+    flags.push(`稳定性一般(${shortJobs}/${jobs.length} 段 < 1 年)`);
+  }
+
+  // 3. 平均在职时长 < 1 年
+  if (jobs.length >= 2) {
+    const totalMonths = jobs.reduce((s, j) => s + j.durationMonths, 0);
+    const avgMonths = totalMonths / jobs.length;
+    if (avgMonths < 12) flags.push(`平均在职 ${Math.round(avgMonths)} 月(不足 1 年)`);
+  }
+
+  return {
+    stable: flags.length === 0,
+    flags,
+    jobs,
+    latestEnd: `${latestJob.endY}.${latestJob.endM}`,
+    isCurrentlyEmployed: latestJob.isPresent,
+    gapMonths: recentlyEmployed ? 0 : (2026 - latestJob.endY) * 12 + (6 - latestJob.endM),
+  };
+}
+
+function activeRecencyScore(activeText) {
+  const s = String(activeText || "");
+  if (!s) return { score: 0, label: "活跃未知", tier: "unknown" };
+  if (/刚刚活跃|今日活跃|收到消息|未读/.test(s)) return { score: 18, label: s.includes("刚刚") ? "刚刚活跃" : "今日/未读活跃", tier: "hot" };
+  if (/3\s*(日|天)内活跃|1\s*(日|天)内活跃|2\s*(日|天)内活跃/.test(s)) return { score: 15, label: "3日内活跃", tier: "recent" };
+  if (/本周活跃|7\s*(日|天)内活跃/.test(s)) return { score: 10, label: "本周活跃", tier: "week" };
+  if (/2周内活跃|14\s*(日|天)内活跃/.test(s)) return { score: 7, label: "2周内活跃", tier: "twoWeeks" };
+  if (/本月活跃|30\s*(日|天)内活跃|1\s*月内活跃/.test(s)) return { score: 4, label: "本月活跃", tier: "month" };
+  if (/\d+\s*月内活跃|2月内活跃|3月内活跃/.test(s)) return { score: 1, label: "较久前活跃", tier: "old" };
+  return { score: 0, label: s, tier: "unknown" };
+}
+
+function overseasSocialRuleMatch(text, directionHits, ecommerceHits, hasFormalWork, expYears, activeText) {
+  const hit = key => directionHits.includes(key);
+  const t = String(text || "");
+  const hasTransferableTkContent = hit("tiktok") && /宠物|猫|家居|家具|母婴|美妆|生活方式|DTC|独立站|站外引流|达人素材|UGC|买家秀|场景短视频|使用视频|产品细节展示|before\/after|vertical space|教育型内容|内容种草/i.test(t);
+  const hasTkCommerceOnly = hit("tiktok") && /TikTok\s*Shop|tiktok\s*shop|直播带货|短视频带货|达人带货|达人合作|投流|投放/i.test(t) && !hasTransferableTkContent;
+  const hasCoreSocialPlatform = hit("xhs") || hit("instagram") || hit("facebook") || hit("pinterest");
+  const hasSocialPlatform = hasCoreSocialPlatform || hasTransferableTkContent;
+  const hasTikTokOnly = hit("tiktok") && !hasCoreSocialPlatform && !hit("dtc") && !hasTransferableTkContent;
+  const hasContent = hit("contentGrowth");
+  const hasConversion = hit("conversion");
+  const hasAI = hit("aiContent");
+  const hasOverseasOrDtc = hit("instagram") || hit("facebook") || hit("pinterest") || hit("dtc") || hit("amazon") || hit("crossBorder");
+  const hasPetHome = hit("petHome");
+  const hasBasicOps = ecommerceHits.length > 0 || hasContent || hasSocialPlatform;
+  const hasEnoughExperience = hasFormalWork || expYears >= 1;
+  const activeScore = activeRecencyScore(activeText);
+
+  const dimensions = [];
+  if (hasSocialPlatform) dimensions.push("社媒平台");
+  if (hasContent) dimensions.push("内容选题/文案");
+  if (hasConversion) dimensions.push("评论私信/转化");
+  if (hasAI) dimensions.push("AI工具");
+  if (hasOverseasOrDtc) dimensions.push("海外/DTC");
+  if (hasPetHome) dimensions.push("宠物/家居");
+  if (hasTransferableTkContent) dimensions.push("TK内容可迁移");
+  if (hasTikTokOnly || hasTkCommerceOnly) dimensions.push("TikTok需复核");
+  if (activeScore.score >= 10) dimensions.push(activeScore.label);
+
+  let score = 0;
+  if (hasSocialPlatform) score += 25;
+  if (hasContent) score += 20;
+  if (hasConversion) score += 25;
+  if (hasAI) score += 10;
+  if (hasOverseasOrDtc) score += 15;
+  if (hasPetHome) score += 10;
+  if (hasEnoughExperience) score += 10;
+  score += activeScore.score;
+  if (hasTransferableTkContent) score += 8;
+  if (hasTikTokOnly || hasTkCommerceOnly) score -= 20;
+
+  return {
+    score,
+    dimensions,
+    hasSocialPlatform,
+    hasContent,
+    hasConversion,
+    hasAI,
+    hasOverseasOrDtc,
+    hasPetHome,
+    hasCoreSocialPlatform,
+    hasTransferableTkContent,
+    hasTkCommerceOnly,
+    hasTikTokOnly,
+    hasBasicOps,
+    hasEnoughExperience,
+    activeScore,
+  };
+}
+
+function classify(c) {
+  const text = [c.name, c.job, c.city, c.message, c.detailText, c.note, c.advantage, c.workHistory, c.education].filter(Boolean).join("\n");
+  const accountingHits = matchedWords(text, activeAccountingWords());
+  const directionEntries = { ...RULES.directions, ecommerceAccounting: activeAccountingWords() };
+  const directionHits = Object.entries(directionEntries).filter(([, w]) => includesAny(text, w)).map(([k]) => k);
+  const requireAccounting = USER_RULES.jobMode === "accounting" || USER_RULES.requireAccounting;
+  const hasAccountingMatch = accountingHits.length > 0;
+  const ecommerceHits = matchedWords(text, RULES.ecommerceExperience);
+  const formalHits = matchedWords(text, RULES.formalWorkSignals);
+  const internshipHits = matchedWords(text, RULES.internshipOnlySignals);
+  const excludeGraduateHits = matchedWords(text, RULES.excludeGraduateSignals);
+  const allowGraduateHits = matchedWords(text, RULES.allowGraduateSignals);
+  const educationHits = matchedWords(text, RULES.educationInclude);
+  const educationExcludeHits = matchedWords(text, RULES.educationExclude);
+  const educationBelowHits = matchedWords(text, RULES.educationBelow);
+  const localHits = matchedWords(text, RULES.localCheckSignals);
+  const entrepreneurHits = matchedWords(text, RULES.entrepreneurSignals);
+
+  const ageNum = Number(String(c.age || "").match(/\d+/)?.[0] || 0);
+  const isUnder30 = ageNum > 0 && ageNum <= (USER_RULES.maxAge || 30);
+  const isFutureGraduate = isFutureGraduateText(text);
+  const expYears = parseExperienceYears(c, text);
+  const isActive = includesAny(c.active || "", RULES.activeInclude) || /随时到岗/.test(text);
+  const hasFormalWork = !isFutureGraduate && (formalHits.length > 0 || expYears >= (USER_RULES.minExpYears ?? 1)) && internshipHits.length === 0;
+  const isExcludedGraduate = USER_RULES.excludeFresh && (isFutureGraduate || (excludeGraduateHits.length > 0 && allowGraduateHits.length === 0 && !hasFormalWork));
+  const degreeStr = c.degree || "";
+  const isDegreeBelow = educationBelowHits.length > 0 || /大专|专科|中专/.test(degreeStr);
+  const minDegreeReq = USER_RULES.minDegree || "bachelor";
+  const hasBachelor = minDegreeReq === "any" ? true :
+    minDegreeReq === "junior" ? !/中专|高中/.test(degreeStr) :
+    (educationHits.length > 0 || /本科|学士|硕士|博士/.test(degreeStr)) && !isDegreeBelow;
+
+  // 自定义排除关键词
+  const customExcludeWords = (USER_RULES.customExclude || "").split(/\n+/).map(s => s.trim()).filter(Boolean);
+  const customExcludeHits = customExcludeWords.filter(w => text.includes(w));
+  const hasCustomExclude = customExcludeHits.length > 0;
+  const reasons = [];
+  if (ageNum && !isUnder30) reasons.push(`${ageNum}岁（超 ${USER_RULES.maxAge || 45} 岁）`);
+  if (USER_RULES.minDegree !== "any" && isDegreeBelow) reasons.push(`学历 ${educationBelowHits[0] || degreeStr}（未达要求）`);
+  else if (USER_RULES.minDegree !== "any" && !hasBachelor && degreeStr) reasons.push("学历未达到要求");
+  if (requireAccounting && !hasAccountingMatch) reasons.push("未命中当前岗位核心方向");
+  else if (!ecommerceHits.length && !directionHits.length) reasons.push("未发现海外社媒/内容增长/转化相关经验");
+  if (internshipHits.length) reasons.push("疑似仅实习");
+  if (isExcludedGraduate) reasons.push(isFutureGraduate ? "未毕业/未来届应届" : "应届/在校");
+  const flags = [];
+  if (localHits.length) flags.push(`含"${localHits[0]}"·核实籍贯`);
+  if (entrepreneurHits.length) flags.push(`含"${entrepreneurHits[0]}"·核实是否创业过`);
+
+  // 工作稳定性分析(频繁跳槽/gap太久/最近不在职)
+  const stability = analyzeWorkStability(c.workHistory || c.raw || "");
+  for (const f of stability.flags) flags.push(`⚠️ ${f}`);
+
+  // 检测非全日制本科(只在用户启用了"必须全日制本科"时检测)
+  const nonFulltimeFlags = USER_RULES.requireFulltime && USER_RULES.excludeNonFulltime
+    ? detectNonFulltimeBachelor(c, USER_RULES.minBachelorYears || 3)
+    : [];
+  for (const f of nonFulltimeFlags) reasons.push(f);
+
+  // 自定义排除关键词命中
+  if (hasCustomExclude) reasons.push(`含自定义排除词:${customExcludeHits.slice(0, 3).join("、")}`);
+
+  let bucket;
+  // 硬性淘汰条件(根据用户设置)
+  const hasHardFail =
+    (ageNum && !isUnder30) ||                                   // 超龄
+    (USER_RULES.minDegree !== "any" && isDegreeBelow && USER_RULES.minDegree === "bachelor") ||  // 学历不够
+    (USER_RULES.excludeFresh && isExcludedGraduate) ||           // 应届
+    (USER_RULES.excludeIntern && internshipHits.length > 0) ||   // 仅实习
+    (USER_RULES.excludeNonFulltime && nonFulltimeFlags.length > 0) ||  // 非全日制本科
+    (USER_RULES.excludeLocal && localHits.length > 0) ||         // 本地人(可选硬淘汰)
+    (USER_RULES.excludeEntre && entrepreneurHits.length > 0) ||  // 创业(可选硬淘汰)
+    hasCustomExclude;                                            // 自定义排除词
+  // 工作稳定性:启用时,2+ flag 视为硬性
+  const hasStabilityHardFail = USER_RULES.excludeJobHopping && stability.flags.length >= 2;
+  // 离职太久(可选硬淘汰)
+  const hasLongGapHardFail = USER_RULES.excludeLongGap && stability.gapMonths > 6;
+  // 过滤掉用户禁用的方向;会计岗严格模式下,只有会计/财务方向算有效命中
+  let enabledDirHits = directionHits.filter(d => USER_RULES.enableDirections?.[d] !== false);
+  if (requireAccounting) enabledDirHits = hasAccountingMatch ? ["ecommerceAccounting"] : [];
+  const isOverseasSocialMode = USER_RULES.jobMode === "overseasSocial" && !requireAccounting;
+  if (isOverseasSocialMode) {
+    const overseasDirs = new Set(["xhs", "instagram", "facebook", "pinterest", "dtc", "contentGrowth", "conversion", "aiContent", "petHome", "amazon", "crossBorder", "tiktok"]);
+    enabledDirHits = enabledDirHits.filter(d => overseasDirs.has(d));
+  }
+  // 严格的规则强匹配:命中海外社媒/内容增长方向 + 有正式经验
+  const minExp = USER_RULES.minExpYears ?? 1;
+  const overseasMatch = isOverseasSocialMode
+    ? overseasSocialRuleMatch(text, enabledDirHits, ecommerceHits, hasFormalWork, expYears, c.active)
+    : null;
+  const hasStrongBonus = overseasMatch && (
+    overseasMatch.hasOverseasOrDtc ||
+    overseasMatch.hasPetHome ||
+    overseasMatch.hasAI ||
+    overseasMatch.activeScore.score >= 10
+  );
+  const isRuleStrong = isOverseasSocialMode
+    ? overseasMatch.score >= 95 &&
+      (overseasMatch.hasCoreSocialPlatform || overseasMatch.hasOverseasOrDtc || (overseasMatch.hasTransferableTkContent && overseasMatch.hasPetHome)) &&
+      overseasMatch.hasContent &&
+      overseasMatch.hasConversion &&
+      overseasMatch.hasEnoughExperience &&
+      hasStrongBonus
+    : isUnder30 && hasBachelor && enabledDirHits.length > 0 && hasFormalWork && expYears >= minExp && stability.flags.length === 0;
+
+  if (isOverseasSocialMode) {
+    if (hasHardFail || hasLongGapHardFail) bucket = "不符合";
+    else if (overseasMatch.hasTikTokOnly || overseasMatch.hasTkCommerceOnly) {
+      bucket = overseasMatch.hasContent || overseasMatch.hasConversion ? "需人工复核" : "待补详情";
+      reasons.push("TikTok/短视频方向为主,需确认是否有 Instagram/Facebook/Pinterest/独立站经验");
+    }
+    else if (hasStabilityHardFail) bucket = "需人工复核";
+    else if (isRuleStrong) bucket = "强匹配";
+    else if (
+      overseasMatch.score >= 55 &&
+      (overseasMatch.hasSocialPlatform || overseasMatch.hasContent) &&
+      (overseasMatch.hasConversion || overseasMatch.hasAI || overseasMatch.hasOverseasOrDtc || overseasMatch.hasPetHome)
+    ) {
+      bucket = flags.length ? "需人工复核" : "候补精选";
+    } else if (overseasMatch.hasBasicOps || enabledDirHits.length) {
+      bucket = "待补详情";
+      if (!overseasMatch.hasSocialPlatform) reasons.push("未明确小红书/Instagram/Pinterest 等社媒平台经验");
+      if (!overseasMatch.hasConversion) reasons.push("未明确评论/私信/线索跟进/成交转化经验");
+      if (overseasMatch.activeScore.score === 0) reasons.push("活跃时间未知或较久,优先级降低");
+    } else {
+      bucket = "不符合";
+      reasons.push("未命中海外社媒内容增长岗位核心能力");
+    }
+    if (overseasMatch.dimensions.length) flags.push(`JD命中:${overseasMatch.dimensions.join("、")}`);
+  } else if (requireAccounting && !hasAccountingMatch) bucket = "不符合";
+  else if (hasHardFail || hasLongGapHardFail) bucket = "不符合";
+  else if (hasStabilityHardFail) bucket = "不符合";
+  else if (flags.length && !reasons.length) bucket = "需人工复核";
+  else if (isRuleStrong) bucket = "强匹配";
+  else if (enabledDirHits.length || ecommerceHits.length) bucket = "待补详情";
+  else bucket = "待补详情";
+
+  // ★ 5 桶精准分类(按优先级降序):
+  //   强匹配  = AI A 级 (90-100) 或 规则命中强匹配(未评分) - 立刻打招呼
+  //   候补精选 = AI B 级 (75-89)  - 第二梯队,强匹配处理完后看
+  //   待补详情 = AI C 级 (60-74) + 规则待补 - 需补简历或评分
+  //   需人工复核 = 触发本地/创业等提示
+  //   不符合 = AI D 级 + 硬淘汰
+  const aiMatchesCurrentJob = c.aiGrade && (
+    c.aiJobMode === USER_RULES.jobMode ||
+    (USER_RULES.jobMode !== "overseasSocial" && !c.aiJobMode)
+  );
+  if (aiMatchesCurrentJob) {
+    if (isOverseasSocialMode && hasHardFail) {
+      bucket = "不符合";
+    } else if (requireAccounting && !hasAccountingMatch) {
+      bucket = "不符合";
+    } else if (c.aiGrade === "A") {
+      bucket = "强匹配";
+    } else if (c.aiGrade === "B") {
+      if (flags.length) bucket = "需人工复核";
+      else bucket = "候补精选";
+    } else if (c.aiGrade === "C") {
+      if (flags.length) bucket = "需人工复核";
+      else bucket = "待补详情";
+    } else if (c.aiGrade === "D") {
+      bucket = "不符合";
+    }
+  }
+  // 没 AI 评分:保留规则的判断结果(强匹配/待补/复核/不符合)
+  // 等 AI 评分后,A 级会自动升级,D 级会降级,B/C 各归其位
+
+  return { ...c, bucket, directionHits, ecommerceHits, accountingHits, reasons, flags, ageNum, expYears, hasBachelor, isUnder30 };
+}
+
+// ============================================================
+// 文本解析：从 BOSS 页面 Cmd+A 复制的整段文字中识别候选人卡片
+// ============================================================
+// 自动判断粘贴的是推荐页格式 还是 未读列表格式
+// 重要:未读特征优先,避免混合数据被误判为推荐页
+function detectPasteFormat(text) {
+  // 1. 优先检测未读列表(BOSS 沟通页特征明显)
+  const bossUnreadPattern = /^\d{1,3}\s*\n\s*\d{1,2}:\d{2}\s*\n/m;
+  const bossUnreadPattern2 = /\n\d{1,3}\s*\n\s*\d{1,2}:\d{2}\s*\n/;
+  const oldUnreadPattern = /^\s*\d+\s+\d{1,2}:\d{2}\s+[一-龥A-Za-z]{2,12}/m;
+  if (bossUnreadPattern.test(text) || bossUnreadPattern2.test(text) || oldUnreadPattern.test(text)) {
+    return "unread";
+  }
+
+  // 2. 推荐页特征:"姓名 活跃状态" + 同一区域有 "X岁 X年 学历"
+  const recommendPattern = /[一-龥A-Za-z]{2,12}\s+(刚刚活跃|今日活跃|本周活跃|本月活跃|月内活跃|\d+\s*(?:天|日|周|月)内活跃|半年内活跃|年内活跃)[\s\S]{0,80}\d{2}\s*岁/;
+  if (recommendPattern.test(text)) return "recommend";
+
+  return "recommend";  // 兜底
+}
+
+// 把"姓名+岗位"连写的字符串拆开
+function splitNameAndJob(line) {
+  // 岗位起始关键词(越长越优先匹配)
+  const jobStartWords = [
+    "电商运营", "电商会计", "电商财务", "店铺运营", "平台运营", "商品运营", "活动运营", "新媒体运营",
+    "天猫运营", "淘宝运营", "拼多多运营", "亚马逊运营", "京东运营", "抖音运营", "快手运营",
+    "电商", "运营", "会计", "财务", "跨境", "客服", "销售", "新媒体", "产品",
+    "采购", "文员", "总账", "出纳", "审计", "平台", "品牌", "店长", "主管",
+    "经理", "主播", "设计", "测试", "工程", "外包", "项目", "店铺", "助理",
+    "专员", "总监", "运营经理", "运营专员", "运营助理",
+  ];
+  // 按长度排序,长的优先
+  const sortedWords = [...jobStartWords].sort((a, b) => b.length - a.length);
+  for (const w of sortedWords) {
+    const idx = line.indexOf(w);
+    if (idx >= 2 && idx <= 5) {  // 姓名 2-5 字
+      const name = line.slice(0, idx).trim();
+      const job = line.slice(idx).trim().slice(0, 80);
+      if (/^[一-龥A-Za-z]{2,5}$/.test(name)) return { name, job };
+    }
+  }
+  // 兜底:前 3 字作姓名,其余作岗位
+  const name = line.slice(0, 3).trim();
+  if (!/^[一-龥A-Za-z]{2,5}$/.test(name)) return null;
+  return { name, job: line.slice(3).slice(0, 80).trim() };
+}
+
+// 检测是否包含 BOSS 对话详情面板格式
+function hasChatDetailFormat(text) {
+  return /沟通职位[::]\s*\S+/.test(text) || /期望[::]\s*\S+/.test(text);
+}
+
+// 解析未读列表 — 处理 BOSS 实际拖选粘贴出来的格式
+// 新策略:直接扫描"姓名+岗位"特征行,不依赖时间锚点
+function parseUnreadList(text) {
+  const cards = [];
+  const lines = text.split(/\n+/).map(l => l.trim()).filter(Boolean);
+  const seenNames = new Set();
+  let position = 0;
+
+  // UI 噪音黑名单(完整匹配)
+  const uiNoise = /^(全部|未读|海外|欧洲|新媒体|批量|沟通|搜索|更多|牛人已读未回|招聘规范|招聘数据|续费VIP|续费|VIP|账号权益|我的客服|面试|提取BOSS未读|我已知晓|发送|求简历|换电话|换微信|约面试|不合适|帮你问牛人|不符牛人|在线简历|附件简历|全部职位|你好啊,可以聊一聊~|不好意思,不太合适哦|邱女士|晓青|图片)$/;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // 跳过 UI 噪音
+    if (uiNoise.test(line)) continue;
+
+    // 试图把当前行拆为"姓名+岗位"
+    const split = splitNameAndJob(line);
+    if (!split) continue;
+    if (split.name.length < 2 || split.name.length > 5) continue;
+
+    // 必须包含岗位关键词,过滤掉误判
+    if (!/(运营|会计|财务|跨境|电商|客服|销售|新媒体|产品|采购|文员|出纳|审计|平台|品牌|店长|主管|经理|主播|设计|分析|师|专员|助理|实习)/.test(split.job)) continue;
+
+    // 姓名必须是纯中文/英文,排除带数字/标点的误判
+    if (!/^[一-龥A-Za-z·]{2,5}$/.test(split.name)) continue;
+
+    // 排除常见误判姓名(语气词等)
+    if (/^(您好|你好|早上|下午|晚上|老板|想问|希望|期待|我有|我是|占用|关注|看到|请问|可以|能否|麻烦|对不起|很高兴|非常|刚刚|现在|今天|明天)/.test(split.name + split.job.slice(0, 2))) continue;
+
+    // 去重
+    const dedupKey = split.name + split.job.slice(0, 20);
+    if (seenNames.has(dedupKey)) continue;
+    seenNames.add(dedupKey);
+
+    // 向上找时间(往前 1-3 行)
+    let msgTime = '';
+    let unreadCount = 1;
+    for (let k = Math.max(0, i - 3); k < i; k++) {
+      if (/^\d{1,2}:\d{2}$/.test(lines[k]) || /^\d{1,2}月\d{1,2}日$/.test(lines[k])) {
+        msgTime = lines[k];
+        // 时间上一行可能是未读数
+        if (k > 0 && /^\d{1,3}$/.test(lines[k - 1])) {
+          unreadCount = parseInt(lines[k - 1]);
+        }
+        break;
+      }
+    }
+
+    // 向下找消息(往后 1-5 行,遇到下一个锚点就停)
+    let message = '';
+    for (let k = i + 1; k < Math.min(lines.length, i + 6); k++) {
+      const next = lines[k];
+      if (uiNoise.test(next)) break;
+      // 遇到时间/日期/未读数 → 停
+      if (/^\d{1,2}:\d{2}$/.test(next) || /^\d{1,2}月\d{1,2}日$/.test(next) || /^\d{1,3}$/.test(next)) break;
+      // 遇到下一个 "姓名+岗位" → 停
+      const nextSplit = splitNameAndJob(next);
+      if (nextSplit && nextSplit.name.length >= 2 && /(运营|会计|财务|跨境|电商|客服|销售)/.test(nextSplit.job)) break;
+      message += (message ? ' ' : '') + next;
+      if (message.length > 300) break;
+    }
+    message = message.slice(0, 300);
+
+    position++;
+    cards.push({
+      name: split.name,
+      unreadCount,
+      msgTime,
+      msgJob: split.job,
+      message,
+      source: "unread",
+      addedAt: Date.now(),
+      pastePosition: position,
+      age: "", ageNum: 0, exp: "", degree: "",
+      expect: split.job,
+      active: msgTime ? `${msgTime} 收到消息` : "未读",
+      advantage: message,
+      workHistory: "", education: "", skillTags: [],
+      fullSummary: `[未读消息·${msgTime || '未知时间'}] ${split.job}\n候选人发来:${message}`,
+      completeness: 15,
+      raw: `${unreadCount}条未读 · ${msgTime || ''} · ${split.job}\n${message}`,
+    });
+  }
+
+  return cards;
+}
+
+function parseRawText(text) {
+  if (!text) return [];
+
+  const fmt = detectPasteFormat(text);
+  if (fmt === "unread") {
+    return parseUnreadList(text);
+  }
+
+  // 推荐页解析(原逻辑)
+  const blockPattern = /(?=([一-龥A-Za-z]{2,12})\s+(刚刚活跃|今日活跃|本周活跃|本月活跃|月内活跃|\d+\s*(?:天|日|周|月)内活跃|\d+日内活跃|半年内活跃|年内活跃))/g;
+  const chunks = text.split(blockPattern).filter(s => s && s.trim().length > 20);
+
+  const cards = [];
+  for (let i = 0; i < chunks.length; i++) {
+    const ch = chunks[i];
+    const nameActiveMatch = ch.match(/^([一-龥A-Za-z]{2,12})\s+(刚刚活跃|今日活跃|本周活跃|本月活跃|月内活跃|\d+\s*(?:天|日|周|月)内活跃|半年内活跃|年内活跃)/);
+    if (!nameActiveMatch) continue;
+    const name = nameActiveMatch[1];
+    const active = nameActiveMatch[2];
+
+    // 年龄
+    const ageMatch = ch.match(/(\d{2})\s*岁/);
+    if (!ageMatch) continue;
+    const age = ageMatch[1] + "岁";
+    const ageNum = parseInt(ageMatch[1]);
+
+    // 经验
+    const expMatch = ch.match(/(\d+)\s*年|10年以上|应届|无经验/);
+    const exp = expMatch ? expMatch[0] : "";
+    const expYearsParsed = expMatch ? (parseInt(expMatch[0]) || (expMatch[0].includes("10年以上") ? 10 : 0)) : 0;
+
+    // 学历
+    const degreeMatch = ch.match(/(博士|硕士|本科|大专|专科|中专|高职)/);
+    const degree = degreeMatch ? degreeMatch[1] : "";
+
+    // 在/离职 + 到岗状态
+    const statusMatch = ch.match(/(在职|离职)[-—\s]?[^\n]{0,15}/);
+    const status = statusMatch ? statusMatch[0] : "";
+
+    // 期望薪资
+    const salaryMatch = ch.match(/(\d+[\-~]\d+[Kk万元])|面议/);
+    const salary = salaryMatch ? salaryMatch[0] : "";
+
+    // 期望：城市 + 岗位
+    const expectMatch = ch.match(/期望[\s:：]*([^\n]+?)(?=\n|优势|\d{4}|工作经历|教育经历|$)/);
+    const expect = expectMatch ? expectMatch[1].trim().slice(0, 80) : "";
+
+    // 优势
+    const advMatch = ch.match(/优势[\s:：]*([^\n]+(?:\n(?!\d{4}|工作经历|教育经历|期望)[^\n]+)*?)(?=\n*(?:\d{4}|工作经历|教育经历|$))/);
+    const advantage = advMatch ? advMatch[1].trim().replace(/\s+/g, ' ').slice(0, 500) : "";
+
+    // ★ 工作经历:抓所有 "YYYY.MM - YYYY.MM 公司·岗位" 段落
+    const workEntries = [];
+    const workRegex = /(\d{4}\.\d{1,2}\s*[-—]\s*(?:至今|\d{4}\.\d{1,2}))\s+([^\n·•\d]{1,40}[··•]+[^\n\d]{1,40})/g;
+    let wm;
+    while ((wm = workRegex.exec(ch)) !== null) {
+      workEntries.push(`${wm[1]} ${wm[2].trim()}`);
+      if (workEntries.length >= 10) break;
+    }
+    const workHistory = workEntries.join("\n");
+
+    // ★ 教育经历:抓 "YYYY - YYYY 学校·专业·学历" 段落
+    const eduEntries = [];
+    const eduRegex = /(\d{4}\s*[-—]\s*\d{4})\s+([^\n\d]{2,50}(?:学院|大学|学校|高中|中专|职业技术)[^\n\d]{0,30}(?:本科|大专|硕士|博士|专科|中专|高职)?)/g;
+    let em;
+    while ((em = eduRegex.exec(ch)) !== null) {
+      eduEntries.push(`${em[1]} ${em[2].trim()}`);
+      if (eduEntries.length >= 5) break;
+    }
+    const education = eduEntries.join("\n");
+
+    // ★ 技能标签:抓 "记账会计 SAP 电商" 这种简短词
+    // 在工作经历下方,通常有几个 2-6 字短标签
+    const tagsArea = ch.slice(ch.length / 2);  // 后半段更可能有标签
+    const tagCandidates = tagsArea.match(/[一-龥A-Za-z]{2,8}/g) || [];
+    const TAG_WHITELIST = ['SAP', '金蝶', '用友', 'ERP', '记账会计', '总账会计', '出纳', '电商', '天猫', '淘宝', '拼多多', '亚马逊', '京东', '抖音', '小红书', '直通车', '万相台', '生意参谋', '店铺运营', '商品运营', '活动运营', '会计实操', '财务核算', '应收应付', '税务申报', '内控审计', '一般纳税人', '小规模', '代理记账', '初级会计', '中级会计', 'CPA', '财务软件', '财务管理', '会计电算化'];
+    const skillTags = [...new Set(tagCandidates.filter(t => TAG_WHITELIST.includes(t)))].slice(0, 8);
+
+    // ★ 完整简历摘要:把所有提取的字段拼成一段
+    const fullSummary = [
+      advantage && `[优势] ${advantage}`,
+      workHistory && `[工作经历]\n${workHistory}`,
+      education && `[教育经历]\n${education}`,
+      skillTags.length && `[技能标签] ${skillTags.join(' / ')}`,
+    ].filter(Boolean).join("\n\n");
+
+    // 信息完整度评估
+    let completeness = 20;  // 基础(姓名+年龄+学历)
+    if (advantage && advantage.length > 30) completeness += 15;
+    if (workHistory) completeness += 15;
+    if (education) completeness += 5;
+    if (skillTags.length) completeness += 5;
+
+    cards.push({
+      name, active, age, ageNum, exp, expYearsParsed, degree, status, salary,
+      expect, advantage,
+      workHistory,       // ★ 多段工作经历
+      education,         // ★ 教育经历
+      skillTags,         // ★ 技能标签
+      fullSummary,       // ★ 完整简历摘要(给 AI 用)
+      completeness,      // ★ 信息完整度
+      raw: ch.slice(0, 2000),  // 保留原始文本更长,详情面板能看
+      source: "paste",
+      addedAt: Date.now(),
+      pastePosition: cards.length + 1,
+    });
+  }
+  return cards;
+}
+
+// ============================================================
+// 状态：localStorage 持久化 + 指纹去重
+// ============================================================
+const STORAGE_KEY = "本地招聘筛选看板_v1";
+function fingerprint(c) {
+  return `${c.name}|${c.ageNum || c.age}|${c.degree || ""}|${(c.expect || "").slice(0, 8)}`;
+}
+function loadAll() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
+}
+function saveAll(arr) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+function mergeIn(newCards) {
+  const all = loadAll();
+  const seen = new Set(all.map(fingerprint));
+  let added = 0;
+  for (const c of newCards) {
+    const fp = fingerprint(c);
+    if (seen.has(fp)) continue;
+    seen.add(fp);
+    all.push(c);
+    added++;
+  }
+  saveAll(all);
+  return { all, added };
+}
+
+// ============================================================
+// 本地采集器：调用 127.0.0.1 API，把 BOSS 结构化数据导入看板
+// ============================================================
+const COLLECTOR_API = "http://127.0.0.1:8765";
+const COLLECTOR_DISABLED = true;
+const COLLECTOR_DISABLED_MESSAGE = "自动采集已暂停: 为避免触发平台访问限制,请用手动搜索/粘贴简历内容的方式继续筛选。";
+
+function setCollectorStatus(message, type = "") {
+  const el = document.getElementById("collectorStatus");
+  if (!el) return;
+  el.className = "collector-status" + (type ? ` ${type}` : "");
+  el.innerHTML = message;
+}
+
+function normalizeCollectorCandidate(c) {
+  const age = c.age || "";
+  const ageNum = Number(String(age).match(/\d+/)?.[0] || 0);
+  const exp = c.experience || "";
+  const expYearsParsed = Number(String(exp).match(/\d+/)?.[0] || 0);
+  const degree = c.education || "";
+  const expect = [c.expectCity, c.title].filter(Boolean).join(" · ");
+  const workHistory = c.workHistory || [c.company, c.title].filter(Boolean).join(" · ");
+  const education = c.educationHistory || [c.school, c.major, c.education].filter(Boolean).join(" · ");
+  const skillTags = Array.isArray(c.skills) ? c.skills.slice(0, 8) : [];
+  const fullSummary = [
+    expect && `[期望] ${expect}`,
+    c.salary && `[薪资] ${c.salary}`,
+    c.jobStatus && `[状态] ${c.jobStatus}`,
+    workHistory && `[最近经历] ${workHistory}`,
+    education && `[教育] ${education}`,
+    skillTags.length && `[技能] ${skillTags.join(" / ")}`,
+    c.fullText && `[原文] ${c.fullText}`,
+  ].filter(Boolean).join("\n\n");
+
+  return {
+    name: c.name || "未知",
+    active: c.jobStatus || "历史采集",
+    age, ageNum,
+    exp,
+    expYearsParsed,
+    degree,
+    salary: c.salary || "",
+    expect,
+    advantage: c.fullText || "",
+    workHistory,
+    education,
+    skillTags,
+    fullSummary,
+    completeness: 45 + (c.fullText ? 10 : 0) + (workHistory ? 10 : 0) + (education ? 10 : 0),
+    raw: c.fullText || JSON.stringify(c, null, 2),
+    source: "collector",
+    addedAt: Date.now(),
+    pastePosition: 0,
+    status: "pending",
+    bossExpectId: c.expectId || "",
+    bossGeekId: c.geekId || "",
+    bossShareUrl: c.share_url || "",
+    sourceKeyword: c._source_keyword || c.source_keyword || "",
+  };
+}
+
+function splitCollectorKeywords(raw) {
+  return String(raw || "")
+    .replace(/，/g, ",")
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean);
+}
+
+function collectorQualifiedCards(cards) {
+  const classified = cards.map(classify);
+  return {
+    classified,
+    qualified: classified.filter(c => c.bucket === "强匹配" || c.bucket === "候补精选"),
+    counts: classified.reduce((acc, c) => {
+      acc[c.bucket] = (acc[c.bucket] || 0) + 1;
+      return acc;
+    }, {}),
+  };
+}
+
+function collectorBucketCountText(counts) {
+  return buckets.filter(b => b !== "全部").map(b => `${b} ${counts[b] || 0}`).join(" / ");
+}
+
+// 采集器进度条:运行中显示模拟进度(无后端进度接口)
+let __collectorProgressTimer = null;
+function startCollectorProgress(expectedTotal, label = "采集中") {
+  const box = document.getElementById("collectorProgress");
+  const fill = document.getElementById("collectorProgressFill");
+  const lab = document.getElementById("collectorProgressLabel");
+  const val = document.getElementById("collectorProgressValue");
+  box.classList.add("active");
+  let pct = 0;
+  lab.textContent = `${label} · 预计 ${expectedTotal} 人`;
+  val.textContent = "0%";
+  fill.style.width = "0%";
+  clearInterval(__collectorProgressTimer);
+  __collectorProgressTimer = setInterval(() => {
+    // 渐近到 92%,留到完成时跳到 100
+    pct = pct + (92 - pct) * 0.06;
+    fill.style.width = pct.toFixed(1) + "%";
+    val.textContent = Math.round(pct) + "%";
+  }, 600);
+}
+function finishCollectorProgress(success = true, finalLabel = "完成") {
+  clearInterval(__collectorProgressTimer);
+  __collectorProgressTimer = null;
+  const fill = document.getElementById("collectorProgressFill");
+  const lab = document.getElementById("collectorProgressLabel");
+  const val = document.getElementById("collectorProgressValue");
+  fill.style.width = success ? "100%" : fill.style.width;
+  fill.style.background = success ? "#047857" : "#dc2626";
+  lab.textContent = finalLabel;
+  val.textContent = success ? "100%" : val.textContent;
+  setTimeout(() => { fill.style.background = "#00a6a7"; }, 2000);
+}
+
+// 采集器质量卡片 + 建议
+function renderCollectorQuality({ fetched, qualified, strong, duplicates, skippedByRules, counts }) {
+  const box = document.getElementById("collectorQuality");
+  const sug = document.getElementById("collectorSuggestions");
+  if (!fetched) { box.classList.remove("active"); sug.classList.remove("active"); return; }
+  box.classList.add("active");
+  const rate = Math.round((qualified / fetched) * 100);
+  let grade = "D";
+  if (rate >= 50) grade = "A";
+  else if (rate >= 30) grade = "B";
+  else if (rate >= 15) grade = "C";
+  const gradeColor = grade === "A" ? "#047857" : grade === "B" ? "#0369a1" : grade === "C" ? "#d97706" : "#dc2626";
+  document.getElementById("collectorQualityRate").textContent = `${rate}%`;
+  document.getElementById("collectorQualityStrong").textContent = strong;
+  document.getElementById("collectorQualityDup").textContent = duplicates;
+  const g = document.getElementById("collectorQualityGrade");
+  g.textContent = grade;
+  g.style.color = gradeColor;
+
+  // 智能建议
+  const tips = [];
+  if (rate < 15) tips.push("💡 <b>有效率偏低</b>:关键词太宽泛,试着加上行业前缀(如 <b>电商运营</b> → <b>天猫店铺运营</b>)。");
+  else if (rate < 30) tips.push("💡 有效率中等,可在<b>筛选规则设置</b>里调整年龄/经验要求,提升筛选精度。");
+  if (skippedByRules > qualified * 2) tips.push(`⚠️ 规则过滤了 <b>${skippedByRules}</b> 人,占比偏高。如果误杀过多,看下排除规则是否过严。`);
+  if (duplicates > fetched * 0.4) tips.push(`♻️ 重复率 <b>${Math.round(duplicates / fetched * 100)}%</b>,关键词重叠度高,建议换关键词或加大每个关键词的采集数。`);
+  if (strong === 0 && fetched >= 30) tips.push("⚠️ 本批<b>没有强匹配</b>。可能是关键词与岗位偏离,或方向命中范围太窄。");
+  if (rate >= 50) tips.push("🎉 <b>有效率高</b>,关键词非常精准!这批关键词可以保留下次复用。");
+  if (tips.length === 0) tips.push("✓ 本批数据质量正常,可继续 AI 评分进入处理模式。");
+  sug.innerHTML = tips.join("<br>");
+  sug.classList.add("active");
+}
+
+// 采集后:对强匹配 + 候补精选 自动 AI 评分(复用顶部 AI 配置面板的 DeepSeek)
+async function autoScoreAfterCollect(judged) {
+  // 开关 1:用户是否启用自动评分
+  const autoOn = document.getElementById("collectorAutoAiScore")?.checked;
+  if (!autoOn) return { scored: 0, failed: 0, skipped: "用户已关闭自动评分" };
+  // 开关 2:必须已配置 AI(同顶部面板的 key)
+  if (!aiIsConfigured()) return { scored: 0, failed: 0, skipped: "AI 未配置" };
+  // 开关 3:仅评强匹配?
+  const strongOnly = document.getElementById("collectorScoreStrongOnly")?.checked;
+  const pool = strongOnly
+    ? judged.qualified.filter(c => c.bucket === "强匹配")
+    : judged.qualified;
+  // 跳过已评过的 (省 token 关键)
+  const targets = pool.filter(c => c.aiScore === undefined);
+  if (!targets.length) return { scored: 0, failed: 0, skipped: "无新候选人需评分" };
+
+  const cfg = loadAiConfig();
+  setCollectorStatus(
+    `AI 自动评分中:${targets.length} 人 · 模型 <b>${escapeHtml(cfg.model)}</b>` +
+    (strongOnly ? " · 仅强匹配模式" : "") + `...`
+  );
+  let scored = 0, failed = 0;
+  for (const c of targets) {
+    try {
+      const result = await aiScoreCandidate(c);
+      const all = loadAll();
+      for (const x of all) if (fingerprint(x) === fingerprint(c)) Object.assign(x, result);
+      saveAll(all);
+      scored++;
+    } catch (e) { failed++; }
+    await new Promise(r => setTimeout(r, 300));
+  }
+  return { scored, failed };
+}
+
+// 更新采集器面板的 AI 配置状态提示
+function updateCollectorAiHint() {
+  const hint = document.getElementById("collectorAiKeyHint");
+  if (!hint) return;
+  if (aiIsConfigured()) {
+    const cfg = loadAiConfig();
+    const masked = cfg.apiKey ? cfg.apiKey.slice(0, 6) + "***" + cfg.apiKey.slice(-4) : "";
+    hint.innerHTML = `· 使用 <b>${escapeHtml(cfg.model)}</b> (${masked})`;
+    hint.style.color = "#047857";
+  } else {
+    hint.innerHTML = `· ⚠️ 未配置,请到顶部「🤖 AI 智能评分」配置 DeepSeek`;
+    hint.style.color = "#dc2626";
+  }
+}
+// 页面加载时和 AI 配置变化时刷新
+window.addEventListener("DOMContentLoaded", updateCollectorAiHint);
+setTimeout(updateCollectorAiHint, 100);
+
+async function importCollectorDb(onlyQualified = true) {
+  setCollectorStatus(`正在读取采集库,准备导入${onlyQualified ? "合格候选人" : "全部候选人"}...`);
+  try {
+    const data = await collectorFetch("/api/db?limit=5000");
+    const rawCandidates = Array.isArray(data.candidates) ? data.candidates : [];
+    const cards = rawCandidates.map(normalizeCollectorCandidate);
+    const judged = collectorQualifiedCards(cards);
+    const importCards = onlyQualified ? judged.qualified : judged.classified;
+    const { added } = mergeIn(importCards);
+    document.getElementById("addedCount").textContent = added;
+    render();
+    const duplicates = importCards.length - added;
+    const skippedByRules = cards.length - importCards.length;
+    renderCollectorQuality({
+      fetched: rawCandidates.length,
+      qualified: judged.qualified.length,
+      strong: judged.counts["强匹配"] || 0,
+      duplicates,
+      skippedByRules,
+      counts: judged.counts,
+    });
+    setCollectorStatus(
+      `采集库共 <b>${rawCandidates.length}</b> 人。规则分类: ${collectorBucketCountText(judged.counts)}。<br>` +
+      `本次${onlyQualified ? "只导入强匹配/候补精选" : "导入全部分类"}: 可导入 <b>${importCards.length}</b> 人,新增 <b>${added}</b> 人,跳过重复 <b>${duplicates}</b> 人。`,
+      "ok"
+    );
+  } catch (e) {
+    setCollectorStatus(`读取采集库失败: ${escapeHtml(e.message)}`, "error");
+  }
+}
+
+async function collectorFetch(path, options = {}) {
+  const resp = await fetch(`${COLLECTOR_API}${path}`, {
+    ...options,
+    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+  });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok || data.ok === false) throw new Error(data.error || `HTTP ${resp.status}`);
+  return data;
+}
+
+document.getElementById("collectorHealthBtn").addEventListener("click", async () => {
+  if (COLLECTOR_DISABLED) {
+    setCollectorStatus(COLLECTOR_DISABLED_MESSAGE, "error");
+    return;
+  }
+  setCollectorStatus("正在连接本地采集服务...");
+  try {
+    const data = await collectorFetch("/api/health");
+    const p = data.pipeline || {};
+    setCollectorStatus(
+      `连接成功。数据库累计 <b>${p.total || 0}</b> 人,今日新增 <b>${p.today_new || 0}</b> 人。`,
+      "ok"
+    );
+  } catch (e) {
+    setCollectorStatus(
+      `连接失败: ${escapeHtml(e.message)}<br>请先在项目目录启动: <b>python local_api.py</b>`,
+      "error"
+    );
+  }
+});
+
+document.getElementById("collectorLoginBtn").addEventListener("click", async () => {
+  if (COLLECTOR_DISABLED) {
+    setCollectorStatus(COLLECTOR_DISABLED_MESSAGE, "error");
+    return;
+  }
+  const btn = document.getElementById("collectorLoginBtn");
+  btn.disabled = true;
+  btn.textContent = "检查中...";
+  setCollectorStatus("自动采集入口已暂停。建议手动复制候选人内容后在本地筛选。");
+  try {
+    const data = await collectorFetch("/api/login", { method: "POST", body: "{}" });
+    const r = data.result || {};
+    setCollectorStatus(`${escapeHtml(r.message || "登录检查完成")}`, r.status === "success" ? "ok" : "");
+  } catch (e) {
+    setCollectorStatus(`登录检查失败: ${escapeHtml(e.message)}`, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "检查/登录平台";
+  }
+});
+
+document.getElementById("collectorShowBrowserBtn").addEventListener("click", async () => {
+  if (COLLECTOR_DISABLED) {
+    setCollectorStatus(COLLECTOR_DISABLED_MESSAGE, "error");
+    return;
+  }
+  const btn = document.getElementById("collectorShowBrowserBtn");
+  btn.disabled = true;
+  btn.textContent = "打开中...";
+  setCollectorStatus("正在打开采集器专用 Chrome。请在弹出的窗口里完成安全验证/登录。");
+  try {
+    const data = await collectorFetch("/api/show-browser", { method: "POST", body: "{}" });
+    const r = data.result || {};
+    setCollectorStatus(`${escapeHtml(r.message || "已打开验证窗口")}`, "ok");
+  } catch (e) {
+    setCollectorStatus(`打开验证窗口失败: ${escapeHtml(e.message)}`, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "打开验证窗口";
+  }
+});
+
+document.getElementById("collectorStartBtn").addEventListener("click", async () => {
+  if (COLLECTOR_DISABLED) {
+    setCollectorStatus(COLLECTOR_DISABLED_MESSAGE, "error");
+    return;
+  }
+  const btn = document.getElementById("collectorStartBtn");
+  const keywords = splitCollectorKeywords(document.getElementById("collectorKeywords").value);
+  const city = document.getElementById("collectorCity").value.trim();
+  const experience = document.getElementById("collectorExperience").value.trim();
+  const count = Math.max(10, Math.min(300, Number(document.getElementById("collectorCount").value) || 50));
+  const autoView = document.getElementById("collectorAutoView").checked;
+  const onlyQualified = document.getElementById("collectorOnlyQualified").checked;
+
+  if (!keywords.length) {
+    setCollectorStatus("请先填写至少 1 个关键词。", "error");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "采集中...";
+  setCollectorStatus(`自动采集属于高风险操作,公开版不推荐运行。关键词: ${escapeHtml(keywords.join("、"))}`);
+  startCollectorProgress(keywords.length * count, `采集 ${keywords.length} 个关键词`);
+
+  try {
+    const data = await collectorFetch("/api/multi-search", {
+      method: "POST",
+      body: JSON.stringify({
+        keywords,
+        city,
+        experience,
+        count_per_keyword: count,
+        auto_view: autoView,
+      }),
+    });
+    const result = Array.isArray(data.result) ? data.result : [];
+    const verification = result.find(x => x && x.needs_verification);
+    const accessBlocked = result.find(x => x && (x.needs_pause || x.reason === "boss_access_restricted"));
+    if (accessBlocked) {
+      finishCollectorProgress(false, "访问受限");
+      const recovery = accessBlocked.recovery_time ? `预计恢复时间: <b>${escapeHtml(accessBlocked.recovery_time)}</b>。` : "";
+      const ip = accessBlocked.current_ip ? `<br>当前 IP: ${escapeHtml(accessBlocked.current_ip)}` : "";
+      setCollectorStatus(
+        `<b>平台访问受限,请暂停采集。</b><br>${escapeHtml(accessBlocked.message || "账号/IP 被临时限制访问。")}<br>${recovery}${ip}`,
+        "error"
+      );
+      return;
+    }
+    const summary = result.find(x => x && x._stats);
+    const rawCandidates = result.filter(x => x && !x._stats && !x._keyword_stats && !x.error && !x.needs_verification);
+    const cards = rawCandidates.map(normalizeCollectorCandidate);
+    const judged = collectorQualifiedCards(cards);
+    const importCards = onlyQualified ? judged.qualified : judged.classified;
+    const { added } = mergeIn(importCards);
+    document.getElementById("addedCount").textContent = added;
+    render();
+
+    const fetched = summary?.total_fetched ?? rawCandidates.length;
+    const skippedByRules = cards.length - importCards.length;
+    const duplicates = importCards.length - added;
+    const verifyHint = verification ? "<br><b>检测到安全验证:</b> 请点上方「打开验证窗口」,在采集器专用 Chrome 完成验证后再点一次采集。" : "";
+    const countText = collectorBucketCountText(judged.counts);
+    const strongCount = judged.counts["强匹配"] || 0;
+    finishCollectorProgress(!verification, verification ? "需要安全验证" : `采集完成,${added} 人入库`);
+    renderCollectorQuality({
+      fetched,
+      qualified: judged.qualified.length,
+      strong: strongCount,
+      duplicates,
+      skippedByRules,
+      counts: judged.counts,
+    });
+    setCollectorStatus(
+      `采集完成: 抓到 <b>${fetched}</b> 条。规则分类: ${countText}。<br>` +
+      `本次${onlyQualified ? "只导入强匹配/候补精选" : "导入全部分类"}: 可导入 <b>${importCards.length}</b> 人,新增 <b>${added}</b> 人,规则过滤 <b>${skippedByRules}</b> 人,跳过重复 <b>${duplicates}</b> 人。${verifyHint}`,
+      verification ? "" : "ok"
+    );
+
+    // 自动 AI 评分(复用顶部 AI 配置)
+    if (!verification && judged.qualified.length > 0) {
+      btn.textContent = "AI 评分中...";
+      const { scored, failed, skipped } = await autoScoreAfterCollect(judged);
+      if (scored || failed) {
+        const cfg = loadAiConfig();
+        setCollectorStatus(
+          `采集 ${added} 人,AI 评分(${escapeHtml(cfg.model)}):成功 <b>${scored}</b>,失败 <b>${failed}</b>。可直接进入强匹配桶处理。`,
+          "ok"
+        );
+        render();
+      } else if (skipped) {
+        setCollectorStatus(`采集 ${added} 人,AI 评分已跳过(${skipped})。`, "ok");
+      }
+    }
+  } catch (e) {
+    finishCollectorProgress(false, "采集失败");
+    setCollectorStatus(`采集失败: ${escapeHtml(e.message)}<br>原来的粘贴解析入口仍可继续使用。`, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "开始采集并导入";
+  }
+});
+
+document.getElementById("collectorImportQualifiedBtn").addEventListener("click", () => importCollectorDb(true));
+document.getElementById("collectorImportAllBtn").addEventListener("click", () => importCollectorDb(false));
+
+// ============================================================
+// 渲染
+// ============================================================
+let activeFilter = "全部";
+const buckets = ["全部", "强匹配", "候补精选", "待补详情", "需人工复核", "不符合"];
+const bucketColors = { 强匹配: "#047857", 候补精选: "#0891b2", 待补详情: "#2563eb", 需人工复核: "#d97706", 不符合: "#9ca3af" };
+
+// A1: 跟进状态全流程
+const STATUS_FLOW = [
+  { key: "pending",   label: "待处理",   cls: "sb-pending",   stage: 0 },
+  { key: "greeted",   label: "已打招呼", cls: "sb-greeted",   stage: 1 },
+  { key: "replied",   label: "已回复",   cls: "sb-replied",   stage: 2 },
+  { key: "wechat",    label: "已加微信", cls: "sb-wechat",    stage: 3 },
+  { key: "phone",     label: "已电话",   cls: "sb-phone",     stage: 4 },
+  { key: "interview", label: "已面试",   cls: "sb-interview", stage: 5 },
+  { key: "offer",     label: "已 offer", cls: "sb-offer",     stage: 6 },
+  { key: "hired",     label: "已入职",   cls: "sb-hired",     stage: 7 },
+  { key: "rejected",  label: "已淘汰",   cls: "sb-rejected",  stage: -1 },
+  { key: "skipped",   label: "跳过",     cls: "sb-skipped",   stage: -1 },
+];
+function statusInfo(key) { return STATUS_FLOW.find(s => s.key === (key || "pending")) || STATUS_FLOW[0]; }
+function nextStatus(currentKey) {
+  const cur = statusInfo(currentKey);
+  if (cur.stage < 0 || cur.stage >= 7) return null;
+  return STATUS_FLOW.find(s => s.stage === cur.stage + 1);
+}
+
+function escapeHtml(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+function showToast(msg) {
+  let t = document.getElementById("__toast");
+  if (!t) {
+    t = document.createElement("div");
+    t.id = "__toast";
+    t.style.cssText = "position:fixed;top:24px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 18px;border-radius:8px;font-size:14px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3);transition:opacity .25s";
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = "1";
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => { t.style.opacity = "0"; }, 2800);
+}
+function dirLabel(k) {
+  return ({
+    xhs: "小红书",
+    instagram: "Instagram",
+    facebook: "Facebook/Meta",
+    pinterest: "Pinterest",
+    dtc: "独立站/DTC",
+    contentGrowth: "内容增长",
+    conversion: "评论私信/转化",
+    aiContent: "AI 内容效率",
+    petHome: "宠物/家居",
+    pdd: "拼多多",
+    tmall: "天猫/淘宝",
+    jd: "京东",
+    domestic: "抖音/快手/小红书等",
+    amazon: "亚马逊",
+    crossBorder: "Wayfair/Shopee 等跨境",
+    tiktok: "TK/TikTok",
+    ecommerceAccounting: "岗位核心词",
+  })[k] || k;
+}
+
+// A2: 渲染今日工作面板
+function renderTodayPanel(all) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const todayTs = today.getTime();
+  const now = Date.now();
+  const dayMs = 86400000;
+
+  const todayNew = all.filter(c => (c.addedAt || 0) >= todayTs).length;
+  const pendingStrong = all.filter(c => c.bucket === "强匹配" && (c.status || "pending") === "pending").length;
+  const greeted3DaysNoReply = all.filter(c => c.status === "greeted" && c.statusAt && (now - c.statusAt) > 3 * dayMs).length;
+  const replied = all.filter(c => ["replied", "wechat", "phone"].includes(c.status)).length;
+  const interview = all.filter(c => c.status === "interview").length;
+  const offered = all.filter(c => ["offer", "hired"].includes(c.status)).length;
+
+  document.getElementById("todayGrid").innerHTML = `
+    <div class="today-card">
+      <div class="today-card-label">今日新增</div>
+      <div class="today-card-value">${todayNew}</div>
+      <div class="today-card-hint">今天累计入库 ${todayNew} 人</div>
+    </div>
+    <div class="today-card ${pendingStrong > 0 ? 'action' : ''}" ${pendingStrong > 0 ? 'data-jump="待处理强匹配"' : ''}>
+      <div class="today-card-label">待打招呼(强匹配)</div>
+      <div class="today-card-value">${pendingStrong}</div>
+      <div class="today-card-hint">${pendingStrong > 0 ? '点击进入处理模式 ▶' : '✓ 全部已处理'}</div>
+    </div>
+    <div class="today-card ${greeted3DaysNoReply > 0 ? 'urgent' : ''}">
+      <div class="today-card-label">⚠️ 3天未回</div>
+      <div class="today-card-value">${greeted3DaysNoReply}</div>
+      <div class="today-card-hint">${greeted3DaysNoReply > 0 ? '考虑重新跟进' : '✓ 暂无待跟进'}</div>
+    </div>
+    <div class="today-card">
+      <div class="today-card-label">已沟通</div>
+      <div class="today-card-value">${replied}</div>
+      <div class="today-card-hint">已回复/已加微信/已电话</div>
+    </div>
+    <div class="today-card">
+      <div class="today-card-label">面试中</div>
+      <div class="today-card-value">${interview}</div>
+      <div class="today-card-hint">已约/已面试</div>
+    </div>
+    <div class="today-card">
+      <div class="today-card-label">offer/入职</div>
+      <div class="today-card-value">${offered}</div>
+      <div class="today-card-hint">收获成果</div>
+    </div>
+  `;
+
+  // 漏斗图
+  const total = all.length;
+  const greeted = all.filter(c => statusInfo(c.status).stage >= 1 && statusInfo(c.status).stage <= 7).length;
+  const repliedTotal = all.filter(c => statusInfo(c.status).stage >= 2 && statusInfo(c.status).stage <= 7).length;
+  const wechatTotal = all.filter(c => statusInfo(c.status).stage >= 3 && statusInfo(c.status).stage <= 7).length;
+  const interviewTotal = all.filter(c => statusInfo(c.status).stage >= 5 && statusInfo(c.status).stage <= 7).length;
+  const offerTotal = all.filter(c => statusInfo(c.status).stage >= 6 && statusInfo(c.status).stage <= 7).length;
+  const stages = [
+    { label: "总入库", n: total, stage: null },
+    { label: "已打招呼", n: greeted, stage: 1 },
+    { label: "已回复", n: repliedTotal, stage: 2 },
+    { label: "已加微信", n: wechatTotal, stage: 3 },
+    { label: "已面试", n: interviewTotal, stage: 5 },
+    { label: "offer+", n: offerTotal, stage: 6 },
+  ];
+  const max = Math.max(...stages.map(s => s.n), 1);
+  document.getElementById("funnelChart").innerHTML = stages.map(s => `
+    <div class="funnel-row" ${s.stage !== null ? `data-funnel-stage="${s.stage}" style="cursor:pointer"` : ''}>
+      <span class="funnel-label">${s.label}${s.stage !== null ? '👆' : ''}</span>
+      <div class="funnel-bar"><div class="funnel-fill" style="width:${(s.n / max * 100)}%"></div></div>
+      <span class="funnel-num">${s.n}</span>
+    </div>
+  `).join("");
+
+  // 点击漏斗图行 → 筛选对应状态
+  document.querySelectorAll("[data-funnel-stage]").forEach(row => {
+    row.addEventListener("click", () => {
+      window.__statusStageFilter = parseInt(row.dataset.funnelStage);
+      activeFilter = "全部";
+      render();
+      setTimeout(() => document.getElementById("rows")?.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
+      showToast(`✓ 已筛选「${row.querySelector('.funnel-label').textContent.replace('👆','')}」候选人`);
+    });
+    row.addEventListener("mouseenter", () => row.style.background = "rgba(255,255,255,.1)");
+    row.addEventListener("mouseleave", () => row.style.background = "transparent");
+  });
+
+  // 点击"待打招呼强匹配"卡片 → 进入处理模式
+  document.querySelectorAll("[data-jump]").forEach(el => {
+    el.addEventListener("click", () => {
+      activeFilter = "强匹配";
+      document.getElementById("startProcessBtn").click();
+    });
+  });
+}
+
+// A4: 详情面板渲染
+function renderDetailContent(c) {
+  const tags = (c.tags || []);
+  const fp = fingerprint(c);
+  return `
+    <!-- 信息完整度条 + 补充完整简历 -->
+    <div class="detail-section" style="background:#fef3c7;border:1px solid #fcd34d;border-radius:6px;padding:10px 12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px">
+        <div>
+          <b>📊 信息完整度:</b>
+          <span style="font-weight:700;color:${(c.completeness || 30) >= 60 ? '#047857' : (c.completeness || 30) >= 40 ? '#d97706' : '#dc2626'}">${c.completeness || 30}%</span>
+          ${c.fullResume ? '<span style="color:#047857;margin-left:8px">✓ 已补充完整简历</span>' : '<span style="color:#92400e;margin-left:8px">(仅列表页摘要)</span>'}
+        </div>
+        <button class="ai-btn" data-add-resume-fp="${fp}" style="background:#92400e">📄 ${c.fullResume ? '更新' : '补充'}完整简历</button>
+      </div>
+      <div style="background:#fff;border-radius:4px;height:6px;margin-top:8px;overflow:hidden">
+        <div style="background:${(c.completeness || 30) >= 60 ? '#047857' : '#d97706'};height:100%;width:${c.completeness || 30}%;transition:width 0.3s"></div>
+      </div>
+      <div style="font-size:11px;color:#78350f;margin-top:6px">
+        💡 强匹配候选人建议手动补充完整简历文本后再评分。AI 看完整简历会更准。
+      </div>
+    </div>
+
+    ${c.aiScore !== undefined ? `
+    <div class="detail-section">
+      <h4>🤖 AI 评分</h4>
+      <div class="ai-score-block">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <span style="font-size:24px;font-weight:750;color:${c.aiScore >= 75 ? '#047857' : c.aiScore >= 60 ? '#0369a1' : '#d97706'}">${c.aiScore} 分</span>
+          <span class="ai-score-badge ai-score-${c.aiGrade || 'C'}">${c.aiGrade || ''} 级</span>
+          <span style="color:#374151;font-weight:600">${escapeHtml(c.aiVerdict || '')}</span>
+          <button class="ai-btn" data-rescore-fp="${fp}" style="margin-left:auto">🔄 重新评分</button>
+        </div>
+        <div style="margin:6px 0"><b style="color:#047857">✓ 亮点:</b>${(c.aiStrengths || []).map(s => escapeHtml(s)).join('、') || '—'}</div>
+        <div style="margin:6px 0"><b style="color:#d97706">⚠ 关注点:</b>${(c.aiConcerns || []).map(s => escapeHtml(s)).join('、') || '—'}</div>
+        <div style="margin-top:6px;color:#374151"><b>总结:</b>${escapeHtml(c.aiSummary || '')}</div>
+        <div style="color:#9ca3af;font-size:11px;margin-top:6px">评分时间:${c.aiScoredAt ? new Date(c.aiScoredAt).toLocaleString('zh-CN') : ''}</div>
+      </div>
+    </div>` : `
+    <div class="detail-section">
+      <button class="ai-btn" data-score-fp="${fp}" style="background:#0369a1;padding:8px 14px">🤖 用 AI 给这个人评分</button>
+      <span style="color:#9ca3af;font-size:12px;margin-left:8px">需在顶部配置 AI 设置</span>
+    </div>`}
+
+    ${c.aiGreeting ? `
+    <div class="detail-section">
+      <h4>💬 AI 个性化话术</h4>
+      <div class="greeting-output">${escapeHtml(c.aiGreeting)}</div>
+      <div style="margin-top:6px">
+        <button class="ai-btn" data-copy-greeting-fp="${fp}" style="background:#0369a1">📋 复制话术</button>
+        <button class="ai-btn" data-regen-greeting-fp="${fp}" style="margin-left:4px">🔄 重新生成</button>
+      </div>
+    </div>` : `
+    <div class="detail-section">
+      <button class="ai-btn" data-greeting-fp="${fp}" style="background:#7c3aed;padding:6px 12px">💬 让 AI 写专属打招呼话术</button>
+    </div>`}
+
+    <div class="detail-section">
+      <h4>📋 完整信息</h4>
+      <div class="detail-grid">
+        <div class="detail-item"><div class="k">姓名</div><div class="v">${escapeHtml(c.name)}</div></div>
+        <div class="detail-item"><div class="k">年龄</div><div class="v">${escapeHtml(c.age || "未知")}</div></div>
+        <div class="detail-item"><div class="k">经验</div><div class="v">${escapeHtml(c.exp || "未知")}</div></div>
+        <div class="detail-item"><div class="k">学历</div><div class="v">${escapeHtml(c.degree || "未知")}</div></div>
+        <div class="detail-item"><div class="k">活跃</div><div class="v">${escapeHtml(c.active || "未知")}</div></div>
+        <div class="detail-item"><div class="k">状态</div><div class="v">${escapeHtml(c.status || "未知")}</div></div>
+        <div class="detail-item"><div class="k">期望</div><div class="v">${escapeHtml(c.expect || "未知")}</div></div>
+        <div class="detail-item"><div class="k">命中方向</div><div class="v">${(c.directionHits || []).map(dirLabel).join("、") || "—"}</div></div>
+      </div>
+    </div>
+
+    ${c.source === "collector" ? `
+    <div class="detail-section">
+      <h4>平台定位/联系</h4>
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:10px;font-size:12px;color:#1e3a8a;line-height:1.7">
+        <div><b>去平台找这个人:</b> 打开候选人页,按姓名搜索/页面查找,用姓名 + 年龄 + 学历核对。</div>
+        <div style="margin-top:4px">姓名: <b>${escapeHtml(c.name)}</b> · ${escapeHtml(c.age || "")} · ${escapeHtml(c.degree || "")} · ${escapeHtml(c.expect || "")}</div>
+        <div style="color:#64748b">expectId: ${escapeHtml(c.bossExpectId || "无")} · geekId: ${escapeHtml(c.bossGeekId || "无")}</div>
+        <button class="ai-btn" data-copy-boss-fp="${fp}" style="margin-top:6px;background:#0369a1">复制定位信息</button>
+      </div>
+    </div>` : ""}
+
+    <div class="detail-section">
+      <h4>✨ 优势/简历摘要</h4>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:10px;font-size:13px;line-height:1.7;color:#374151">
+        ${escapeHtml(c.advantage || c.note || "(未读取到)")}
+      </div>
+    </div>
+
+    ${c.workHistory ? `
+    <div class="detail-section">
+      <h4>💼 工作经历(从摘要解析)</h4>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:10px;font-size:12px;color:#374151;white-space:pre-wrap">${escapeHtml(c.workHistory)}</div>
+    </div>` : ""}
+
+    ${c.education ? `
+    <div class="detail-section">
+      <h4>🎓 教育经历(从摘要解析)</h4>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:10px;font-size:12px;color:#374151;white-space:pre-wrap">${escapeHtml(c.education)}</div>
+    </div>` : ""}
+
+    ${(c.skillTags && c.skillTags.length) ? `
+    <div class="detail-section">
+      <h4>🏷️ 技能标签(从摘要解析)</h4>
+      <div class="tag-list">${c.skillTags.map(t => `<span class="custom-tag" style="background:#fef3c7;color:#92400e;cursor:default">${escapeHtml(t)}</span>`).join("")}</div>
+    </div>` : ""}
+
+    ${c.fullResume ? `
+    <div class="detail-section">
+      <h4>📄 完整简历(你补充的)</h4>
+      <div style="background:#f0fdfa;border:1px solid #5eead4;border-radius:6px;padding:10px;font-size:12px;color:#134e4a;max-height:300px;overflow-y:auto;white-space:pre-wrap">${escapeHtml(c.fullResume)}</div>
+      <div style="color:#9ca3af;font-size:11px;margin-top:4px">补充时间:${c.fullResumeAt ? new Date(c.fullResumeAt).toLocaleString('zh-CN') : ''}</div>
+    </div>` : ""}
+
+    <div class="detail-section">
+      <h4>🏷️ 自定义标签</h4>
+      <div class="tag-list">
+        ${tags.map(t => `<span class="custom-tag" data-tag-fp="${fp}" data-tag-value="${escapeHtml(t)}">${escapeHtml(t)}<span class="x">×</span></span>`).join("")}
+        <input type="text" class="add-tag-input" data-add-tag-fp="${fp}" placeholder="+ 加标签(回车)">
+      </div>
+      <div style="color:#9ca3af;font-size:11px;margin-top:6px">建议:沟通能力强 / 简历优秀 / 跟进中 / 重点候选人 / 备选</div>
+    </div>
+
+    <div class="detail-section">
+      <h4>📝 我的笔记</h4>
+      <textarea class="note-area" data-note-fp="${fp}" placeholder="记下你跟这个人沟通的内容、面试感受、决定...">${escapeHtml(c.userNote || "")}</textarea>
+    </div>
+
+    <div class="detail-section">
+      <span class="raw-text-toggle" data-toggle-raw-fp="${fp}">▶ 显示原始粘贴文本</span>
+      <div class="raw-text-content" data-raw-content-fp="${fp}">${escapeHtml(c.raw || "(无)")}</div>
+    </div>
+  `;
+}
+
+function render() {
+  const all = loadAll().map(classify);
+  const counts = Object.fromEntries(buckets.map(b => [b, 0]));
+  counts.全部 = all.length;
+  for (const c of all) counts[c.bucket] = (counts[c.bucket] || 0) + 1;
+  renderTodayPanel(all);  // A2: 渲染今日面板
+
+  document.getElementById("kpiTotal").textContent = all.length;
+  document.getElementById("kpiStrong").textContent = counts["强匹配"] || 0;
+  document.getElementById("kpiBackup").textContent = counts["候补精选"] || 0;
+  document.getElementById("kpiPending").textContent = counts["待补详情"] || 0;
+  document.getElementById("kpiManual").textContent = counts["需人工复核"] || 0;
+  document.getElementById("kpiBad").textContent = counts["不符合"] || 0;
+  document.getElementById("totalCount").textContent = all.length;
+
+  // 高亮当前选中的 KPI 卡片
+  document.querySelectorAll("[data-jump-bucket]").forEach(card => {
+    card.classList.toggle("active-bucket", card.dataset.jumpBucket === activeFilter);
+  });
+
+  document.getElementById("filters").innerHTML = buckets.map(b =>
+    `<button class="${activeFilter === b ? "active" : ""}" data-bucket="${b}">${b} ${counts[b] || 0}</button>`
+  ).join("");
+
+  function getCandidateContent(c) {
+    return (c.advantage || c.message || c.note || c.fullSummary || "").trim();
+  }
+  // 状态筛选(来自漏斗点击)
+  const stageFilter = window.__statusStageFilter;
+  const rows = all
+    .filter(c => activeFilter === "全部" || c.bucket === activeFilter)
+    .filter(c => stageFilter === undefined || stageFilter === null
+      ? true
+      : statusInfo(c.status).stage >= stageFilter && statusInfo(c.status).stage <= 7)
+    .sort((a, b) => {
+      const sa = a.aiScore;
+      const sb = b.aiScore;
+      if (sa !== undefined && sb !== undefined) return sb - sa;
+      if (sa !== undefined) return -1;
+      if (sb !== undefined) return 1;
+      return getCandidateContent(b).length - getCandidateContent(a).length;
+    });
+  document.getElementById("currentCount").textContent = rows.length;
+
+  // 显示当前状态筛选提示
+  const stageLabelMap = { 1: "已打招呼", 2: "已回复", 3: "已加微信", 5: "已面试", 6: "offer+" };
+  const stageFilterEl = document.getElementById("stageFilterHint");
+  if (stageFilterEl) {
+    if (stageFilter !== undefined && stageFilter !== null) {
+      stageFilterEl.style.display = "inline-block";
+      stageFilterEl.innerHTML = `🎯 仅显示「${stageLabelMap[stageFilter] || stageFilter}」及以后 · <a href="#" id="clearStageFilter" style="color:#dc2626">[清除]</a>`;
+    } else {
+      stageFilterEl.style.display = "none";
+    }
+  }
+  document.getElementById("rows").innerHTML = rows.map((c, idx) => `
+    <tr data-row-fp="${fingerprint(c)}">
+      <td>
+        <span class="expand-icon" data-expand-fp="${fingerprint(c)}">▶</span>
+        <span class="bucket-tag bucket-${c.bucket}">${c.bucket}</span>
+      </td>
+      <td>
+        ${c.pastePosition ? `<span style="color:#9ca3af;font-size:11px">#${c.pastePosition}</span> ` : ""}
+        ${c.source === "unread" ? `<span title="来自未读消息列表" style="background:#fef3c7;color:#92400e;padding:1px 5px;border-radius:3px;font-size:10px;margin-right:4px">📬 ${c.unreadCount || 1}条未读</span>` : ""}
+        <b class="copyable-name" data-name="${escapeHtml(c.name)}" title="点击复制姓名，去 BOSS 页面按 ⌘F 粘贴查找" style="cursor:pointer;color:#0369a1;border-bottom:1px dashed #0369a1">${escapeHtml(c.name)}</b>
+        ${c.bossShareUrl ? `<a href="${escapeHtml(c.bossShareUrl)}" target="_blank" rel="noopener" title="在浏览器中打开此候选人的详情页" style="margin-left:6px;background:#0369a1;color:#fff;padding:2px 7px;border-radius:4px;font-size:11px;text-decoration:none;font-weight:600">🔗 详情</a>` : ''}
+        ${c.aiScore !== undefined ? `<span class="ai-score-badge ai-score-${c.aiGrade || 'C'}" title="${escapeHtml(c.aiSummary || '')}">${c.aiScore}</span>` : ''}
+        ${c.fullResume ? '<span title="已补充完整简历" style="margin-left:4px">📄</span>' : ''}
+        <br>
+        <span class="status-badge ${statusInfo(c.status).cls}">${statusInfo(c.status).label}</span>
+        <select class="status-select" data-update-status-fp="${fingerprint(c)}" style="margin-left:4px">
+          ${STATUS_FLOW.map(s => `<option value="${s.key}" ${(c.status || "pending") === s.key ? "selected" : ""}>${s.label}</option>`).join("")}
+        </select>
+        <br><span style="color:#9ca3af;font-size:11px">${escapeHtml(c.active || "")}</span>
+      </td>
+      <td>${escapeHtml(c.age || "")} · ${escapeHtml(c.exp || "")}<br><span style="color:#6b7280">${escapeHtml(c.degree || "")} ${escapeHtml(c.status || "")}</span></td>
+      <td><span style="color:#6b7280">${escapeHtml(c.expect || "")}</span></td>
+      <td style="color:#374151;font-size:12px">${escapeHtml((c.advantage || c.note || c.message || "").slice(0, 120))}</td>
+      <td>${(c.directionHits || []).map(k => `<span class="tag">${dirLabel(k)}</span>`).join("") || '<span style="color:#9ca3af">—</span>'}</td>
+      <td>
+        ${c.reasons && c.reasons.length ? `<div class="reason">${escapeHtml(c.reasons.join("；"))}</div>` : ""}
+        ${c.flags && c.flags.length ? `<div style="color:#d97706;font-size:12px">${escapeHtml(c.flags.join("；"))}</div>` : ""}
+        ${!c.reasons?.length && !c.flags?.length ? '<span style="color:#047857;font-size:12px">✓ 符合</span>' : ""}
+      </td>
+      <td><button data-del-fp="${fingerprint(c)}" style="padding:3px 6px;font-size:11px;color:#dc2626">删</button></td>
+    </tr>
+    <tr class="detail-row" data-detail-fp="${fingerprint(c)}" style="display:none">
+      <td colspan="8">${renderDetailContent(c)}</td>
+    </tr>
+  `).join("");
+
+  // 补充完整简历
+  document.querySelectorAll("[data-add-resume-fp]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const fp = btn.dataset.addResumeFp;
+      const allData = loadAll();
+      const target = allData.find(c => fingerprint(c) === fp);
+      if (!target) return;
+      const existing = target.fullResume || "";
+      const text = prompt(
+        `📄 补充「${target.name}」的完整简历\n\n` +
+        `操作:\n` +
+        `1. 切到招聘平台,点开「${target.name}」的卡片\n` +
+        `2. 在简历详情页按 ⌘ + A 全选\n` +
+        `3. ⌘ + C 复制\n` +
+        `4. 回到这里 ⌘ + V 粘贴下方\n\n` +
+        `(粘完点确定,系统会保存并把信息完整度提到 100%)`,
+        existing
+      );
+      if (text === null) return;
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      target.fullResume = trimmed;
+      target.completeness = 100;
+      target.fullResumeAt = Date.now();
+      saveAll(allData);
+      showToast(`✓ 完整简历已保存,信息完整度 → 100%`);
+      render();
+      setTimeout(() => document.querySelector(`[data-expand-fp="${fp}"]`)?.click(), 0);
+    });
+  });
+
+  // B1: AI 评分(单个)
+  async function runAiScore(fp) {
+    if (!aiIsConfigured()) {
+      showToast("⚠️ 请先在顶部配置 AI(填 API Key)");
+      document.getElementById("aiConfigBody").classList.add("open");
+      document.getElementById("aiConfigArrow").textContent = "▲ 收起设置";
+      return;
+    }
+    const allData = loadAll();
+    const target = allData.find(c => fingerprint(c) === fp);
+    if (!target) return;
+    showToast("🤖 AI 正在评分...");
+    try {
+      const result = await aiScoreCandidate(target);
+      Object.assign(target, result);
+      saveAll(allData);
+      showToast(`✓ AI 评分:${result.aiScore} 分 / ${result.aiGrade} 级`);
+      render();
+      setTimeout(() => document.querySelector(`[data-expand-fp="${fp}"]`)?.click(), 0);
+    } catch (e) {
+      showToast(`❌ 评分失败:${e.message.slice(0, 60)}`);
+    }
+  }
+  document.querySelectorAll("[data-score-fp], [data-rescore-fp]").forEach(btn => {
+    btn.addEventListener("click", () => runAiScore(btn.dataset.scoreFp || btn.dataset.rescoreFp));
+  });
+
+  // B2: AI 生成话术
+  async function runAiGreeting(fp) {
+    if (!aiIsConfigured()) { showToast("⚠️ 请先在顶部配置 AI"); return; }
+    const allData = loadAll();
+    const target = allData.find(c => fingerprint(c) === fp);
+    if (!target) return;
+    showToast("✍️ AI 正在生成专属话术...");
+    try {
+      const greeting = await aiGenerateGreeting(target);
+      target.aiGreeting = greeting.trim();
+      saveAll(allData);
+      showToast("✓ 话术已生成");
+      render();
+      setTimeout(() => document.querySelector(`[data-expand-fp="${fp}"]`)?.click(), 0);
+    } catch (e) {
+      showToast(`❌ 生成失败:${e.message.slice(0, 60)}`);
+    }
+  }
+  document.querySelectorAll("[data-greeting-fp], [data-regen-greeting-fp]").forEach(btn => {
+    btn.addEventListener("click", () => runAiGreeting(btn.dataset.greetingFp || btn.dataset.regenGreetingFp));
+  });
+  document.querySelectorAll("[data-copy-greeting-fp]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const fp = btn.dataset.copyGreetingFp;
+      const c = loadAll().find(c => fingerprint(c) === fp);
+      if (c?.aiGreeting) {
+        navigator.clipboard.writeText(c.aiGreeting).then(() => showToast("✓ 话术已复制"));
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-copy-boss-fp]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const fp = btn.dataset.copyBossFp;
+      const c = loadAll().find(c => fingerprint(c) === fp);
+      if (!c) return;
+      const text = [
+        `姓名:${c.name}`,
+        `年龄:${c.age || ""}`,
+        `学历:${c.degree || ""}`,
+        `期望:${c.expect || ""}`,
+        `来源关键词:${c.sourceKeyword || ""}`,
+        `expectId:${c.bossExpectId || ""}`,
+        `geekId:${c.bossGeekId || ""}`,
+      ].join("\n");
+      navigator.clipboard.writeText(text).then(() => showToast("✓ 定位信息已复制"));
+    });
+  });
+
+  // A4: 详情展开/收起
+  document.querySelectorAll("[data-expand-fp]").forEach(icon => {
+    icon.addEventListener("click", () => {
+      const fp = icon.dataset.expandFp;
+      const detailRow = document.querySelector(`[data-detail-fp="${fp}"]`);
+      if (detailRow) {
+        const isOpen = detailRow.style.display !== "none";
+        detailRow.style.display = isOpen ? "none" : "table-row";
+        icon.classList.toggle("open", !isOpen);
+        icon.textContent = isOpen ? "▶" : "▼";
+      }
+    });
+  });
+
+  // A4: 加标签(回车)
+  document.querySelectorAll("[data-add-tag-fp]").forEach(input => {
+    input.addEventListener("keydown", e => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      const fp = input.dataset.addTagFp;
+      const tag = input.value.trim();
+      if (!tag) return;
+      const allData = loadAll();
+      for (const c of allData) {
+        if (fingerprint(c) === fp) {
+          if (!c.tags) c.tags = [];
+          if (!c.tags.includes(tag)) c.tags.push(tag);
+        }
+      }
+      saveAll(allData);
+      showToast(`✓ 已加标签「${tag}」`);
+      render();
+      // 重新展开
+      setTimeout(() => document.querySelector(`[data-expand-fp="${fp}"]`)?.click(), 0);
+    });
+  });
+
+  // A4: 删标签
+  document.querySelectorAll(".custom-tag").forEach(tag => {
+    tag.addEventListener("click", () => {
+      const fp = tag.dataset.tagFp;
+      const val = tag.dataset.tagValue;
+      const allData = loadAll();
+      for (const c of allData) {
+        if (fingerprint(c) === fp && c.tags) c.tags = c.tags.filter(t => t !== val);
+      }
+      saveAll(allData);
+      render();
+      setTimeout(() => document.querySelector(`[data-expand-fp="${fp}"]`)?.click(), 0);
+    });
+  });
+
+  // A4: 保存笔记(失焦保存)
+  document.querySelectorAll("[data-note-fp]").forEach(ta => {
+    ta.addEventListener("blur", () => {
+      const fp = ta.dataset.noteFp;
+      const note = ta.value;
+      const allData = loadAll();
+      for (const c of allData) {
+        if (fingerprint(c) === fp) c.userNote = note;
+      }
+      saveAll(allData);
+      showToast("✓ 笔记已保存");
+    });
+  });
+
+  // A4: 显示/隐藏原始文本
+  document.querySelectorAll("[data-toggle-raw-fp]").forEach(t => {
+    t.addEventListener("click", () => {
+      const fp = t.dataset.toggleRawFp;
+      const content = document.querySelector(`[data-raw-content-fp="${fp}"]`);
+      const isShown = content.style.display === "block";
+      content.style.display = isShown ? "none" : "block";
+      t.textContent = isShown ? "▶ 显示原始粘贴文本" : "▼ 隐藏原始文本";
+    });
+  });
+
+  // 清除状态筛选
+  const clearStageFilterBtn = document.getElementById("clearStageFilter");
+  if (clearStageFilterBtn) {
+    clearStageFilterBtn.addEventListener("click", e => {
+      e.preventDefault();
+      window.__statusStageFilter = null;
+      render();
+      showToast("✓ 已清除状态筛选");
+    });
+  }
+
+  // A1: 状态下拉切换
+  document.querySelectorAll("[data-update-status-fp]").forEach(sel => {
+    sel.addEventListener("change", e => {
+      const fp = sel.dataset.updateStatusFp;
+      const newStatus = e.target.value;
+      const all = loadAll();
+      for (const c of all) {
+        if (fingerprint(c) === fp) {
+          c.status = newStatus;
+          c.statusAt = Date.now();
+          if (!c.statusHistory) c.statusHistory = [];
+          c.statusHistory.push({ status: newStatus, at: Date.now() });
+        }
+      }
+      saveAll(all);
+      const info = statusInfo(newStatus);
+      showToast(`✓ 已标记为「${info.label}」`);
+      render();
+    });
+    // 阻止事件冒泡(避免触发复制姓名)
+    sel.addEventListener("click", e => e.stopPropagation());
+  });
+
+  document.querySelectorAll(".copyable-name").forEach(el => {
+    el.addEventListener("click", () => {
+      const name = el.dataset.name;
+      navigator.clipboard.writeText(name).then(() => showToast(`✓ 已复制「${name}」，切到平台页面按 ⌘F 粘贴查找`));
+    });
+  });
+
+  document.querySelectorAll("[data-bucket]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      activeFilter = btn.dataset.bucket;
+      window.__statusStageFilter = null;  // 切桶时清除状态筛选
+      render();
+    });
+  });
+  document.querySelectorAll("[data-del-fp]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const fp = btn.dataset.delFp;
+      const all = loadAll().filter(c => fingerprint(c) !== fp);
+      saveAll(all);
+      render();
+    });
+  });
+}
+
+// ============================================================
+// 按钮事件
+// ============================================================
+// B1 批量评分(并发 3,失败自动重试 3 次,可中途暂停)
+window.__lastFailedTargets = [];
+window.__batchScoringStopped = false;
+async function runBatchScoring(targets, label = "评分") {
+  // 并发数:2 个并发更稳,失败率显著降低
+  const CONCURRENCY = 2;
+  const THROTTLE_MS = 300;  // 每个请求之间隔 300ms,避免速率限制
+  const btn = document.getElementById("batchScoreBtn");
+  const stopBtn = document.getElementById("stopScoreBtn");
+  const retryBtn = document.getElementById("retryFailedBtn");
+  btn.disabled = true;
+  if (stopBtn) stopBtn.style.display = "inline-block";
+  if (retryBtn) retryBtn.style.display = "none";
+  window.__batchScoringStopped = false;
+  let done = 0, failed = 0;
+  const failedTargets = [];
+  const errorStats = {};  // 统计错误类型
+  const queue = [...targets];
+
+  async function worker() {
+    while (queue.length > 0) {
+      if (window.__batchScoringStopped) break;
+      const target = queue.shift();
+      if (!target) break;
+      try {
+        const result = await aiScoreCandidate(target);
+        const allData = loadAll();
+        for (const c of allData) {
+          if (fingerprint(c) === fingerprint(target)) Object.assign(c, result);
+        }
+        saveAll(allData);
+      } catch (e) {
+        failed++;
+        const errMsg = (e.message || "").slice(0, 100);
+        failedTargets.push({ ...target, error: errMsg });
+        // 分类错误
+        const errType = /429|rate/i.test(errMsg) ? "速率限制" :
+                        /401|403|key/i.test(errMsg) ? "Key 无效" :
+                        /402|balance|余额/i.test(errMsg) ? "余额不足" :
+                        /timeout|网络/i.test(errMsg) ? "超时" :
+                        /JSON|格式/i.test(errMsg) ? "返回格式错误" : "其他";
+        errorStats[errType] = (errorStats[errType] || 0) + 1;
+      }
+      done++;
+      btn.textContent = `🤖 ${label}中 ${done}/${targets.length}`;
+      // 节流:每次请求后等一会儿
+      await new Promise(r => setTimeout(r, THROTTLE_MS));
+    }
+  }
+
+  const workers = Array.from({ length: CONCURRENCY }, () => worker());
+  await Promise.all(workers);
+
+  // 保存错误统计
+  window.__lastErrorStats = errorStats;
+
+  btn.disabled = false; btn.textContent = "🤖 AI 批量评分(当前桶)";
+  if (stopBtn) stopBtn.style.display = "none";
+  window.__lastFailedTargets = failedTargets;
+  if (failed > 0 && retryBtn) {
+    retryBtn.style.display = "inline-block";
+    retryBtn.textContent = `🔄 重试失败的 ${failed} 人`;
+  }
+  const succeeded = done - failed;
+  const wasStopped = window.__batchScoringStopped;
+  let msg = wasStopped
+    ? `⏸ 已暂停:成功 ${succeeded} 人,剩余 ${targets.length - done} 人未评分`
+    : `✓ ${label}完成:成功 ${succeeded} 人${failed ? `,失败 ${failed} 人` : ''}`;
+  // 显示失败原因分布
+  if (failed > 0 && Object.keys(errorStats).length) {
+    const breakdown = Object.entries(errorStats).map(([k, v]) => `${k}×${v}`).join(' / ');
+    msg += `\n失败原因: ${breakdown}`;
+  }
+  showToast(msg);
+  render();
+}
+
+// 绑定暂停按钮
+document.addEventListener("DOMContentLoaded", () => {
+  const stopBtn = document.getElementById("stopScoreBtn");
+  if (stopBtn) {
+    stopBtn.addEventListener("click", () => {
+      window.__batchScoringStopped = true;
+      stopBtn.textContent = "⏸ 暂停中...";
+      stopBtn.disabled = true;
+      showToast("⏸ 正在停止...(正在进行的请求会完成后停)");
+    });
+  }
+});
+// 上面的事件如果 DOM 已加载完就直接绑
+if (document.readyState !== "loading") {
+  const stopBtn = document.getElementById("stopScoreBtn");
+  if (stopBtn) {
+    stopBtn.addEventListener("click", () => {
+      window.__batchScoringStopped = true;
+      stopBtn.textContent = "⏸ 暂停中...";
+      stopBtn.disabled = true;
+      showToast("⏸ 正在停止...(正在进行的请求会完成后停)");
+    });
+  }
+}
+
+document.getElementById("batchScoreBtn").addEventListener("click", async () => {
+  if (!aiIsConfigured()) {
+    showToast("⚠️ 请先在顶部配置 AI(填 API Key)");
+    document.getElementById("aiConfigBody").classList.add("open");
+    document.getElementById("aiConfigArrow").textContent = "▲ 收起设置";
+    return;
+  }
+  const all = loadAll().map(classify);
+  const targets = all.filter(c => (activeFilter === "全部" || c.bucket === activeFilter) && c.aiScore === undefined);
+  if (!targets.length) { showToast("当前筛选里所有人都已评分(或没有候选人)"); return; }
+  const estimatedSec = Math.ceil(targets.length / 3 * 2.5);
+  if (!confirm(`将为 ${targets.length} 人批量 AI 评分,3 个并发,预计耗时约 ${estimatedSec} 秒,失败的会自动重试 3 次,继续?`)) return;
+  await runBatchScoring(targets);
+});
+
+// 重试失败的
+document.addEventListener("DOMContentLoaded", () => {
+  const retryBtn = document.getElementById("retryFailedBtn");
+  if (!retryBtn) return;
+  retryBtn.addEventListener("click", async () => {
+    const failed = window.__lastFailedTargets || [];
+    if (!failed.length) { showToast("没有失败的待重试"); return; }
+    // 用 fingerprint 找回原对象
+    const allData = loadAll();
+    const targets = failed.map(f => allData.find(c => fingerprint(c) === fingerprint(f))).filter(Boolean);
+    await runBatchScoring(targets, "重试");
+  });
+});
+
+document.getElementById("copyMatchedBtn").addEventListener("click", () => {
+  const all = loadAll().map(classify);
+  const rows = all.filter(c => activeFilter === "全部" || c.bucket === activeFilter);
+  if (!rows.length) { showToast("当前筛选没有候选人"); return; }
+  const text = rows.map((c, i) => `${i + 1}. ${c.name}  ${c.age || ""} ${c.degree || ""}`).join("\n");
+  navigator.clipboard.writeText(text).then(() => showToast(`✓ 已复制 ${rows.length} 人名单到剪贴板`));
+});
+
+function currentVisibleCandidates() {
+  const all = loadAll().map(classify);
+  const stageFilter = window.__statusStageFilter;
+  return all
+    .filter(c => activeFilter === "全部" || c.bucket === activeFilter)
+    .filter(c => stageFilter === undefined || stageFilter === null
+      ? true
+      : statusInfo(c.status).stage >= stageFilter && statusInfo(c.status).stage <= 7);
+}
+
+document.getElementById("copyBossHighlightBtn").addEventListener("click", () => {
+  const rows = currentVisibleCandidates();
+  const names = [...new Set(rows.map(c => String(c.name || "").trim()).filter(Boolean))];
+  if (!names.length) { showToast("当前筛选没有可定位的姓名"); return; }
+  const label = activeFilter === "全部" ? "当前显示" : activeFilter;
+  const text = `本地看板定位名单:${label}\n` + names.join("\n");
+  navigator.clipboard.writeText(text).then(() => {
+    showToast(`✓ 已复制 ${names.length} 人定位名单。切到平台页面点「🎯 名单定位」书签`);
+  });
+});
+
+document.getElementById("parseBtn").addEventListener("click", () => {
+  const text = document.getElementById("inputText").value;
+  if (!text.trim()) {
+    document.getElementById("parseResult").textContent = "请先粘贴文本";
+    return;
+  }
+  // 警告:对话详情面板格式
+  if (hasChatDetailFormat(text) && !/^\s*\d+\s*\n\s*\d{1,2}:\d{2}/m.test(text)) {
+    document.getElementById("parseResult").innerHTML =
+      '⚠️ <b style="color:#dc2626">检测到对话详情面板格式</b>(只有"沟通职位/期望"没有姓名),无法识别候选人。<br>' +
+      '💡 公开版建议手动复制左侧可见候选人列表,不要自动提取未读或批量扫描页面';
+    return;
+  }
+  const fmt = detectPasteFormat(text);
+  const fmtLabel = fmt === "unread" ? "📬 未读消息列表" : "📋 推荐牛人列表";
+  const cards = parseRawText(text);
+  const { added } = mergeIn(cards);
+  const fmtHint = fmt === "unread"
+    ? '<span style="color:#d97706"> · ⚠️ 未读消息只有姓名+时间+消息,信息有限。AI 评分会基于消息内容判断,建议对值得的人手动补充完整简历</span>'
+    : '';
+  document.getElementById("parseResult").innerHTML =
+    `识别格式: <b>${fmtLabel}</b> · 解析 <b>${cards.length}</b> 人 · 新增 <b style="color:#00a6a7">${added}</b> 人 · 跳过重复 <b>${cards.length - added}</b> 人${fmtHint}`;
+  document.getElementById("addedCount").textContent = added;
+  render();
+});
+
+document.getElementById("sampleBtn").addEventListener("click", () => {
+  document.getElementById("inputText").value =
+`黄海泉 刚刚活跃
+29岁 | 6年 | 本科 | 在职-月内到岗
+期望  上海 · 总账会计
+优势  1.熟悉全盘账务处理流程，可独立完成凭证编制
+2024.04 - 2026.06  广东库斯家居 · 总账
+2023.05 - 2024.02  慕思健康睡眠 · 财务
+2023 - 2027  广东财经大学 · 会计
+打招呼
+
+区小姐 刚刚活跃
+31岁 | 10年以上 | 大专 | 离职-随时到岗
+期望  上海 · 结算会计
+优势  能熟悉操作金蝶、用友等财务软件，会一般纳税人
+2021.12 - 2026.02  雄起来家具 · 总账
+2015 - 2020  广东金融学院 · 会计学 · 大专
+
+郑惠 3日内活跃
+26岁 | 7年 | 本科 | 在职-月内到岗
+期望  上海 · 会计
+优势  已获得初级会计师资格证，熟练掌握数据透视表
+2022.02 - 2025.02  艾凯控股集团 · 会计
+2017 - 2020  广西理工职业技术学院 · 会计 · 大专
+
+赖湘怡 刚刚活跃
+24岁 | 3年 | 本科 | 离职-随时到岗
+期望  上海 · 会计
+优势  获得湖南省技能竞赛智能财税赛项一等奖
+2025.10 - 至今  广东爱依服商贸 · 税务助理
+2020 - 2024  湖南信息学院 · 会计 · 本科`;
+  document.getElementById("parseResult").textContent = "示例已载入，点「解析并累加」试试";
+});
+
+document.getElementById("clearTextBtn").addEventListener("click", () => {
+  document.getElementById("inputText").value = "";
+  document.getElementById("parseResult").textContent = "已清空输入框";
+});
+
+document.getElementById("exportBtn").addEventListener("click", () => {
+  const all = loadAll();
+  const blob = new Blob([JSON.stringify(all, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const ts = new Date().toISOString().slice(0, 10);
+  a.href = url; a.download = `招聘候选人数据_${ts}_${all.length}人.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`✓ 已导出 ${all.length} 人到 Downloads 文件夹`);
+});
+
+document.getElementById("importBtn").addEventListener("click", () => {
+  document.getElementById("importFile").click();
+});
+
+document.getElementById("importFile").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const arr = JSON.parse(reader.result);
+      if (!Array.isArray(arr)) throw new Error("文件格式不正确");
+      const { added } = mergeIn(arr);
+      showToast(`✓ 导入 ${arr.length} 条，新增 ${added} 条`);
+      render();
+    } catch (err) {
+      alert("导入失败：" + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";  // 重置，允许再次选同一个文件
+});
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if (!confirm("⚠️ 清空所有累积的候选人记录？此操作不可恢复。")) return;
+  localStorage.removeItem(STORAGE_KEY);
+  document.getElementById("addedCount").textContent = 0;
+  render();
+});
+
+document.getElementById("addManualBtn").addEventListener("click", () => {
+  const name = document.getElementById("mName").value.trim();
+  if (!name) { alert("请填写姓名"); return; }
+  const c = {
+    name,
+    age: document.getElementById("mAge").value + (document.getElementById("mAge").value ? "岁" : ""),
+    ageNum: parseInt(document.getElementById("mAge").value) || 0,
+    exp: document.getElementById("mExp").value + (document.getElementById("mExp").value ? "年" : ""),
+    degree: document.getElementById("mDegree").value,
+    expect: (document.getElementById("mCity").value + " " + document.getElementById("mJob").value).trim(),
+    active: document.getElementById("mActive").value,
+    note: document.getElementById("mNote").value,
+    source: "manual",
+    addedAt: Date.now(),
+  };
+  const { added } = mergeIn([c]);
+  if (added) {
+    ["mName", "mAge", "mExp", "mJob", "mCity", "mActive", "mNote"].forEach(id => document.getElementById(id).value = "");
+    document.getElementById("mDegree").value = "";
+    render();
+  } else {
+    alert("已存在相同候选人（姓名+年龄+学历重复）");
+  }
+});
+
+// ============================================================
+// B1/B2: AI 集成层(支持 DeepSeek/Claude/通义/Kimi/自定义)
+// ============================================================
+const AI_STORAGE_KEY = "本地招聘看板_AI配置_v1";
+const AI_PRESETS = {
+  deepseek: { endpoint: "https://api.deepseek.com/v1/chat/completions", model: "deepseek-chat", type: "openai" },
+  claude:   { endpoint: "https://api.anthropic.com/v1/messages", model: "claude-haiku-4-5-20251001", type: "anthropic" },
+  qwen:     { endpoint: "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions", model: "qwen-plus", type: "openai" },
+  kimi:     { endpoint: "https://api.moonshot.cn/v1/chat/completions", model: "moonshot-v1-8k", type: "openai" },
+  custom:   { endpoint: "", model: "", type: "openai" },
+};
+function loadAiConfig() {
+  try { return JSON.parse(localStorage.getItem(AI_STORAGE_KEY) || "{}"); } catch { return {}; }
+}
+function saveAiConfig(cfg) { localStorage.setItem(AI_STORAGE_KEY, JSON.stringify(cfg)); }
+function aiIsConfigured() { const c = loadAiConfig(); return c.apiKey && c.endpoint && c.model; }
+
+// 通用 AI 调用(自动适配 OpenAI 兼容格式 / Anthropic 原生格式)
+async function aiChat(systemPrompt, userPrompt, opts = {}) {
+  const cfg = loadAiConfig();
+  if (!cfg.apiKey) throw new Error("尚未配置 API Key");
+  const isAnthropic = cfg.type === "anthropic";
+  const body = isAnthropic
+    ? {
+        model: cfg.model,
+        max_tokens: opts.maxTokens || 600,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }],
+      }
+    : {
+        model: cfg.model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        temperature: opts.temperature ?? 0.3,
+        max_tokens: opts.maxTokens || 600,
+      };
+  const headers = { "Content-Type": "application/json" };
+  if (isAnthropic) {
+    headers["x-api-key"] = cfg.apiKey;
+    headers["anthropic-version"] = "2023-06-01";
+    headers["anthropic-dangerous-direct-browser-access"] = "true";
+  } else {
+    headers["Authorization"] = `Bearer ${cfg.apiKey}`;
+  }
+  const resp = await fetch(cfg.endpoint, { method: "POST", headers, body: JSON.stringify(body) });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}: ${(await resp.text()).slice(0, 200)}`);
+  const data = await resp.json();
+  if (isAnthropic) return data.content?.[0]?.text || "";
+  return data.choices?.[0]?.message?.content || "";
+}
+
+async function aiTestConnection() {
+  try {
+    const ans = await aiChat("你是测试机器人。", "回复一个字:好", { maxTokens: 20 });
+    return { ok: true, message: `✓ 连接成功,模型回复:${ans.slice(0, 20)}` };
+  } catch (e) {
+    return { ok: false, message: `❌ ${e.message}` };
+  }
+}
+
+// AI 评分 prompt
+function buildLegacyScoringPrompt(c, isUnread) {
+  const accountingMode = USER_RULES.jobMode === "accounting" || USER_RULES.requireAccounting;
+  const sys = `你是一个资深 HR 招聘顾问,正在帮一家公司筛选候选人。
+岗位:${accountingMode ? "电商会计/电商财务" : "天猫/淘宝运营、拼多多运营、京东运营、亚马逊运营、跨境电商运营、抖音/快手/小红书等平台运营"}
+
+硬性要求:
+1. 30 岁以下。
+2. 全日制本科及以上；自考/成考/函授/网络教育/专升本/在职本科/2年本科通常不合格。
+3. ${accountingMode ? "必须有会计、财务、总账、出纳、应收应付、税务、ERP、金蝶/用友等相关经验。" : "必须有电商平台运营相关经验。"}
+4. 排除应届/在校、仅实习、明显无相关工作经验。
+
+评分:
+- A 90-100: 硬条件满足,经验强,有清晰平台/岗位技能和结果。
+- B 75-89: 基础合格,有相关经验,可推荐。
+- C 60-74: 可能相关但信息不足,需要补简历。
+- D <60: 硬性不符或方向明显不匹配。
+${isUnread ? "未读消息信息少,只有模板问候且无经验信息时给 D 级 35-45。" : "推荐页信息相对完整,按简历内容果断评分。"}
+
+只输出 JSON,格式:
+{"score":85,"grade":"B","verdict":"推荐","strengths":["相关经验"],"concerns":["待确认点"],"summary":"一句话总结"}`;
+  const user = `候选人信息:
+姓名:${c.name || ""}
+年龄:${c.age || "未知"}
+经验:${c.exp || "未知"}
+学历:${c.degree || "未知"}
+活跃:${c.active || "未知"}
+期望:${c.expect || "未知"}${c.salary ? ' ' + c.salary : ''}
+求职状态:${c.status || "未知"}
+
+优势/自我介绍:
+${c.advantage || c.note || "(无)"}
+
+工作经历:
+${c.workHistory || "(未读取到)"}
+
+教育经历:
+${c.education || "(未读取到)"}
+
+技能标签:
+${(c.skillTags || []).join(' / ') || "(未读取到)"}
+${c.fullResume ? `\n完整简历:\n${c.fullResume.slice(0, 3000)}` : ''}`;
+  return { sys, user };
+}
+
+function buildScoringPrompt(c) {
+  const isUnread = c.source === "unread";
+  if (USER_RULES.jobMode !== "overseasSocial") {
+    return buildLegacyScoringPrompt(c, isUnread);
+  }
+  const sys = `你是一个资深 HR 招聘顾问,正在帮一家公司筛选候选人。
+公司:请按使用者在规则设置中填写的业务背景理解,不要假设具体公司名称。
+岗位:海外内容增长运营 / 海外社媒转化运营(示例岗位,使用者可按自己的 JD 修改规则和关键词)
+业务:示例为面向海外市场的消费品/电商品牌,通过小红书、Instagram、Facebook、Pinterest、独立站等内容增长渠道获客。
+
+岗位核心目标:
+通过社媒内容获取目标用户,用评论/私信/内容承接推动咨询、引流和成交,最终导向独立站、Amazon 或私域成交。不是单纯发帖,也不是只做品牌曝光。
+
+硬性要求:
+1. 有社媒内容运营经验,小红书 / Instagram / Facebook / Pinterest 至少熟悉一个平台。
+2. 必须有内容选题、文案、发布、数据复盘、用户互动中的实际经验；只会机械发帖不够。
+3. 有转化意识:愿意做评论回复、私信承接、线索记录、用户跟进,而不是只做品牌曝光。
+4. 能使用 AI 工具提升选题、文案、翻译、内容复用、FAQ、私信话术、数据复盘效率。
+5. 能理解消费者购买产品时关心的价格、品质、使用场景、发货、退换货等问题。
+6. 应届/在校/仅实习/完全没有社媒内容或运营经验,通常不合适。
+
+活跃度权重:
+- 刚刚活跃、今日活跃、3日内活跃、未读消息:优先级明显提高,同等条件下可加 5-10 分。
+- 本周活跃:正常优先。
+- 本月活跃或更久:可看,但沟通优先级降低。
+- 活跃时间未知:不要淘汰,但不要因为经验普通就给高分。
+
+⚡ 重要评分原则(请严格遵守,避免保守评分):
+
+1. **不要因为学历、年龄不明就淘汰**。本岗位更看重内容增长、社媒转化、AI效率和用户洞察。
+
+2. **基础合格就是 B 级 (75-85)**:
+   - 有小红书/Instagram/Pinterest/新媒体/内容运营任一实际经验
+   - 能做选题、文案、发布、互动、复盘
+   - 有运营或内容经验 1 年以上
+   - 即使没有当前品类经验,只要内容与转化能力清楚,也应给 B 级
+
+3. **A 级 / 强匹配 (90-100) 必须更严格**:
+   - 必须同时看到:社媒/独立站平台经验 + 内容选题/文案/素材能力 + 评论私信/线索/引流转化意识
+   - 还至少要有一个强加分:Instagram/Facebook/Pinterest/Shopify/独立站/DTC、目标行业经验、英文/海外用户、AI内容效率、清晰数据结果
+   - 只有泛新媒体/短视频/内容运营,但没有转化承接或海外/DTC线索,不要给 A 级
+
+4. **C 级 (60-74) 只给真正"信息不足"的**:
+   - 有运营/电商/客服/文案背景,但看不清是否做过社媒内容增长
+   - 只看得到平台名,看不到选题、互动、转化或数据复盘能力
+   - 可能合适,但需要补完整简历或追问项目细节
+
+4.5. **区分两类 TikTok/TK 人才**:
+   - 内容种草型 TK 可考虑:做过目标行业、家居、母婴、美妆、生活方式、DTC 品牌、独立站引流、达人素材、UGC短视频、场景短视频、产品细节展示、买家秀、before/after 或教育型内容,这些能力可迁移到 Instagram Reels、Pinterest video pin、小红书视频笔记和独立站素材,可按 B/A 级判断
+   - 交易/投放型 TK 要降权:只有 TikTok Shop / 直播带货 / 达人带货 / 投流投放经验,没有内容种草、品类审美、海外社媒矩阵或独立站/DTC 引流经验,最多给 C 级或 D 级
+
+⚠️ **严重信息不足直接给 D 级 30-45 分**(不要默认 65/70):
+   - 只有"您好/可以聊吗/感兴趣"这类模板问候,无任何具体经验/能力描述
+   - 完整度 < 30% 且没有自荐信息
+   - 这种情况给 35 分 D 级,理由"信息严重不足,无法评估,建议直接跳过或点开看简历"
+   - 这帮助 HR 把时间花在真正有信息的候选人上,而不是被 70 分误导
+
+5. **D 级 (<60) 给明显不匹配的人**:
+   - 纯会计/财务/行政/人事/仓库/采购,没有内容或运营经验
+   - 纯客服但没有社媒内容、私信转化、线索跟进能力
+   - 纯剪辑/设计但没有内容策划、运营复盘或用户转化意识
+   - 纯广告投放优化师,不愿做内容、评论私信承接和线索跟进
+   - 应届/在校/仅实习且无可验证社媒项目
+
+6. **请充分使用 0-100 全部分数范围**,不要扎堆 65 分
+
+7. ${isUnread ? `这是【未读消息】场景,信息更有限:
+   - 从消息内容判断:有具体自荐经验(如"做过小红书账号/IG内容/私信转化/英文内容")→ B 级以上
+   - 模板问候"您好可以聊聊吗"且无经验信息 → D 级 35-45
+   - 暴露应届/仅实习/方向完全不符 → D 级` : `这是【推荐页】场景,信息相对完整,请按上述标准果断评分`}
+
+⚠️ 输出格式要求(必须严格遵守):
+1. 只输出一个 JSON 对象,不要任何解释/说明/markdown 代码块
+2. 不要前置文字,不要 \`\`\`json 包裹
+3. 直接以 { 开头,以 } 结尾
+4. 使用英文双引号 ",不要使用中文引号 " "
+5. 数组用 [],分数是数字不要带引号
+
+JSON 结构(请按这个填):
+{"score":88,"grade":"B","verdict":"推荐","strengths":["有小红书内容运营经验","能做评论私信承接"],"concerns":["未看到独立站或英文内容经验"],"summary":"一句话总结是否适合海外社媒转化岗位"}`;
+  // 工作稳定性分析(给 AI 参考)
+  const stab = analyzeWorkStability(c.workHistory || c.raw || "");
+  const stabilityHint = stab.flags.length ?
+    `\n【⚠️ 工作稳定性警告】 ${stab.flags.join('; ')}` :
+    (stab.jobs.length > 0 ? `\n【✓ 工作稳定性】 共 ${stab.jobs.length} 段经历,最近${stab.isCurrentlyEmployed ? '在职' : '于 ' + stab.latestEnd + ' 离职'}` : '');
+
+  const user = `候选人信息(${c.completeness || 30}% 完整度${c.fullResume ? '·已补充完整简历' : ''}):
+${stabilityHint}
+
+姓名:${c.name || ""}
+年龄:${c.age || "未知"}
+经验:${c.exp || "未知"}
+学历:${c.degree || "未知"}
+活跃:${c.active || "未知"}
+期望:${c.expect || "未知"}${c.salary ? ' ' + c.salary : ''}
+求职状态:${c.status || "未知"}
+
+【优势/自我介绍】
+${c.advantage || "(无)"}
+
+【工作经历】
+${c.workHistory || "(未读取到)"}
+
+【教育经历】
+${c.education || "(未读取到)"}
+
+【技能标签】
+${(c.skillTags || []).join(' / ') || "(未读取到)"}
+${c.fullResume ? `\n【完整简历(用户补充)】\n${c.fullResume.slice(0, 3000)}` : ''}
+
+注意:如果信息完整度低于 60%,在评分时酌情考虑"信息不全"因素,不要因为缺信息而过度淘汰。`;
+  return { sys, user };
+}
+
+// 强力 JSON 提取(处理 markdown 代码块/前置说明/尾随文字等)
+function extractJSON(text) {
+  if (!text) return null;
+  // 1. 去掉 markdown 代码块包裹 ```json ... ```
+  let cleaned = text.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '').trim();
+  // 2. 寻找第一个 { 和最后一个 } 之间的内容
+  const firstBrace = cleaned.indexOf('{');
+  const lastBrace = cleaned.lastIndexOf('}');
+  if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) return null;
+  let jsonStr = cleaned.slice(firstBrace, lastBrace + 1);
+  // 3. 修复常见 JSON 错误
+  jsonStr = jsonStr.replace(/,\s*([\}\]])/g, '$1');  // 尾随逗号
+  jsonStr = jsonStr.replace(/[“”]/g, '"');  // 中文引号
+  jsonStr = jsonStr.replace(/[‘’]/g, "'");
+  try { return JSON.parse(jsonStr); } catch (e) { return null; }
+}
+
+async function aiScoreCandidate(c, maxRetries = 3) {
+  const { sys, user } = buildScoringPrompt(c);
+  let lastError = null;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const ans = await aiChat(sys, user, { maxTokens: 800, temperature: 0.2 });
+      const result = extractJSON(ans);
+      if (!result) throw new Error("JSON 解析失败: " + (ans || '').slice(0, 80));
+      // 强制类型容错:有时 AI 返回字符串数字
+      const score = Number(result.score);
+      if (isNaN(score)) throw new Error("score 不是数字: " + result.score);
+      const grade = result.grade || (score >= 90 ? "A" : score >= 75 ? "B" : score >= 60 ? "C" : "D");
+      return {
+        aiScore: score,
+        aiGrade: grade,
+        aiJobMode: USER_RULES.jobMode,
+        aiPromptVersion: USER_RULES.jobMode === "overseasSocial" ? "overseas_social_v1" : "legacy_v1",
+        aiVerdict: result.verdict || "",
+        aiStrengths: Array.isArray(result.strengths) ? result.strengths : (result.strengths ? [result.strengths] : []),
+        aiConcerns: Array.isArray(result.concerns) ? result.concerns : (result.concerns ? [result.concerns] : []),
+        aiSummary: result.summary || "",
+        aiScoredAt: Date.now(),
+      };
+    } catch (e) {
+      lastError = e;
+      const isRetryable = /429|rate|timeout|network|fetch|503|502|JSON|格式/i.test(e.message || "");
+      if (!isRetryable || attempt === maxRetries - 1) throw e;
+      const backoff = Math.pow(2, attempt) * 1000;
+      await new Promise(r => setTimeout(r, backoff));
+    }
+  }
+  throw lastError;
+}
+
+// B2: AI 个性化打招呼话术
+async function aiGenerateGreeting(c) {
+  const legacyRole = USER_RULES.jobMode === "accounting" || USER_RULES.requireAccounting
+    ? "电商会计/电商财务"
+    : "天猫/拼多多/亚马逊/跨境电商或平台运营";
+  const roleIntro = USER_RULES.jobMode === "overseasSocial"
+    ? "我们正在招聘海外内容增长/海外社媒转化运营,会负责社媒内容、跨平台复用、评论私信承接和引流转化"
+    : `我们正在招聘${legacyRole}`;
+  const sys = `你是一个有招聘经验的 HR,要给候选人写一段个性化的初次沟通话术。要求:
+1. 称呼对方姓名,显得真诚
+2. 提到对方简历里 1-2 个亮点(让 ta 知道你看过简历)
+3. 简单介绍我方:${roleIntro}
+4. 邀请候选人进一步沟通,或问 ta 是否方便聊聊
+5. 控制在 80-120 字,自然亲切,不要套话
+6. 不要用"您"显得太正式,用"你"
+7. 直接输出话术正文,不要任何额外解释`;
+  const user = `候选人信息:
+姓名:${c.name}
+${c.age || ""} · ${c.exp || ""} · ${c.degree || ""}
+期望:${c.expect || ""}
+简历摘要:${(c.advantage || c.note || "").slice(0, 500)}`;
+  return await aiChat(sys, user, { maxTokens: 300, temperature: 0.7 });
+}
+
+// 渲染 AI 设置面板
+function initAiConfigPanel() {
+  const cfg = loadAiConfig();
+  document.getElementById("aiProvider").value = cfg.provider || "deepseek";
+  document.getElementById("aiModel").value = cfg.model || AI_PRESETS.deepseek.model;
+  document.getElementById("aiApiKey").value = cfg.apiKey || "";
+  document.getElementById("aiEndpoint").value = cfg.endpoint || AI_PRESETS.deepseek.endpoint;
+  updateAiStatusDisplay(cfg.tested);
+
+  document.getElementById("aiConfigToggle").addEventListener("click", () => {
+    const body = document.getElementById("aiConfigBody");
+    const arrow = document.getElementById("aiConfigArrow");
+    body.classList.toggle("open");
+    arrow.textContent = body.classList.contains("open") ? "▲ 收起设置" : "▼ 展开设置";
+  });
+
+  document.getElementById("aiProvider").addEventListener("change", e => {
+    const preset = AI_PRESETS[e.target.value];
+    if (preset) {
+      document.getElementById("aiEndpoint").value = preset.endpoint;
+      document.getElementById("aiModel").value = preset.model;
+    }
+  });
+
+  document.getElementById("aiSaveBtn").addEventListener("click", () => {
+    const provider = document.getElementById("aiProvider").value;
+    const newCfg = {
+      provider,
+      type: AI_PRESETS[provider]?.type || "openai",
+      model: document.getElementById("aiModel").value.trim(),
+      apiKey: document.getElementById("aiApiKey").value.trim(),
+      endpoint: document.getElementById("aiEndpoint").value.trim(),
+      tested: false,
+    };
+    saveAiConfig(newCfg);
+    updateAiStatusDisplay(false);
+    if (typeof updateCollectorAiHint === "function") updateCollectorAiHint();
+    showToast("✓ 设置已保存(建议测试连接)");
+  });
+
+  document.getElementById("aiTestBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("aiTestBtn");
+    btn.disabled = true; btn.textContent = "测试中...";
+    document.getElementById("aiSaveBtn").click();  // 先保存
+    const res = await aiTestConnection();
+    btn.disabled = false; btn.textContent = "🔌 测试连接";
+    document.getElementById("aiStatus").textContent = res.message;
+    document.getElementById("aiStatus").className = res.ok ? "ai-status-ok" : "ai-status-fail";
+    if (res.ok) {
+      const cfg = loadAiConfig(); cfg.tested = true; saveAiConfig(cfg);
+      updateAiStatusDisplay(true);
+      if (typeof updateCollectorAiHint === "function") updateCollectorAiHint();
+      showToast("✓ AI 连接成功!现在可以用 AI 评分了");
+    }
+  });
+}
+
+function updateAiStatusDisplay(tested) {
+  const inline = document.getElementById("aiStatusInline");
+  if (aiIsConfigured() && tested) {
+    inline.textContent = "· ✓ 已配置,可用";
+    inline.className = "ai-status-ok";
+  } else if (aiIsConfigured()) {
+    inline.textContent = "· 已填写,未测试";
+    inline.className = "ai-status-pending";
+  } else {
+    inline.textContent = "· 未配置";
+    inline.className = "ai-status-pending";
+  }
+}
+
+// ============================================================
+// 处理模式
+// ============================================================
+let processQueue = [];
+let processIndex = 0;
+
+function getProcessableList() {
+  const all = loadAll().map(classify);
+  // 如果当前选了具体桶,只处理那个桶(高分先处理)
+  if (activeFilter && activeFilter !== "全部") {
+    return all
+      .filter(c => c.bucket === activeFilter)
+      .filter(c => c.status !== "greeted")
+      .sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
+  }
+  // 在「全部」桶时,按优先级顺序(强匹配 > 候补 > 待补 > 复核)
+  const order = ["强匹配", "候补精选", "待补详情", "需人工复核"];
+  let list = [];
+  for (const b of order) list = list.concat(all.filter(c => c.bucket === b));
+  return list.filter(c => c.status !== "greeted");
+}
+
+function setStatus(name, ageNum, degree, status) {
+  const all = loadAll();
+  const fp = `${name}|${ageNum || ""}|${degree || ""}`;
+  for (const c of all) {
+    if (`${c.name}|${c.ageNum || ""}|${c.degree || ""}` === fp) {
+      c.status = status;
+      c.statusAt = Date.now();
+    }
+  }
+  saveAll(all);
+}
+
+function showProcessCard() {
+  const c = processQueue[processIndex];
+  if (!c) { closeProcessMode(); return; }
+  document.getElementById("processProgress").innerHTML =
+    `第 <b>${processIndex + 1}</b> / ${processQueue.length} 人　·　桶：<b style="color:${bucketColors[c.bucket] || '#666'}">${c.bucket}</b>` +
+    (c.aiScore !== undefined ? `　·　🤖 AI: <b style="color:${c.aiScore >= 75 ? '#047857' : '#d97706'}">${c.aiScore} 分(${c.aiGrade})</b>` : '');
+  document.getElementById("processPersonName").textContent = c.name;
+  document.getElementById("processMeta").innerHTML =
+    `${escapeHtml(c.age || "")} · ${escapeHtml(c.exp || "")} · ${escapeHtml(c.degree || "")} · ${escapeHtml(c.status || "")}<br>` +
+    (c.expect ? `<span style="color:#6b7280">期望：${escapeHtml(c.expect)}</span>` : "") +
+    (c.pastePosition ? `<br><span style="color:#9ca3af;font-size:12px">原列表大约第 #${c.pastePosition} 位</span>` : "");
+  document.getElementById("processDetail").textContent = c.advantage || c.note || "(无详情)";
+
+  // B2: AI 话术区
+  const aiArea = document.getElementById("processAiArea");
+  if (c.aiGreeting) {
+    aiArea.innerHTML = `
+      <div style="background:#f0fdfa;border:1px solid #5eead4;border-radius:6px;padding:10px;font-size:13px;line-height:1.7;color:#134e4a">
+        ${escapeHtml(c.aiGreeting)}
+      </div>
+      <div style="margin-top:4px;text-align:right">
+        <button class="ai-btn" id="processCopyGreetingBtn" style="background:#0369a1">📋 复制话术</button>
+        <button class="ai-btn" id="processRegenGreetingBtn">🔄 重新生成</button>
+      </div>`;
+    document.getElementById("processCopyGreetingBtn").onclick = () =>
+      navigator.clipboard.writeText(c.aiGreeting).then(() => showToast("✓ 话术已复制"));
+    document.getElementById("processRegenGreetingBtn").onclick = () => generateProcessGreeting();
+  } else if (aiIsConfigured()) {
+    aiArea.innerHTML = `<button class="ai-btn" id="processGenGreetingBtn" style="background:#7c3aed;width:100%;padding:8px">💬 让 AI 写专属打招呼话术</button>`;
+    document.getElementById("processGenGreetingBtn").onclick = () => generateProcessGreeting();
+  } else {
+    aiArea.innerHTML = `<div style="color:#9ca3af;font-size:12px;text-align:center">💡 配置 AI 后,这里能让 AI 写专属话术</div>`;
+  }
+
+  async function generateProcessGreeting() {
+    const btn = document.querySelector("#processAiArea button");
+    if (btn) { btn.disabled = true; btn.textContent = "生成中..."; }
+    try {
+      const greeting = await aiGenerateGreeting(c);
+      c.aiGreeting = greeting.trim();
+      // 同步到 storage
+      const all = loadAll();
+      for (const x of all) { if (fingerprint(x) === fingerprint(c)) x.aiGreeting = c.aiGreeting; }
+      saveAll(all);
+      showProcessCard();
+    } catch (e) {
+      showToast(`❌ ${e.message.slice(0, 60)}`);
+      if (btn) { btn.disabled = false; }
+    }
+  }
+  // 复制话术按钮状态:无话术则灰掉
+  const copyGreetBtn = document.getElementById("qcCopyGreeting");
+  if (copyGreetBtn) {
+    copyGreetBtn.disabled = !c.aiGreeting;
+    copyGreetBtn.style.opacity = c.aiGreeting ? "1" : "0.5";
+    copyGreetBtn.style.cursor = c.aiGreeting ? "pointer" : "not-allowed";
+  }
+  // BOSS 直达按钮:无 share_url 则灰掉并提示
+  const openBossBtn = document.getElementById("qcOpenBoss");
+  if (openBossBtn) {
+    if (c.bossShareUrl) {
+      openBossBtn.disabled = false;
+      openBossBtn.style.opacity = "1";
+      openBossBtn.style.cursor = "pointer";
+      openBossBtn.textContent = "🔗 打开此人详情页";
+      openBossBtn.title = c.bossShareUrl;
+    } else {
+      openBossBtn.disabled = true;
+      openBossBtn.style.opacity = "0.5";
+      openBossBtn.style.cursor = "not-allowed";
+      openBossBtn.textContent = "🔗 没有详情链接(采集时请勾选「同时尝试获取分享链接」)";
+      openBossBtn.title = "此候选人采集时未抓取分享链接";
+    }
+  }
+  document.getElementById("processOverlay").classList.add("active");
+}
+
+function nextPerson() {
+  processIndex++;
+  if (processIndex >= processQueue.length) {
+    closeProcessMode();
+    showToast(`🎉 处理完成！共处理 ${processQueue.length} 人`);
+  } else {
+    showProcessCard();
+  }
+}
+
+function closeProcessMode() {
+  document.getElementById("processOverlay").classList.remove("active");
+  render();
+}
+
+document.getElementById("startProcessBtn").addEventListener("click", () => {
+  processQueue = getProcessableList();
+  if (!processQueue.length) {
+    alert("当前没有待处理的候选人（强匹配/待补/复核都为空，或都已打招呼）");
+    return;
+  }
+  processIndex = 0;
+  showProcessCard();
+});
+
+document.getElementById("processCloseBtn").addEventListener("click", closeProcessMode);
+
+// 一键复制姓名
+document.getElementById("qcCopyName").addEventListener("click", () => {
+  const c = processQueue[processIndex];
+  navigator.clipboard.writeText(c.name).then(() =>
+    showToast(`✓ 已复制「${c.name}」,切到平台按 ⌘F 粘贴查找`));
+});
+
+// 一键复制 AI 话术
+document.getElementById("qcCopyGreeting").addEventListener("click", () => {
+  const c = processQueue[processIndex];
+  if (!c.aiGreeting) { showToast("⚠ 还没生成话术,点上方紫色按钮生成"); return; }
+  navigator.clipboard.writeText(c.aiGreeting).then(() =>
+    showToast(`✓ 话术已复制,到平台聊天框粘贴`));
+});
+
+// 一键打开此人详情页(用默认浏览器,通常是你日常 Chrome)
+document.getElementById("qcOpenBoss").addEventListener("click", () => {
+  const c = processQueue[processIndex];
+  if (!c.bossShareUrl) {
+    showToast("⚠ 此候选人没有详情链接,采集时需勾选「同时尝试获取分享链接」");
+    return;
+  }
+  window.open(c.bossShareUrl, "_blank", "noopener");
+  showToast(`🔗 已在新标签打开「${c.name}」的详情页`);
+});
+
+// 一键标记(自动跳下一个)
+function quickMark(targetKey, emoji) {
+  const c = processQueue[processIndex];
+  setStatus(c.name, c.ageNum, c.degree, targetKey);
+  const info = statusInfo(targetKey);
+  showToast(`${emoji}「${c.name}」→ ${info.label}`);
+  nextPerson();
+}
+document.getElementById("qmGreeted").addEventListener("click", () => quickMark("greeted", "✓"));
+document.getElementById("qmReplied").addEventListener("click", () => quickMark("replied", "💌"));
+document.getElementById("qmWechat").addEventListener("click",  () => quickMark("wechat",  "💚"));
+document.getElementById("qmReject").addEventListener("click",  () => quickMark("rejected","❌"));
+
+document.getElementById("processSkipBtn").addEventListener("click", () => {
+  const c = processQueue[processIndex];
+  showToast(`⏭ 跳过「${c.name}」(状态不变)`);
+  nextPerson();
+});
+
+document.getElementById("processPrevBtn").addEventListener("click", () => {
+  if (processIndex > 0) { processIndex--; showProcessCard(); }
+  else showToast("已经是第一个");
+});
+
+// 键盘快捷键
+document.addEventListener("keydown", e => {
+  if (!document.getElementById("processOverlay").classList.contains("active")) return;
+  if (e.key === "Escape") return closeProcessMode();
+  if (!(e.metaKey || e.ctrlKey)) return;
+  if (e.key === "1") { e.preventDefault(); document.getElementById("qmGreeted").click(); }
+  else if (e.key === "2") { e.preventDefault(); document.getElementById("qmReplied").click(); }
+  else if (e.key === "3") { e.preventDefault(); document.getElementById("qmWechat").click(); }
+  else if (e.key === "4") { e.preventDefault(); document.getElementById("qmReject").click(); }
+  else if (e.key === "c" || e.key === "C") { e.preventDefault(); document.getElementById("qcCopyName").click(); }
+});
+
+// 给书签设置实际的 JavaScript URL
+(function setupBookmarklet() {
+  const bm = document.getElementById("bookmarklet");
+  if (!bm) return;
+  const code = "alert('公开版已停用自动未读提取。建议手动复制可见候选人文本后粘贴到本地看板,避免触发平台限制。')";
+  bm.href = "javascript:" + encodeURIComponent(code);
+  bm.addEventListener("click", function(e) {
+    e.preventDefault();
+    showToast("⚠️ 未读提取已停用。公开版建议手动复制候选人内容");
+  });
+})();
+
+// 给「名单定位」书签设置 JavaScript URL
+(function setupHighlightBookmarklet() {
+  const bm = document.getElementById("highlightBookmarklet");
+  if (!bm) return;
+  const code = `
+(async function(){
+  function parseNames(text) {
+    return Array.from(new Set(String(text || '').split(/\\n+/).map(function(line){
+      return line
+        .replace(/^本地看板(?:高亮|定位)名单[:：].*$/, '')
+        .replace(/^\\s*\\d+[\\.、)]\\s*/, '')
+        .replace(/\\s+\\d{1,2}岁.*$/, '')
+        .replace(/\\s+(本科|大专|硕士|博士|高中|中专).*$/, '')
+        .trim();
+    }).filter(function(name){
+      return name && name.length <= 20 && !/当前显示|强匹配|候补精选|待补详情|需人工复核|不符合/.test(name);
+    })));
+  }
+  async function readList() {
+    try {
+      var text = await navigator.clipboard.readText();
+      if (text && text.trim()) return text;
+    } catch (e) {}
+    return prompt('请粘贴从看板复制的定位名单:') || '';
+  }
+  function copyText(text) {
+    try { navigator.clipboard.writeText(text); } catch (e) {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    }
+  }
+  function clearOld() {
+    var oldStyle = document.getElementById('__ztBossLocateStyle');
+    if (oldStyle) oldStyle.remove();
+    var oldPanel = document.getElementById('__ztBossLocatePanel');
+    if (oldPanel) oldPanel.remove();
+  }
+  var raw = await readList();
+  var names = parseNames(raw);
+  if (!names.length) {
+    alert('没有读取到姓名。请先回看板点「复制定位名单」');
+    return;
+  }
+  clearOld();
+  var index = 0;
+  var lastResult = '未定位';
+  var style = document.createElement('style');
+  style.id = '__ztBossLocateStyle';
+  style.textContent = '#__ztBossLocatePanel{position:fixed;right:18px;top:88px;z-index:2147483647;background:#111827;color:#fff;border-radius:10px;padding:12px 14px;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.28);line-height:1.5;min-width:220px}#__ztBossLocatePanel button{margin-top:8px;width:100%;border:0;border-radius:6px;padding:7px 8px;background:#fff;color:#111827;cursor:pointer;font-weight:800}#__ztBossLocatePanel .zt-tip{color:#fde68a;font-size:12px;line-height:1.45;margin-top:6px}';
+  document.head.appendChild(style);
+  var panel = document.createElement('div');
+  panel.id = '__ztBossLocatePanel';
+  document.body.appendChild(panel);
+  function currentName() {
+    return names.length ? names[Math.min(index, names.length - 1)] : '';
+  }
+  function render() {
+    panel.innerHTML = '<b>名单定位助手</b><br>名单:' + names.length + ' 人<br>当前:' + (currentName() || '无') + '<br>进度:' + (names.length ? (Math.min(index + 1, names.length)) : 0) + '/' + names.length + '<br>结果:' + lastResult + '<div class="zt-tip">低风险模式:只复制/查找单个姓名,不扫描页面,不点击,不发请求。</div><button id="__ztLocateFind">定位当前姓名</button><button id="__ztLocateCopy">复制当前姓名</button><button id="__ztLocateNext">下一个姓名</button><button id="__ztLocateClose">关闭</button>';
+    document.getElementById('__ztLocateFind').onclick = locateCurrent;
+    document.getElementById('__ztLocateCopy').onclick = function(){ var n=currentName(); if(n){ copyText(n); lastResult='已复制「'+n+'」'; render(); } };
+    document.getElementById('__ztLocateNext').onclick = function(){ if(index < names.length - 1) index += 1; else index = 0; lastResult='已切到「'+currentName()+'」'; render(); };
+    document.getElementById('__ztLocateClose').onclick = clearOld;
+  }
+  function locateCurrent() {
+    var name = currentName();
+    if (!name) return;
+    copyText(name);
+    var ok = false;
+    try {
+      if (window.getSelection) window.getSelection().removeAllRanges();
+      ok = window.find ? window.find(name, false, false, true, false, false, false) : false;
+    } catch (e) { ok = false; }
+    lastResult = ok ? '已定位「' + name + '」' : '未找到「' + name + '」,已复制姓名,可 Cmd+F 粘贴';
+    render();
+  }
+  render();
+})();
+  `.trim().replace(/\s+/g, ' ');
+  bm.href = "javascript:" + encodeURIComponent(code);
+  bm.addEventListener("click", function(e) {
+    e.preventDefault();
+    showToast("⚠️ 请把这个按钮拖到 Chrome 书签栏；之后在平台页面点它来逐个定位名单");
+  });
+})();
+
+// 初始化 AI 配置面板
+initAiConfigPanel();
+
+// ============================================================
+// 初始化「筛选规则设置」面板
+// ============================================================
+(function initRulesPanel() {
+  const $ = id => document.getElementById(id);
+  const fillForm = () => {
+    const r = USER_RULES;
+    $("ruleJobMode").value = r.jobMode || "overseasSocial";
+    $("ruleRequireAccounting").checked = r.requireAccounting !== false;
+    $("ruleAccountingKeywords").value = r.accountingKeywords || RULES_DEFAULTS.accountingKeywords;
+    $("ruleMaxAge").value = r.maxAge;
+    $("ruleMinDegree").value = r.minDegree;
+    $("ruleFulltime").checked = r.requireFulltime;
+    $("ruleMinExpYears").value = r.minExpYears;
+    $("ruleMinBachelorYears").value = r.minBachelorYears;
+    $("ruleExcludeFresh").checked = r.excludeFresh;
+    $("ruleExcludeIntern").checked = r.excludeIntern;
+    $("ruleExcludeNonFulltime").checked = r.excludeNonFulltime;
+    $("ruleExcludeJobHopping").checked = r.excludeJobHopping;
+    $("ruleExcludeLongGap").checked = r.excludeLongGap;
+    $("ruleExcludeLocal").checked = r.excludeLocal;
+    $("ruleExcludeEntre").checked = r.excludeEntre;
+    $("dirPdd").checked = r.enableDirections?.pdd ?? true;
+    $("dirTmall").checked = r.enableDirections?.tmall ?? true;
+    $("dirJd").checked = r.enableDirections?.jd ?? true;
+    $("dirDomestic").checked = r.enableDirections?.domestic ?? true;
+    $("dirAmazon").checked = r.enableDirections?.amazon ?? true;
+    $("dirCrossBorder").checked = r.enableDirections?.crossBorder ?? true;
+    $("dirFacebook").checked = r.enableDirections?.facebook ?? true;
+    $("dirEcomAcc").checked = r.enableDirections?.ecommerceAccounting ?? false;
+    $("ruleCustomExclude").value = r.customExclude;
+    $("ruleCustomBonus").value = r.customBonus;
+    updateRulesStatus();
+  };
+  const collectForm = () => ({
+    jobMode: $("ruleJobMode").value,
+    requireAccounting: $("ruleRequireAccounting").checked,
+    accountingKeywords: $("ruleAccountingKeywords").value,
+    maxAge: Number($("ruleMaxAge").value) || 30,
+    minDegree: $("ruleMinDegree").value,
+    requireFulltime: $("ruleFulltime").checked,
+    minExpYears: Number($("ruleMinExpYears").value) || 0,
+    minBachelorYears: Number($("ruleMinBachelorYears").value) || 3,
+    excludeFresh: $("ruleExcludeFresh").checked,
+    excludeIntern: $("ruleExcludeIntern").checked,
+    excludeNonFulltime: $("ruleExcludeNonFulltime").checked,
+    excludeJobHopping: $("ruleExcludeJobHopping").checked,
+    excludeLongGap: $("ruleExcludeLongGap").checked,
+    excludeLocal: $("ruleExcludeLocal").checked,
+    excludeEntre: $("ruleExcludeEntre").checked,
+    enableDirections: {
+      pdd: $("dirPdd").checked, tmall: $("dirTmall").checked,
+      jd: $("dirJd").checked, domestic: $("dirDomestic").checked,
+      amazon: $("dirAmazon").checked, crossBorder: $("dirCrossBorder").checked,
+      facebook: $("dirFacebook").checked, tiktok: true,
+      ecommerceAccounting: $("dirEcomAcc").checked,
+    },
+    customExclude: $("ruleCustomExclude").value,
+    customBonus: $("ruleCustomBonus").value,
+  });
+  function updateRulesModeUi() {
+    const accountingMode = $("ruleJobMode").value === "accounting" || $("ruleRequireAccounting").checked;
+    $("accountingModeHint").style.display = accountingMode ? "block" : "none";
+    for (const id of ["dirPdd", "dirTmall", "dirJd", "dirDomestic", "dirAmazon", "dirCrossBorder", "dirFacebook"]) {
+      $(id).disabled = accountingMode;
+      $(id).parentElement.style.opacity = accountingMode ? "0.45" : "1";
+    }
+    if (accountingMode) $("dirEcomAcc").checked = true;
+  }
+  function updateRuleSummary() {
+    const r = USER_RULES;
+    const accountingMode = r.jobMode === "accounting" || r.requireAccounting;
+    if (r.jobMode === "overseasSocial" && !accountingMode) {
+      $("ruleSummaryJob").textContent = "海外内容增长 / 社媒转化运营";
+      $("ruleSummaryHard").textContent = `${r.minExpYears || 0} 年以上内容/社媒/运营经验，${r.minDegree === "any" ? "学历不限" : "学历需达标"}`;
+      $("ruleSummaryDirections").textContent = "命中小红书/Instagram/Pinterest/独立站/转化/AI/宠物家居等任一强相关方向";
+      $("ruleSummaryExclude").textContent = `${r.excludeFresh ? "应届/在校淘汰、" : ""}${r.excludeIntern ? "仅实习淘汰；" : ""}纯客服/纯投放/纯剪辑/财务等非内容增长方向淘汰`;
+    } else {
+      $("ruleSummaryJob").textContent = accountingMode ? "会计/财务专招" : "电商运营综合";
+      $("ruleSummaryHard").textContent = `${r.maxAge || 30} 岁以下、${r.minDegree === "junior" ? "大专及以上" : r.minDegree === "any" ? "学历不限" : "本科及以上"}、${r.minExpYears || 0} 年以上经验`;
+      $("ruleSummaryDirections").textContent = accountingMode ? "只命中核心词才算匹配" : "命中已勾选电商方向任一";
+      $("ruleSummaryExclude").textContent = `${r.excludeFresh ? "应届/在校淘汰、" : ""}${r.excludeIntern ? "仅实习淘汰、" : ""}${r.excludeNonFulltime ? "非全日制淘汰；" : ""}本地/创业${r.excludeLocal || r.excludeEntre ? "可直接淘汰" : "默认复核"}`;
+    }
+  }
+  function updateRulesStatus() {
+    const r = USER_RULES;
+    const customized = JSON.stringify(r) !== JSON.stringify(RULES_DEFAULTS);
+    const accountingMode = r.jobMode === "accounting" || r.requireAccounting;
+    $("rulesStatus").textContent = r.jobMode === "overseasSocial" && !accountingMode ? "· 海外社媒增长规则" : (accountingMode ? "· 核心词强制命中已启用" : (customized ? "· ⚠️ 已自定义" : "· 当前为默认规则"));
+    $("rulesStatus").style.color = r.jobMode === "overseasSocial" && !accountingMode ? "#047857" : (accountingMode ? "#047857" : (customized ? "#dc2626" : "#92400e"));
+    updateRuleSummary();
+  }
+
+  fillForm();
+  updateRulesModeUi();
+
+  function applyJobModePreset(mode) {
+    if (mode === "accounting") {
+      $("ruleRequireAccounting").checked = true;
+      $("ruleAccountingKeywords").value = ACCOUNTING_KEYWORDS_DEFAULT.join("\n");
+      $("ruleMaxAge").value = 30;
+      $("ruleMinDegree").value = "bachelor";
+      $("ruleFulltime").checked = true;
+      $("ruleMinExpYears").value = 1;
+      $("ruleMinBachelorYears").value = 3;
+      $("ruleExcludeNonFulltime").checked = true;
+      $("dirPdd").checked = false;
+      $("dirTmall").checked = false;
+      $("dirJd").checked = false;
+      $("dirDomestic").checked = false;
+      $("dirAmazon").checked = false;
+      $("dirCrossBorder").checked = false;
+      $("dirFacebook").checked = false;
+      $("dirEcomAcc").checked = true;
+      $("ruleCustomExclude").value = "";
+      $("ruleCustomBonus").value = "";
+    } else if (mode === "ecommerce") {
+      $("ruleRequireAccounting").checked = false;
+      $("ruleAccountingKeywords").value = ACCOUNTING_KEYWORDS_DEFAULT.join("\n");
+      $("ruleMaxAge").value = 30;
+      $("ruleMinDegree").value = "bachelor";
+      $("ruleFulltime").checked = true;
+      $("ruleMinExpYears").value = 1;
+      $("ruleMinBachelorYears").value = 3;
+      $("ruleExcludeNonFulltime").checked = true;
+      $("dirPdd").checked = true;
+      $("dirTmall").checked = true;
+      $("dirJd").checked = true;
+      $("dirDomestic").checked = true;
+      $("dirAmazon").checked = true;
+      $("dirCrossBorder").checked = true;
+      $("dirFacebook").checked = false;
+      $("dirEcomAcc").checked = false;
+      $("ruleCustomExclude").value = "";
+      $("ruleCustomBonus").value = "天猫\n拼多多\n亚马逊\n京东\n抖音\n小红书\n跨境\n店铺运营\n数据复盘";
+    } else {
+      $("ruleRequireAccounting").checked = false;
+      $("ruleAccountingKeywords").value = OVERSEAS_SOCIAL_KEYWORDS_DEFAULT.join("\n");
+      $("ruleMaxAge").value = 45;
+      $("ruleMinDegree").value = "any";
+      $("ruleFulltime").checked = false;
+      $("ruleMinExpYears").value = 1;
+      $("ruleMinBachelorYears").value = 0;
+      $("ruleExcludeNonFulltime").checked = false;
+      $("dirPdd").checked = false;
+      $("dirTmall").checked = false;
+      $("dirJd").checked = false;
+      $("dirDomestic").checked = true;
+      $("dirAmazon").checked = true;
+      $("dirCrossBorder").checked = true;
+      $("dirFacebook").checked = true;
+      $("dirEcomAcc").checked = true;
+      $("ruleCustomExclude").value = RULES_DEFAULTS.customExclude;
+      $("ruleCustomBonus").value = RULES_DEFAULTS.customBonus;
+    }
+  }
+
+  $("ruleJobMode").addEventListener("change", () => {
+    applyJobModePreset($("ruleJobMode").value);
+    updateRulesModeUi();
+  });
+  $("ruleRequireAccounting").addEventListener("change", updateRulesModeUi);
+
+  $("rulesToggle").addEventListener("click", () => {
+    const body = $("rulesBody");
+    const arrow = $("rulesArrow");
+    body.classList.toggle("open");
+    arrow.textContent = body.classList.contains("open") ? "▲ 收起" : "▼ 展开";
+  });
+
+  $("rulesSaveBtn").addEventListener("click", () => {
+    USER_RULES = collectForm();
+    saveRules(USER_RULES);
+    updateRulesStatus();
+    render();
+    showToast("✓ 筛选规则已保存,所有候选人已重新分类");
+  });
+
+  $("rulesResetBtn").addEventListener("click", () => {
+    if (!confirm("确定恢复默认规则?")) return;
+    USER_RULES = { ...RULES_DEFAULTS };
+    saveRules(USER_RULES);
+    fillForm();
+    render();
+    showToast("✓ 已恢复默认规则");
+  });
+})();
+
+// KPI 卡片点击跳到对应桶
+document.querySelectorAll("[data-jump-bucket]").forEach(card => {
+  card.addEventListener("click", () => {
+    activeFilter = card.dataset.jumpBucket;
+    // 切桶时自动清除状态筛选(避免叠加上一次漏斗点击的状态)
+    window.__statusStageFilter = null;
+    render();
+    // 滚动到表格区
+    setTimeout(() => {
+      const rowsEl = document.getElementById("rows");
+      if (rowsEl) rowsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+    showToast(`✓ 已切到「${activeFilter}」桶`);
+  });
+});
+
+// 初始渲染
+render();
+</script>
+</body>
+</html>
