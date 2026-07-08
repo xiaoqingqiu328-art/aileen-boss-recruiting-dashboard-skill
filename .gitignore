@@ -43,18 +43,13 @@ backups/
 *.gif
 *.crx
 
-# Optional / legacy automation artifacts; keep out of public releases by default
-boss-extension-optimized/
-extension/
-skills/
-boss_userscript.user.js
-get_cookies.py
-local_api.py
-read_inbox.py
-inbox_manager.py
-run_daily.py
-test_auto.py
-setup_schedule.sh
+# Local-only helper scripts or automation experiments
+local_*.py
+*_local.py
+*_private.py
+*_test.py
+scripts-local/
+private-tools/
 *.command
 *内部分享.md
 *处理手册.md
