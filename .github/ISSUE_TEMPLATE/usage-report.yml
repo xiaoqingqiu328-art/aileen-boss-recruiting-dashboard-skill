@@ -1,12 +1,12 @@
-name: I use this skill
-description: Tell us how you use the BOSS Recruiting Dashboard Skill
-title: "I use this skill: "
+name: Local dashboard feedback
+description: Share feedback about the local recruiting screening dashboard
+title: "Dashboard feedback: "
 labels: ["usage"]
 body:
   - type: markdown
     attributes:
       value: |
-        Thanks for using this skill. Please do not share private company names, candidate data, phone numbers, emails, resumes, cookies, API keys, or screenshots with personal information.
+        Thanks for using this local dashboard. Please do not share private company names, candidate data, phone numbers, emails, resumes, cookies, API keys, or screenshots with personal information.
   - type: dropdown
     id: workflow
     attributes:
@@ -15,8 +15,6 @@ body:
         - Candidate screening dashboard
         - Configurable role templates
         - AI scoring prompts
-        - Chrome extension workflow
-        - GitHub-safe packaging
         - Other
     validations:
       required: true
