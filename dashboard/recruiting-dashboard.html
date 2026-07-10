@@ -286,6 +286,12 @@
           <div style="display:grid;grid-template-columns:130px 1fr;gap:8px 12px;align-items:center">
             <label>年龄上限:</label>
             <input type="number" id="ruleMaxAge" min="20" max="50" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px">
+            <label>性别要求:</label>
+            <select id="ruleGenderPreference" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px">
+              <option value="any">不限</option>
+              <option value="female">只看女</option>
+              <option value="male">只看男</option>
+            </select>
             <label>最低学历:</label>
             <select id="ruleMinDegree" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px">
               <option value="bachelor">本科及以上</option>
@@ -298,6 +304,8 @@
             <input type="number" id="ruleMinExpYears" min="0" max="20" step="1" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px">
             <label>本科最少读多少年:</label>
             <input type="number" id="ruleMinBachelorYears" min="2" max="4" step="1" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px">
+            <label>性别未知:</label>
+            <label><input type="checkbox" id="ruleGenderUnknownReview"> 不符合性别要求时,未知先人工复核</label>
           </div>
 
           <h4 style="color:#0369a1;margin:18px 0 10px">❌ 自动淘汰</h4>
@@ -560,6 +568,8 @@ const RULES_DEFAULTS = {
   requireAccounting: false,
   accountingKeywords: OVERSEAS_SOCIAL_KEYWORDS_DEFAULT.join("\n"),
   maxAge: 45,
+  genderPreference: "any",       // any / female / male
+  genderUnknownReview: true,     // 只看某性别时,未知先人工复核,避免误杀
   minDegree: "any",             // bachelor / junior / any
   requireFulltime: false,
   minExpYears: 1,                // 最少 1 年经验
@@ -657,6 +667,17 @@ function includesAny(text, words) {
 function matchedWords(text, words) {
   const lower = String(text || "").toLowerCase();
   return words.filter(w => lower.includes(String(w).toLowerCase()));
+}
+
+function inferGender(c, text = "") {
+  const source = [c.gender, c.name, c.raw, c.fullSummary, text].filter(Boolean).join("\n");
+  if (/先生|男士|♂|男生|男性/.test(source)) return "male";
+  if (/女士|小姐|太太|姑娘|女生|女性|♀/.test(source)) return "female";
+  return "unknown";
+}
+
+function genderLabel(gender) {
+  return gender === "male" ? "男" : gender === "female" ? "女" : "未知";
 }
 
 function isFutureGraduateText(text) {
@@ -855,6 +876,11 @@ function classify(c) {
   const educationBelowHits = matchedWords(text, RULES.educationBelow);
   const localHits = matchedWords(text, RULES.localCheckSignals);
   const entrepreneurHits = matchedWords(text, RULES.entrepreneurSignals);
+  const inferredGender = inferGender(c, text);
+  const genderPreference = USER_RULES.genderPreference || "any";
+  const hasGenderRequirement = genderPreference !== "any";
+  const genderMismatch = hasGenderRequirement && inferredGender !== "unknown" && inferredGender !== genderPreference;
+  const genderUnknownNeedsReview = hasGenderRequirement && inferredGender === "unknown" && USER_RULES.genderUnknownReview !== false;
 
   const ageNum = Number(String(c.age || "").match(/\d+/)?.[0] || 0);
   const isUnder30 = ageNum > 0 && ageNum <= (USER_RULES.maxAge || 30);
@@ -882,7 +908,9 @@ function classify(c) {
   else if (!ecommerceHits.length && !directionHits.length) reasons.push("未发现海外社媒/内容增长/转化相关经验");
   if (internshipHits.length) reasons.push("疑似仅实习");
   if (isExcludedGraduate) reasons.push(isFutureGraduate ? "未毕业/未来届应届" : "应届/在校");
+  if (genderMismatch) reasons.push(`性别${genderLabel(inferredGender)}（要求${genderLabel(genderPreference)}）`);
   const flags = [];
+  if (genderUnknownNeedsReview) flags.push("性别未知·需核对");
   if (localHits.length) flags.push(`含"${localHits[0]}"·核实籍贯`);
   if (entrepreneurHits.length) flags.push(`含"${entrepreneurHits[0]}"·核实是否创业过`);
 
@@ -909,6 +937,7 @@ function classify(c) {
     (USER_RULES.excludeNonFulltime && nonFulltimeFlags.length > 0) ||  // 非全日制本科
     (USER_RULES.excludeLocal && localHits.length > 0) ||         // 本地人(可选硬淘汰)
     (USER_RULES.excludeEntre && entrepreneurHits.length > 0) ||  // 创业(可选硬淘汰)
+    genderMismatch ||                                            // 性别不符合
     hasCustomExclude;                                            // 自定义排除词
   // 工作稳定性:启用时,2+ flag 视为硬性
   const hasStabilityHardFail = USER_RULES.excludeJobHopping && stability.flags.length >= 2;
@@ -1004,7 +1033,7 @@ function classify(c) {
   // 没 AI 评分:保留规则的判断结果(强匹配/待补/复核/不符合)
   // 等 AI 评分后,A 级会自动升级,D 级会降级,B/C 各归其位
 
-  return { ...c, bucket, directionHits, ecommerceHits, accountingHits, reasons, flags, ageNum, expYears, hasBachelor, isUnder30 };
+  return { ...c, gender: c.gender || inferredGender, bucket, directionHits, ecommerceHits, accountingHits, reasons, flags, ageNum, expYears, hasBachelor, isUnder30 };
 }
 
 // ============================================================
@@ -1126,8 +1155,10 @@ function parseUnreadList(text) {
     message = message.slice(0, 300);
 
     position++;
+    const rawText = `${unreadCount}条未读 · ${msgTime || ''} · ${split.job}\n${message}`;
     cards.push({
       name: split.name,
+      gender: inferGender({ name: split.name, raw: rawText }),
       unreadCount,
       msgTime,
       msgJob: split.job,
@@ -1142,7 +1173,7 @@ function parseUnreadList(text) {
       workHistory: "", education: "", skillTags: [],
       fullSummary: `[未读消息·${msgTime || '未知时间'}] ${split.job}\n候选人发来:${message}`,
       completeness: 15,
-      raw: `${unreadCount}条未读 · ${msgTime || ''} · ${split.job}\n${message}`,
+      raw: rawText,
     });
   }
 
@@ -1168,6 +1199,7 @@ function parseRawText(text) {
     if (!nameActiveMatch) continue;
     const name = nameActiveMatch[1];
     const active = nameActiveMatch[2];
+    const gender = inferGender({ name, raw: ch });
 
     // 年龄
     const ageMatch = ch.match(/(\d{2})\s*岁/);
@@ -1243,7 +1275,7 @@ function parseRawText(text) {
     if (skillTags.length) completeness += 5;
 
     cards.push({
-      name, active, age, ageNum, exp, expYearsParsed, degree, status, salary,
+      name, gender, active, age, ageNum, exp, expYearsParsed, degree, status, salary,
       expect, advantage,
       workHistory,       // ★ 多段工作经历
       education,         // ★ 教育经历
@@ -1323,6 +1355,7 @@ function normalizeCollectorCandidate(c) {
 
   return {
     name: c.name || "未知",
+    gender: inferGender({ name: c.name || "", raw: c.fullText || JSON.stringify(c) }),
     active: c.jobStatus || "历史采集",
     age, ageNum,
     exp,
@@ -3300,6 +3333,8 @@ initAiConfigPanel();
     $("ruleRequireAccounting").checked = r.requireAccounting !== false;
     $("ruleAccountingKeywords").value = r.accountingKeywords || RULES_DEFAULTS.accountingKeywords;
     $("ruleMaxAge").value = r.maxAge;
+    $("ruleGenderPreference").value = r.genderPreference || "any";
+    $("ruleGenderUnknownReview").checked = r.genderUnknownReview !== false;
     $("ruleMinDegree").value = r.minDegree;
     $("ruleFulltime").checked = r.requireFulltime;
     $("ruleMinExpYears").value = r.minExpYears;
@@ -3328,6 +3363,8 @@ initAiConfigPanel();
     requireAccounting: $("ruleRequireAccounting").checked,
     accountingKeywords: $("ruleAccountingKeywords").value,
     maxAge: Number($("ruleMaxAge").value) || 30,
+    genderPreference: $("ruleGenderPreference").value,
+    genderUnknownReview: $("ruleGenderUnknownReview").checked,
     minDegree: $("ruleMinDegree").value,
     requireFulltime: $("ruleFulltime").checked,
     minExpYears: Number($("ruleMinExpYears").value) || 0,
@@ -3361,14 +3398,15 @@ initAiConfigPanel();
   function updateRuleSummary() {
     const r = USER_RULES;
     const accountingMode = r.jobMode === "accounting" || r.requireAccounting;
+    const genderText = r.genderPreference === "female" ? "、只看女" : r.genderPreference === "male" ? "、只看男" : "";
     if (r.jobMode === "overseasSocial" && !accountingMode) {
       $("ruleSummaryJob").textContent = "海外内容增长 / 社媒转化运营";
-      $("ruleSummaryHard").textContent = `${r.minExpYears || 0} 年以上内容/社媒/运营经验，${r.minDegree === "any" ? "学历不限" : "学历需达标"}`;
+      $("ruleSummaryHard").textContent = `${r.minExpYears || 0} 年以上内容/社媒/运营经验，${r.minDegree === "any" ? "学历不限" : "学历需达标"}${genderText}`;
       $("ruleSummaryDirections").textContent = "命中小红书/Instagram/Pinterest/独立站/转化/AI/宠物家居等任一强相关方向";
       $("ruleSummaryExclude").textContent = `${r.excludeFresh ? "应届/在校淘汰、" : ""}${r.excludeIntern ? "仅实习淘汰；" : ""}纯客服/纯投放/纯剪辑/财务等非内容增长方向淘汰`;
     } else {
       $("ruleSummaryJob").textContent = accountingMode ? "会计/财务专招" : "电商运营综合";
-      $("ruleSummaryHard").textContent = `${r.maxAge || 30} 岁以下、${r.minDegree === "junior" ? "大专及以上" : r.minDegree === "any" ? "学历不限" : "本科及以上"}、${r.minExpYears || 0} 年以上经验`;
+      $("ruleSummaryHard").textContent = `${r.maxAge || 30} 岁以下、${r.minDegree === "junior" ? "大专及以上" : r.minDegree === "any" ? "学历不限" : "本科及以上"}、${r.minExpYears || 0} 年以上经验${genderText}`;
       $("ruleSummaryDirections").textContent = accountingMode ? "只命中核心词才算匹配" : "命中已勾选电商方向任一";
       $("ruleSummaryExclude").textContent = `${r.excludeFresh ? "应届/在校淘汰、" : ""}${r.excludeIntern ? "仅实习淘汰、" : ""}${r.excludeNonFulltime ? "非全日制淘汰；" : ""}本地/创业${r.excludeLocal || r.excludeEntre ? "可直接淘汰" : "默认复核"}`;
     }
@@ -3390,6 +3428,8 @@ initAiConfigPanel();
       $("ruleRequireAccounting").checked = true;
       $("ruleAccountingKeywords").value = ACCOUNTING_KEYWORDS_DEFAULT.join("\n");
       $("ruleMaxAge").value = 30;
+      $("ruleGenderPreference").value = "any";
+      $("ruleGenderUnknownReview").checked = true;
       $("ruleMinDegree").value = "bachelor";
       $("ruleFulltime").checked = true;
       $("ruleMinExpYears").value = 1;
@@ -3409,6 +3449,8 @@ initAiConfigPanel();
       $("ruleRequireAccounting").checked = false;
       $("ruleAccountingKeywords").value = ACCOUNTING_KEYWORDS_DEFAULT.join("\n");
       $("ruleMaxAge").value = 30;
+      $("ruleGenderPreference").value = "any";
+      $("ruleGenderUnknownReview").checked = true;
       $("ruleMinDegree").value = "bachelor";
       $("ruleFulltime").checked = true;
       $("ruleMinExpYears").value = 1;
@@ -3428,6 +3470,8 @@ initAiConfigPanel();
       $("ruleRequireAccounting").checked = false;
       $("ruleAccountingKeywords").value = OVERSEAS_SOCIAL_KEYWORDS_DEFAULT.join("\n");
       $("ruleMaxAge").value = 45;
+      $("ruleGenderPreference").value = "any";
+      $("ruleGenderUnknownReview").checked = true;
       $("ruleMinDegree").value = "any";
       $("ruleFulltime").checked = false;
       $("ruleMinExpYears").value = 1;
