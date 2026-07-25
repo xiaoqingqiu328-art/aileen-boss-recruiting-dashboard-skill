@@ -286,11 +286,11 @@
           <div style="display:grid;grid-template-columns:130px 1fr;gap:8px 12px;align-items:center">
             <label>年龄上限:</label>
             <input type="number" id="ruleMaxAge" min="20" max="50" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px">
-            <label>性别要求:</label>
+            <label>性别偏好:</label>
             <select id="ruleGenderPreference" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px">
               <option value="any">不限</option>
-              <option value="female">只看女</option>
-              <option value="male">只看男</option>
+              <option value="female">女生优先</option>
+              <option value="male">男生优先</option>
             </select>
             <label>最低学历:</label>
             <select id="ruleMinDegree" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px">
@@ -305,7 +305,7 @@
             <label>本科最少读多少年:</label>
             <input type="number" id="ruleMinBachelorYears" min="2" max="4" step="1" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px">
             <label>性别未知:</label>
-            <label><input type="checkbox" id="ruleGenderUnknownReview"> 不符合性别要求时,未知先人工复核</label>
+            <label><input type="checkbox" id="ruleGenderUnknownReview"> 仅提示核对,不自动淘汰/复核</label>
           </div>
 
           <h4 style="color:#0369a1;margin:18px 0 10px">❌ 自动淘汰</h4>
@@ -569,7 +569,7 @@ const RULES_DEFAULTS = {
   accountingKeywords: OVERSEAS_SOCIAL_KEYWORDS_DEFAULT.join("\n"),
   maxAge: 45,
   genderPreference: "any",       // any / female / male
-  genderUnknownReview: true,     // 只看某性别时,未知先人工复核,避免误杀
+  genderUnknownReview: true,     // 性别仅作偏好提示,不作为硬淘汰
   minDegree: "any",             // bachelor / junior / any
   requireFulltime: false,
   minExpYears: 1,                // 最少 1 年经验
@@ -901,8 +901,8 @@ function classify(c) {
   const inferredGender = inferGender(c, text);
   const genderPreference = USER_RULES.genderPreference || "any";
   const hasGenderRequirement = genderPreference !== "any";
-  const genderMismatch = hasGenderRequirement && inferredGender !== "unknown" && inferredGender !== genderPreference;
-  const genderUnknownNeedsReview = hasGenderRequirement && inferredGender === "unknown" && USER_RULES.genderUnknownReview !== false;
+  const genderMismatch = false;
+  const genderUnknownNeedsReview = false;
 
   const ageNum = Number(String(c.age || "").match(/\d+/)?.[0] || 0);
   const isUnder30 = ageNum > 0 && ageNum <= (USER_RULES.maxAge || 30);
@@ -930,7 +930,6 @@ function classify(c) {
   else if (!ecommerceHits.length && !directionHits.length) reasons.push("未发现海外社媒/内容增长/转化相关经验");
   if (internshipHits.length) reasons.push("疑似仅实习");
   if (isExcludedGraduate) reasons.push(isFutureGraduate ? "未毕业/未来届应届" : "应届/在校");
-  if (genderMismatch) reasons.push(`性别${genderLabel(inferredGender)}（要求${genderLabel(genderPreference)}）`);
   const flags = [];
   if (genderUnknownNeedsReview) flags.push("性别未知·需核对");
   if (localHits.length) flags.push(`含"${localHits[0]}"·核实籍贯`);
@@ -939,6 +938,8 @@ function classify(c) {
   // 工作稳定性分析(频繁跳槽/gap太久/最近不在职)
   const stability = analyzeWorkStability(c.workHistory || c.raw || "");
   for (const f of stability.flags) flags.push(`⚠️ ${f}`);
+  // 性别未知只是提醒核对,不应单独把海外岗位候选人打入"需人工复核"。
+  const reviewFlags = flags.filter(f => f !== "性别未知·需核对");
 
   // 检测非全日制本科(只在用户启用了"必须全日制本科"时检测)
   const nonFulltimeFlags = USER_RULES.requireFulltime && USER_RULES.excludeNonFulltime
@@ -959,7 +960,7 @@ function classify(c) {
     (USER_RULES.excludeNonFulltime && nonFulltimeFlags.length > 0) ||  // 非全日制本科
     (USER_RULES.excludeLocal && localHits.length > 0) ||         // 本地人(可选硬淘汰)
     (USER_RULES.excludeEntre && entrepreneurHits.length > 0) ||  // 创业(可选硬淘汰)
-    genderMismatch ||                                            // 性别不符合
+    genderMismatch ||                                            // 性别仅作偏好,默认不硬淘汰
     hasCustomExclude;                                            // 自定义排除词
   // 工作稳定性:启用时,2+ flag 视为硬性
   const hasStabilityHardFail = USER_RULES.excludeJobHopping && stability.flags.length >= 2;
@@ -1026,7 +1027,7 @@ function classify(c) {
       (overseasMatch.hasPriorityOverseasPlatform || overseasMatch.hasSocialPlatform || overseasMatch.hasContent) &&
       (overseasMatch.hasSalesConversion || overseasMatch.hasMarketingOps || overseasMatch.hasAI || overseasMatch.hasOverseasOrDtc || overseasMatch.hasPetHome)
     ) {
-      bucket = flags.length ? "需人工复核" : "候补精选";
+      bucket = reviewFlags.length ? "需人工复核" : "候补精选";
     } else if (overseasMatch.hasBasicOps || enabledDirHits.length) {
       bucket = "待补详情";
       if (!overseasMatch.hasPriorityOverseasPlatform) reasons.push("未明确 Instagram/Facebook/Pinterest/独立站等海外平台经验");
@@ -1041,7 +1042,7 @@ function classify(c) {
   } else if (requireAccounting && !hasAccountingMatch) bucket = "不符合";
   else if (hasHardFail || hasLongGapHardFail) bucket = "不符合";
   else if (hasStabilityHardFail) bucket = "不符合";
-  else if (flags.length && !reasons.length) bucket = "需人工复核";
+  else if (reviewFlags.length && !reasons.length) bucket = "需人工复核";
   else if (isRuleStrong) bucket = "强匹配";
   else if (enabledDirHits.length || ecommerceHits.length) bucket = "待补详情";
   else bucket = "待补详情";
@@ -1063,19 +1064,19 @@ function classify(c) {
       bucket = "不符合";
     } else if (c.aiGrade === "A") {
       if (isOverseasSocialMode && !isRuleStrong) {
-        bucket = overseasBackupGate ? (flags.length ? "需人工复核" : "候补精选") : (flags.length ? "需人工复核" : "待补详情");
+        bucket = overseasBackupGate ? (reviewFlags.length ? "需人工复核" : "候补精选") : (reviewFlags.length ? "需人工复核" : "待补详情");
         reasons.push("AI评分较高,但未同时满足海外平台、图文表达、运营承接和转化销售硬门槛");
       } else {
         bucket = "强匹配";
       }
     } else if (c.aiGrade === "B") {
       if (isOverseasSocialMode && !overseasBackupGate) {
-        bucket = flags.length ? "需人工复核" : "待补详情";
+        bucket = reviewFlags.length ? "需人工复核" : "待补详情";
         reasons.push("AI B级,但海外平台/转化销售证据不足,先放入待补详情");
-      } else if (flags.length) bucket = "需人工复核";
+      } else if (reviewFlags.length) bucket = "需人工复核";
       else bucket = "候补精选";
     } else if (c.aiGrade === "C") {
-      if (flags.length) bucket = "需人工复核";
+      if (reviewFlags.length) bucket = "需人工复核";
       else bucket = "待补详情";
     } else if (c.aiGrade === "D") {
       bucket = "不符合";
@@ -2114,6 +2115,12 @@ function render() {
       if (sa !== undefined && sb !== undefined) return sb - sa;
       if (sa !== undefined) return -1;
       if (sb !== undefined) return 1;
+      const gp = USER_RULES.genderPreference || "any";
+      if (gp !== "any") {
+        const ga = a.gender === gp ? 1 : 0;
+        const gb = b.gender === gp ? 1 : 0;
+        if (ga !== gb) return gb - ga;
+      }
       return getCandidateContent(b).length - getCandidateContent(a).length;
     });
   document.getElementById("currentCount").textContent = rows.length;
@@ -3084,7 +3091,13 @@ function getProcessableList() {
     return all
       .filter(c => c.bucket === activeFilter)
       .filter(c => c.status !== "greeted")
-      .sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0));
+      .sort((a, b) => {
+        const scoreDiff = (b.aiScore || 0) - (a.aiScore || 0);
+        if (scoreDiff) return scoreDiff;
+        const gp = USER_RULES.genderPreference || "any";
+        if (gp === "any") return 0;
+        return (b.gender === gp ? 1 : 0) - (a.gender === gp ? 1 : 0);
+      });
   }
   // 在「全部」桶时,按优先级顺序(强匹配 > 候补 > 待补 > 复核)
   const order = ["强匹配", "候补精选", "待补详情", "需人工复核"];
@@ -3451,7 +3464,7 @@ initAiConfigPanel();
   function updateRuleSummary() {
     const r = USER_RULES;
     const accountingMode = r.jobMode === "accounting" || r.requireAccounting;
-    const genderText = r.genderPreference === "female" ? "、只看女" : r.genderPreference === "male" ? "、只看男" : "";
+    const genderText = r.genderPreference === "female" ? "、女生优先" : r.genderPreference === "male" ? "、男生优先" : "";
     if (r.jobMode === "overseasSocial" && !accountingMode) {
       $("ruleSummaryJob").textContent = "海外社媒转化运营 / 海外社媒增长运营";
       $("ruleSummaryHard").textContent = `${r.minExpYears || 0} 年以上内容/社媒/运营经验，${r.minDegree === "any" ? "学历不限" : "学历需达标"}${genderText}`;
