@@ -991,8 +991,19 @@ function classify(c) {
       overseasMatch.hasSalesConversion &&
       overseasMatch.hasEnoughExperience &&
       hasStrongBonus &&
-      !overseasMatch.isPureContentPlanning
+      !overseasMatch.isPureContentPlanning &&
+      flags.length === 0
     : isUnder30 && hasBachelor && enabledDirHits.length > 0 && hasFormalWork && expYears >= minExp && stability.flags.length === 0;
+  const overseasBackupGate = !isOverseasSocialMode || (
+    overseasMatch &&
+    !hasHardFail &&
+    !hasLongGapHardFail &&
+    !overseasMatch.isPureContentPlanning &&
+    (overseasMatch.hasPriorityOverseasPlatform || overseasMatch.hasTransferableTkContent || (overseasMatch.isXhsOnly && overseasMatch.hasSalesConversion)) &&
+    overseasMatch.hasGraphicExpression &&
+    overseasMatch.hasSalesConversion &&
+    overseasMatch.hasEnoughExperience
+  );
 
   if (isOverseasSocialMode) {
     if (hasHardFail || hasLongGapHardFail) bucket = "不符合";
@@ -1036,7 +1047,7 @@ function classify(c) {
   else bucket = "待补详情";
 
   // ★ 5 桶精准分类(按优先级降序):
-  //   强匹配  = AI A 级 (90-100) 或 规则命中强匹配(未评分) - 立刻打招呼
+  //   强匹配  = AI A 级且通过当前岗位硬门槛,或规则命中强匹配(未评分) - 立刻打招呼
   //   候补精选 = AI B 级 (75-89)  - 第二梯队,强匹配处理完后看
   //   待补详情 = AI C 级 (60-74) + 规则待补 - 需补简历或评分
   //   需人工复核 = 触发本地/创业等提示
@@ -1046,14 +1057,22 @@ function classify(c) {
     (USER_RULES.jobMode !== "overseasSocial" && !c.aiJobMode)
   );
   if (aiMatchesCurrentJob) {
-    if (isOverseasSocialMode && hasHardFail) {
+    if (isOverseasSocialMode && (hasHardFail || hasLongGapHardFail)) {
       bucket = "不符合";
     } else if (requireAccounting && !hasAccountingMatch) {
       bucket = "不符合";
     } else if (c.aiGrade === "A") {
-      bucket = "强匹配";
+      if (isOverseasSocialMode && !isRuleStrong) {
+        bucket = overseasBackupGate ? (flags.length ? "需人工复核" : "候补精选") : (flags.length ? "需人工复核" : "待补详情");
+        reasons.push("AI评分较高,但未同时满足海外平台、图文表达、运营承接和转化销售硬门槛");
+      } else {
+        bucket = "强匹配";
+      }
     } else if (c.aiGrade === "B") {
-      if (flags.length) bucket = "需人工复核";
+      if (isOverseasSocialMode && !overseasBackupGate) {
+        bucket = flags.length ? "需人工复核" : "待补详情";
+        reasons.push("AI B级,但海外平台/转化销售证据不足,先放入待补详情");
+      } else if (flags.length) bucket = "需人工复核";
       else bucket = "候补精选";
     } else if (c.aiGrade === "C") {
       if (flags.length) bucket = "需人工复核";
