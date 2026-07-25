@@ -225,10 +225,10 @@
   <div style="color:#9ca3af;font-size:11px;margin-bottom:14px">本地工具 · 候选人数据和 AI Key 仅保存在当前浏览器本地</div>
 
   <div class="rule-band">
-    <div class="rule"><strong>当前岗位：</strong><span id="ruleSummaryJob">海外内容增长 / 社媒转化运营</span></div>
+    <div class="rule"><strong>当前岗位：</strong><span id="ruleSummaryJob">海外社媒转化运营 / 海外社媒增长运营</span></div>
     <div class="rule"><strong>硬性条件：</strong><span id="ruleSummaryHard">1 年以上内容/社媒/运营经验，学历不限</span></div>
-    <div class="rule"><strong>命中条件：</strong><span id="ruleSummaryDirections">小红书/Instagram/Pinterest/内容种草/私信转化/AI工具/独立站/DTC 任一强相关</span></div>
-    <div class="rule"><strong>排除/复核：</strong><span id="ruleSummaryExclude">纯投放、纯客服、纯剪辑、无内容转化经验需复核；仅实习/在校默认淘汰</span></div>
+    <div class="rule"><strong>命中条件：</strong><span id="ruleSummaryDirections">强匹配需同时具备海外平台 + 图文表达 + 运营承接 + 营销转化/销售能力</span></div>
+    <div class="rule"><strong>排除/复核：</strong><span id="ruleSummaryExclude">泛内容策划/纯剪辑/纯投放/无转化承接降权；仅实习/在校默认淘汰</span></div>
   </div>
 
   <!-- B1/B2: AI 设置面板 -->
@@ -334,7 +334,7 @@
             <label><input type="checkbox" id="ruleRequireAccounting"> 是,只命中核心词才算匹配</label>
           </div>
           <div id="accountingModeHint" style="background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:6px;padding:8px 10px;font-size:12px;line-height:1.6;margin-bottom:12px">
-            当前核心方向:海外内容增长、社媒转化、小红书、Instagram、Pinterest、独立站、AI 内容效率、目标行业内容。
+            当前核心方向:Instagram/Facebook/Pinterest/独立站等海外社媒、图文表达、账号运营、评论私信承接、线索转化和销售意识。
           </div>
 
           <h4 style="color:#0369a1;margin:0 0 10px">🎯 命中方向(强匹配必须满足任一)</h4>
@@ -555,12 +555,12 @@ const ACCOUNTING_KEYWORDS_DEFAULT = [
 const OVERSEAS_SOCIAL_KEYWORDS_DEFAULT = [
   "海外内容增长", "海外社媒", "社媒运营", "内容运营", "内容增长", "内容营销",
   "小红书", "Instagram", "instagram", "IG", "Facebook", "facebook", "Meta", "Pinterest", "pinterest",
-  "独立站", "Shopify", "shopify", "DTC", "dtc", "品牌出海",
-  "种草", "笔记", "标题优化", "评论", "私信", "私域", "引流", "转化", "成交",
-  "买家秀", "UGC", "UGC短视频", "达人素材", "场景短视频", "产品细节展示", "before/after", "faq", "FAQ", "用户反馈", "数据复盘",
+  "独立站", "Shopify", "shopify", "DTC", "dtc", "品牌出海", "海外市场", "英文内容",
+  "种草", "笔记", "标题优化", "图文", "文案", "视觉", "审美", "评论", "私信", "私域", "引流", "转化", "成交", "销售", "营销", "线索", "询盘",
+  "买家秀", "UGC", "UGC短视频", "达人素材", "场景短视频", "产品细节展示", "before/after", "faq", "FAQ", "用户反馈", "数据复盘", "账号运营", "粉丝互动",
   "AI工具", "ChatGPT", "deepseek", "Midjourney", "Canva",
   "目标行业", "消费品", "家居", "母婴", "美妆", "生活方式",
-  "Amazon", "amazon", "Wayfair", "wayfair", "海外市场", "英文内容"
+  "Amazon", "amazon", "Wayfair", "wayfair"
 ];
 
 const RULES_DEFAULTS = {
@@ -589,7 +589,7 @@ const RULES_DEFAULTS = {
     tiktok: true,
   },
   customExclude: "纯客服\n电话销售\n纯直播主播\n纯剪辑\n纯投放优化师\n纯行政\n纯财务\n会计\n出纳\n总账",
-  customBonus: "目标行业\n消费品\n家居\n母婴\n美妆\n生活方式\n海外市场\n英文\nShopify\nDTC\n买家秀\nUGC\nUGC短视频\n达人素材\n场景短视频\n产品细节展示\nbefore/after\n私信转化\n评论转化\n线索跟进\nAI工具",
+  customBonus: "Instagram\nFacebook\nPinterest\nMeta\n独立站\nShopify\nDTC\n海外社媒\n海外市场\n英文\n图文\n文案\n视觉\n审美\n营销\n销售\n转化\n询盘\n线索跟进\n私信转化\n评论转化\n账号运营\n粉丝互动\n买家秀\nUGC\n达人素材\n场景短视频\n产品细节展示\nbefore/after\nAI工具",
 };
 const RULES_STORAGE_KEY = "本地招聘筛选看板_规则_v1";
 function loadRules() {
@@ -612,12 +612,12 @@ const RULES = {
   directions: {
     // 海外内容增长 / 社媒转化
     xhs: ["小红书", "小红书运营", "薯店", "笔记", "种草", "爆文", "蒲公英"],
-    instagram: ["instagram", "Instagram", "IG", "ins", "reels", "story", "海外社媒"],
-    facebook: ["facebook", "Facebook", "FB", "Meta", "meta", "Facebook主页", "Facebook群组", "Facebook社群"],
+    instagram: ["instagram", "Instagram", "IG", "ins", "reels", "reel", "story", "海外社媒", "海外社交媒体"],
+    facebook: ["facebook", "Facebook", "FB", "Meta", "meta", "Facebook主页", "Facebook群组", "Facebook社群", "海外社媒"],
     pinterest: ["pinterest", "Pinterest", "pin", "pins"],
-    dtc: ["独立站", "Shopify", "shopify", "DTC", "dtc", "品牌出海", "站外引流", "官网", "产品页"],
-    contentGrowth: ["内容增长", "内容运营", "内容营销", "社媒运营", "新媒体运营", "内容策划", "选题", "标题优化", "文案", "买家秀", "UGC", "UGC短视频", "达人素材", "场景短视频", "产品细节展示", "before/after", "使用视频", "教育型内容", "FAQ", "素材库"],
-    conversion: ["转化", "成交", "咨询", "线索", "私信", "评论", "私域", "引流", "用户跟进", "客户跟进", "话术", "复购"],
+    dtc: ["独立站", "Shopify", "shopify", "DTC", "dtc", "品牌出海", "站外引流", "官网", "产品页", "落地页"],
+    contentGrowth: ["内容增长", "内容运营", "内容营销", "社媒运营", "新媒体运营", "账号运营", "内容策划", "选题", "标题优化", "文案", "图文", "图片", "视觉", "审美", "排版", "买家秀", "UGC", "UGC短视频", "达人素材", "场景短视频", "产品细节展示", "before/after", "使用视频", "教育型内容", "FAQ", "素材库"],
+    conversion: ["转化", "成交", "咨询", "询盘", "线索", "销售", "营销", "私信", "评论", "私域", "引流", "用户跟进", "客户跟进", "话术", "复购", "加购", "下单", "GMV", "ROI"],
     aiContent: ["AI工具", "AI 工具", "ChatGPT", "chatgpt", "DeepSeek", "deepseek", "Midjourney", "Canva", "提示词", "翻译", "内容复用"],
     petHome: ["目标行业", "消费品", "家居", "家具", "母婴", "美妆", "生活方式"],
     // 国内电商平台(域内)
@@ -632,8 +632,8 @@ const RULES = {
     // 电商会计/财务
     ecommerceAccounting: ACCOUNTING_KEYWORDS_DEFAULT,
   },
-  ecommerceExperience: ["社媒", "海外社媒", "内容运营", "内容增长", "新媒体", "小红书", "Instagram", "Facebook", "Meta", "Pinterest", "独立站", "Shopify", "DTC", "品牌出海", "跨境", "亚马逊", "Amazon", "Wayfair", "电商", "运营", "种草", "私信", "转化", "买家秀", "AI工具", "宠物", "家居"],
-  formalWorkSignals: ["工作经历", "在职", "离职", "上一份工作", "负责", "任职", "担任", "工作经验", "岗位经验", "运营专员", "运营主管", "内容运营", "新媒体运营", "社媒运营", "海外运营", "品牌运营", "用户运营"],
+  ecommerceExperience: ["社媒", "海外社媒", "内容运营", "内容增长", "新媒体", "小红书", "Instagram", "Facebook", "Meta", "Pinterest", "独立站", "Shopify", "DTC", "品牌出海", "跨境", "亚马逊", "Amazon", "Wayfair", "电商", "运营", "账号运营", "种草", "私信", "转化", "销售", "营销", "线索", "买家秀", "AI工具", "宠物", "家居"],
+  formalWorkSignals: ["工作经历", "在职", "离职", "上一份工作", "负责", "任职", "担任", "工作经验", "岗位经验", "运营专员", "运营主管", "内容运营", "新媒体运营", "社媒运营", "海外运营", "品牌运营", "用户运营", "账号运营"],
   internshipOnlySignals: ["仅实习", "只有实习", "校招实习"],
   // 应届/在校相关词:全部命中即触发排除(除非有正式工作经历)
   excludeGraduateSignals: [
@@ -805,7 +805,8 @@ function overseasSocialRuleMatch(text, directionHits, ecommerceHits, hasFormalWo
   const t = String(text || "");
   const hasTransferableTkContent = hit("tiktok") && /宠物|猫|家居|家具|母婴|美妆|生活方式|DTC|独立站|站外引流|达人素材|UGC|买家秀|场景短视频|使用视频|产品细节展示|before\/after|vertical space|教育型内容|内容种草/i.test(t);
   const hasTkCommerceOnly = hit("tiktok") && /TikTok\s*Shop|tiktok\s*shop|直播带货|短视频带货|达人带货|达人合作|投流|投放/i.test(t) && !hasTransferableTkContent;
-  const hasCoreSocialPlatform = hit("xhs") || hit("instagram") || hit("facebook") || hit("pinterest");
+  const hasPriorityOverseasPlatform = hit("instagram") || hit("facebook") || hit("pinterest") || hit("dtc");
+  const hasCoreSocialPlatform = hit("xhs") || hasPriorityOverseasPlatform;
   const hasSocialPlatform = hasCoreSocialPlatform || hasTransferableTkContent;
   const hasTikTokOnly = hit("tiktok") && !hasCoreSocialPlatform && !hit("dtc") && !hasTransferableTkContent;
   const hasContent = hit("contentGrowth");
@@ -813,31 +814,45 @@ function overseasSocialRuleMatch(text, directionHits, ecommerceHits, hasFormalWo
   const hasAI = hit("aiContent");
   const hasOverseasOrDtc = hit("instagram") || hit("facebook") || hit("pinterest") || hit("dtc") || hit("amazon") || hit("crossBorder");
   const hasPetHome = hit("petHome");
+  const hasGraphicExpression = /图文|文案|标题|笔记|种草|视觉|图片|排版|审美|素材|买家秀|UGC|场景|产品细节|before\/after|Canva|PS|Photoshop|设计/i.test(t);
+  const hasMarketingOps = /营销|销售|转化|成交|询盘|线索|引流|私信|评论|客户跟进|用户跟进|复购|加购|下单|GMV|ROI|数据复盘|账号运营|粉丝|互动/i.test(t);
+  const hasSocialOps = /社媒运营|海外社媒|账号运营|新媒体运营|内容运营|运营|发布|互动|评论|私信|数据复盘|粉丝|增长|引流|转化/i.test(t);
+  const hasSalesConversion = hasConversion || /销售|成交|询盘|线索|客户|咨询|私信|评论|转化|引流|下单|复购/i.test(t);
+  const isXhsOnly = hit("xhs") && !hasPriorityOverseasPlatform && !hit("amazon") && !hit("crossBorder") && !hasTransferableTkContent;
+  const isPureContentPlanning = hasContent && !hasMarketingOps && !hasSalesConversion && !hasPriorityOverseasPlatform;
   const hasBasicOps = ecommerceHits.length > 0 || hasContent || hasSocialPlatform;
   const hasEnoughExperience = hasFormalWork || expYears >= 1;
   const activeScore = activeRecencyScore(activeText);
 
   const dimensions = [];
-  if (hasSocialPlatform) dimensions.push("社媒平台");
-  if (hasContent) dimensions.push("内容选题/文案");
-  if (hasConversion) dimensions.push("评论私信/转化");
+  if (hasPriorityOverseasPlatform) dimensions.push("海外平台/独立站");
+  else if (hasSocialPlatform) dimensions.push("社媒平台");
+  if (hasGraphicExpression) dimensions.push("图文/素材表达");
+  else if (hasContent) dimensions.push("内容选题/文案");
+  if (hasMarketingOps || hasSalesConversion) dimensions.push("营销转化/销售承接");
   if (hasAI) dimensions.push("AI工具");
   if (hasOverseasOrDtc) dimensions.push("海外/DTC");
   if (hasPetHome) dimensions.push("宠物/家居");
   if (hasTransferableTkContent) dimensions.push("TK内容可迁移");
+  if (isXhsOnly) dimensions.push("小红书为主需复核海外平台");
+  if (isPureContentPlanning) dimensions.push("偏内容策划需补转化");
   if (hasTikTokOnly || hasTkCommerceOnly) dimensions.push("TikTok需复核");
   if (activeScore.score >= 10) dimensions.push(activeScore.label);
 
   let score = 0;
-  if (hasSocialPlatform) score += 25;
-  if (hasContent) score += 20;
-  if (hasConversion) score += 25;
+  if (hasPriorityOverseasPlatform) score += 30;
+  else if (hasSocialPlatform) score += 15;
+  if (hasGraphicExpression) score += 18;
+  else if (hasContent) score += 10;
+  if (hasMarketingOps || hasSalesConversion) score += 30;
   if (hasAI) score += 10;
   if (hasOverseasOrDtc) score += 15;
-  if (hasPetHome) score += 10;
+  if (hasPetHome) score += 6;
   if (hasEnoughExperience) score += 10;
   score += activeScore.score;
   if (hasTransferableTkContent) score += 8;
+  if (isXhsOnly) score -= 12;
+  if (isPureContentPlanning) score -= 18;
   if (hasTikTokOnly || hasTkCommerceOnly) score -= 20;
 
   return {
@@ -849,7 +864,14 @@ function overseasSocialRuleMatch(text, directionHits, ecommerceHits, hasFormalWo
     hasAI,
     hasOverseasOrDtc,
     hasPetHome,
+    hasPriorityOverseasPlatform,
     hasCoreSocialPlatform,
+    hasGraphicExpression,
+    hasMarketingOps,
+    hasSocialOps,
+    hasSalesConversion,
+    isXhsOnly,
+    isPureContentPlanning,
     hasTransferableTkContent,
     hasTkCommerceOnly,
     hasTikTokOnly,
@@ -957,18 +979,19 @@ function classify(c) {
     ? overseasSocialRuleMatch(text, enabledDirHits, ecommerceHits, hasFormalWork, expYears, c.active)
     : null;
   const hasStrongBonus = overseasMatch && (
-    overseasMatch.hasOverseasOrDtc ||
-    overseasMatch.hasPetHome ||
     overseasMatch.hasAI ||
+    overseasMatch.hasPetHome ||
     overseasMatch.activeScore.score >= 10
   );
   const isRuleStrong = isOverseasSocialMode
-    ? overseasMatch.score >= 95 &&
-      (overseasMatch.hasCoreSocialPlatform || overseasMatch.hasOverseasOrDtc || (overseasMatch.hasTransferableTkContent && overseasMatch.hasPetHome)) &&
-      overseasMatch.hasContent &&
-      overseasMatch.hasConversion &&
+    ? overseasMatch.score >= 105 &&
+      overseasMatch.hasPriorityOverseasPlatform &&
+      overseasMatch.hasGraphicExpression &&
+      overseasMatch.hasSocialOps &&
+      overseasMatch.hasSalesConversion &&
       overseasMatch.hasEnoughExperience &&
-      hasStrongBonus
+      hasStrongBonus &&
+      !overseasMatch.isPureContentPlanning
     : isUnder30 && hasBachelor && enabledDirHits.length > 0 && hasFormalWork && expYears >= minExp && stability.flags.length === 0;
 
   if (isOverseasSocialMode) {
@@ -977,18 +1000,27 @@ function classify(c) {
       bucket = overseasMatch.hasContent || overseasMatch.hasConversion ? "需人工复核" : "待补详情";
       reasons.push("TikTok/短视频方向为主,需确认是否有 Instagram/Facebook/Pinterest/独立站经验");
     }
+    else if (overseasMatch.isXhsOnly && !overseasMatch.hasSalesConversion) {
+      bucket = "需人工复核";
+      reasons.push("小红书/国内新媒体为主,需确认是否有 Ins/Facebook/Pinterest/独立站等海外社媒经验");
+    }
+    else if (overseasMatch.isPureContentPlanning) {
+      bucket = "待补详情";
+      reasons.push("偏内容策划/文案,未明确营销转化、销售线索或用户承接能力");
+    }
     else if (hasStabilityHardFail) bucket = "需人工复核";
     else if (isRuleStrong) bucket = "强匹配";
     else if (
-      overseasMatch.score >= 55 &&
-      (overseasMatch.hasSocialPlatform || overseasMatch.hasContent) &&
-      (overseasMatch.hasConversion || overseasMatch.hasAI || overseasMatch.hasOverseasOrDtc || overseasMatch.hasPetHome)
+      overseasMatch.score >= 65 &&
+      (overseasMatch.hasPriorityOverseasPlatform || overseasMatch.hasSocialPlatform || overseasMatch.hasContent) &&
+      (overseasMatch.hasSalesConversion || overseasMatch.hasMarketingOps || overseasMatch.hasAI || overseasMatch.hasOverseasOrDtc || overseasMatch.hasPetHome)
     ) {
       bucket = flags.length ? "需人工复核" : "候补精选";
     } else if (overseasMatch.hasBasicOps || enabledDirHits.length) {
       bucket = "待补详情";
-      if (!overseasMatch.hasSocialPlatform) reasons.push("未明确小红书/Instagram/Pinterest 等社媒平台经验");
-      if (!overseasMatch.hasConversion) reasons.push("未明确评论/私信/线索跟进/成交转化经验");
+      if (!overseasMatch.hasPriorityOverseasPlatform) reasons.push("未明确 Instagram/Facebook/Pinterest/独立站等海外平台经验");
+      if (!overseasMatch.hasGraphicExpression) reasons.push("未明确图文、文案、视觉素材或内容表达能力");
+      if (!overseasMatch.hasSalesConversion) reasons.push("未明确评论/私信/线索跟进/成交转化/销售能力");
       if (overseasMatch.activeScore.score === 0) reasons.push("活跃时间未知或较久,优先级降低");
     } else {
       bucket = "不符合";
@@ -2765,16 +2797,17 @@ function buildScoringPrompt(c) {
   }
   const sys = `你是一个资深 HR 招聘顾问,正在帮一家公司筛选候选人。
 公司:请按使用者在规则设置中填写的业务背景理解,不要假设具体公司名称。
-岗位:海外内容增长运营 / 海外社媒转化运营(示例岗位,使用者可按自己的 JD 修改规则和关键词)
-业务:示例为面向海外市场的消费品/电商品牌,通过小红书、Instagram、Facebook、Pinterest、独立站等内容增长渠道获客。
+岗位:海外社媒转化运营 / 海外社媒增长运营(示例岗位,使用者可按自己的 JD 修改规则和关键词)
+业务:示例为面向海外市场的消费品/电商品牌,通过 Instagram、Facebook、Pinterest、小红书、独立站等社媒和内容渠道获客。
 
 岗位核心目标:
 通过社媒内容获取目标用户,用评论/私信/内容承接推动咨询、引流和成交,最终导向独立站、Amazon 或私域成交。不是单纯发帖,也不是只做品牌曝光。
 
 硬性要求:
-1. 有社媒内容运营经验,小红书 / Instagram / Facebook / Pinterest 至少熟悉一个平台。
-2. 必须有内容选题、文案、发布、数据复盘、用户互动中的实际经验；只会机械发帖不够。
-3. 有转化意识:愿意做评论回复、私信承接、线索记录、用户跟进,而不是只做品牌曝光。
+1. 优先匹配做过海外社媒运营的人,尤其 Instagram / Facebook / Pinterest / Meta / 独立站 / DTC / Shopify 等。
+2. 必须有图文表达能力:选题、文案、标题、图片/视觉素材、买家秀/UGC/产品场景表达、发布和数据复盘。
+3. 必须有营销转化/销售承接能力:评论回复、私信承接、线索记录、用户跟进、询盘、引流、成交转化,而不是只做品牌曝光。
+4. 只会内容策划、只写文案、只剪辑、只做品牌曝光,但没有运营承接和转化意识,不能高分。
 4. 能使用 AI 工具提升选题、文案、翻译、内容复用、FAQ、私信话术、数据复盘效率。
 5. 能理解消费者购买产品时关心的价格、品质、使用场景、发货、退换货等问题。
 6. 应届/在校/仅实习/完全没有社媒内容或运营经验,通常不合适。
@@ -2790,19 +2823,20 @@ function buildScoringPrompt(c) {
 1. **不要因为学历、年龄不明就淘汰**。本岗位更看重内容增长、社媒转化、AI效率和用户洞察。
 
 2. **基础合格就是 B 级 (75-85)**:
-   - 有小红书/Instagram/Pinterest/新媒体/内容运营任一实际经验
-   - 能做选题、文案、发布、互动、复盘
+   - 有 Instagram/Facebook/Pinterest/海外社媒/独立站/DTC 经验,但转化结果或销售承接信息不完整
+   - 或有小红书/新媒体/内容运营经验,同时能看到图文表达 + 互动/私信/线索/转化意识
    - 有运营或内容经验 1 年以上
-   - 即使没有当前品类经验,只要内容与转化能力清楚,也应给 B 级
+   - 只有平台名或只有内容策划,看不到转化和运营承接,只能 C 级
 
 3. **A 级 / 强匹配 (90-100) 必须更严格**:
-   - 必须同时看到:社媒/独立站平台经验 + 内容选题/文案/素材能力 + 评论私信/线索/引流转化意识
-   - 还至少要有一个强加分:Instagram/Facebook/Pinterest/Shopify/独立站/DTC、目标行业经验、英文/海外用户、AI内容效率、清晰数据结果
-   - 只有泛新媒体/短视频/内容运营,但没有转化承接或海外/DTC线索,不要给 A 级
+   - 必须同时看到:Instagram/Facebook/Pinterest/Shopify/独立站/DTC 等海外平台经验 + 图文/文案/视觉素材表达能力 + 评论私信/线索/引流/成交转化或销售承接能力
+   - 还至少要有一个强加分:英文/海外用户、目标行业经验、AI内容效率、清晰数据结果、从内容到成交的完整链路
+   - 只有小红书/国内新媒体/泛内容运营,但没有海外平台或转化销售线索,不要给 A 级
+   - 只有 TikTok 或短视频,但没有可迁移到海外社媒矩阵/独立站的图文和转化能力,不要给 A 级
 
 4. **C 级 (60-74) 只给真正"信息不足"的**:
-   - 有运营/电商/客服/文案背景,但看不清是否做过社媒内容增长
-   - 只看得到平台名,看不到选题、互动、转化或数据复盘能力
+   - 有运营/电商/客服/文案背景,但看不清是否做过海外社媒运营
+   - 只看得到平台名,看不到图文表达、互动、转化、销售承接或数据复盘能力
    - 可能合适,但需要补完整简历或追问项目细节
 
 4.5. **区分两类 TikTok/TK 人才**:
@@ -2817,8 +2851,8 @@ function buildScoringPrompt(c) {
 
 5. **D 级 (<60) 给明显不匹配的人**:
    - 纯会计/财务/行政/人事/仓库/采购,没有内容或运营经验
-   - 纯客服但没有社媒内容、私信转化、线索跟进能力
-   - 纯剪辑/设计但没有内容策划、运营复盘或用户转化意识
+   - 纯客服但没有社媒内容、私信转化、线索跟进或销售承接能力
+   - 纯剪辑/设计/内容策划但没有账号运营、营销复盘或用户转化意识
    - 纯广告投放优化师,不愿做内容、评论私信承接和线索跟进
    - 应届/在校/仅实习且无可验证社媒项目
 
@@ -3400,10 +3434,10 @@ initAiConfigPanel();
     const accountingMode = r.jobMode === "accounting" || r.requireAccounting;
     const genderText = r.genderPreference === "female" ? "、只看女" : r.genderPreference === "male" ? "、只看男" : "";
     if (r.jobMode === "overseasSocial" && !accountingMode) {
-      $("ruleSummaryJob").textContent = "海外内容增长 / 社媒转化运营";
+      $("ruleSummaryJob").textContent = "海外社媒转化运营 / 海外社媒增长运营";
       $("ruleSummaryHard").textContent = `${r.minExpYears || 0} 年以上内容/社媒/运营经验，${r.minDegree === "any" ? "学历不限" : "学历需达标"}${genderText}`;
-      $("ruleSummaryDirections").textContent = "命中小红书/Instagram/Pinterest/独立站/转化/AI/宠物家居等任一强相关方向";
-      $("ruleSummaryExclude").textContent = `${r.excludeFresh ? "应届/在校淘汰、" : ""}${r.excludeIntern ? "仅实习淘汰；" : ""}纯客服/纯投放/纯剪辑/财务等非内容增长方向淘汰`;
+      $("ruleSummaryDirections").textContent = "强匹配需同时具备海外平台 + 图文表达 + 运营承接 + 营销转化/销售能力";
+      $("ruleSummaryExclude").textContent = `${r.excludeFresh ? "应届/在校淘汰、" : ""}${r.excludeIntern ? "仅实习淘汰；" : ""}泛内容策划/纯剪辑/纯投放/无转化承接降权`;
     } else {
       $("ruleSummaryJob").textContent = accountingMode ? "会计/财务专招" : "电商运营综合";
       $("ruleSummaryHard").textContent = `${r.maxAge || 30} 岁以下、${r.minDegree === "junior" ? "大专及以上" : r.minDegree === "any" ? "学历不限" : "本科及以上"}、${r.minExpYears || 0} 年以上经验${genderText}`;
