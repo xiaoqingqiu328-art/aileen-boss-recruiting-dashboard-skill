@@ -145,6 +145,10 @@
   .process-person-name { font-size: 32px; font-weight: 750; color: #0369a1; margin: 16px 0 4px; word-break: break-all; }
   .process-meta { color: #374151; font-size: 14px; margin-bottom: 12px; }
   .process-detail { background: #f3f4f6; border-radius: 6px; padding: 10px 12px; font-size: 12px; color: #374151; max-height: 180px; overflow-y: auto; margin-bottom: 14px; line-height: 1.6; }
+  .process-gap-list { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px; padding: 9px 12px; margin: -4px 0 14px; font-size: 12px; color: #7c2d12; line-height: 1.55; }
+  .process-gap-list .title { font-weight: 750; color: #c2410c; margin-bottom: 4px; }
+  .process-gap-list ul { margin: 0; padding-left: 18px; }
+  .process-gap-list li { margin: 2px 0; }
   .process-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 16px; }
   .process-actions button { padding: 12px; font-size: 14px; font-weight: 600; }
   .process-actions button.big-primary { background: #00a6a7; color: #fff; border-color: #00a6a7; }
@@ -196,6 +200,7 @@
     <div class="process-person-name" id="processPersonName">—</div>
     <div class="process-meta" id="processMeta">—</div>
     <div class="process-detail" id="processDetail">—</div>
+    <div class="process-gap-list" id="processGapReasons">—</div>
     <div id="processAiArea" style="margin:10px 0"></div>
 
     <div class="quick-copy-row">
@@ -1880,6 +1885,56 @@ function dirLabel(k) {
   })[k] || k;
 }
 
+function getCandidateReviewText(c) {
+  return [
+    c.name, c.job, c.city, c.message, c.detailText, c.note, c.advantage,
+    c.workHistory, c.education, c.fullResume, c.fullSummary,
+    Array.isArray(c.skillTags) ? c.skillTags.join(" ") : ""
+  ].filter(Boolean).join("\n");
+}
+
+function buildPotentialGapReasons(c) {
+  const text = getCandidateReviewText(c);
+  const directions = new Set(c.directionHits || []);
+  const has = re => re.test(text);
+  const hasOverseasPlatform = directions.has("instagram") || directions.has("tiktok") || directions.has("pinterest") || directions.has("facebook") || directions.has("dtc") ||
+    has(/Instagram|IG|ins|TikTok|TK|Pinterest|Facebook|Meta|海外社媒|海外社交|独立站|Shopify|DTC/i);
+  const hasEnglish = has(/英文|英语|本土化|localization|翻译|海外文案|英文文案|海外用户|北美|欧美|海外市场/i);
+  const hasShootEdit = has(/拍摄|摄影|短视频|视频拍摄|视频剪辑|剪辑|脚本|分镜|Reels|UGC短视频|场景短视频|产品细节|before\/after|剪映|CapCut|Premiere|PR|Final Cut/i);
+  const hasCreatorUgc = directions.has("creatorCollab") || has(/达人|红人|KOL|KOC|influencer|creator|博主|寄样|测评|授权|UGC授权|UGC|买家秀|达人沟通|达人推进|达人合作/i);
+  const hasFeedback = has(/用户问题|用户反馈|产品反馈|网站反馈|FAQ|评论|私信|需求反馈|反馈给产品|反馈给网站|产品优化|页面优化|评价|review/i);
+  const hasData = has(/数据复盘|链接点击|官网点击|主页访问|进站|进站数据|点击率|CTR|收藏|分享|加购|订单|转化率|GMV|ROI|Google Analytics|GA4|Shopify后台|后台数据/i);
+  const hasOnlyPostingSignal = has(/发帖|发布|涨粉|粉丝增长|曝光|种草|内容策划/i) && !hasCreatorUgc && !hasFeedback && !hasData;
+
+  const gaps = [];
+  const add = reason => {
+    const normalized = String(reason || "").replace(/[，。；;,.]/g, "").trim();
+    if (normalized && !gaps.some(x => x.replace(/[，。；;,.]/g, "").trim() === normalized)) gaps.push(String(reason).trim());
+  };
+
+  (c.aiConcerns || []).forEach(add);
+  (c.reasons || []).forEach(add);
+  if ((c.flags || []).some(f => /本地|创业|稳定性|离职|频繁跳槽|非全日制|专升本|性别/.test(f))) {
+    (c.flags || []).filter(f => !/^JD命中/.test(f)).forEach(add);
+  }
+  if (!hasOverseasPlatform) add("未明确 Instagram/TikTok/Pinterest 等海外社媒日常运营经验");
+  if (!hasEnglish) add("未明确英文内容策划、翻译或本土化改写能力");
+  if (!hasShootEdit) add("未明确图片/短视频拍摄、剪辑、脚本或 Reels/TikTok 内容生产能力");
+  if (!hasCreatorUgc) add("未明确海外达人沟通、UGC 收集或授权管理经验");
+  if (!hasFeedback) add("未明确能整理评论、私信、用户问题并反馈给产品或网站");
+  if (!hasData) add("未明确会看链接点击、主页访问、官网点击、进站、加购或订单数据");
+  if (hasOnlyPostingSignal) add("内容经历偏发帖/曝光,还需要核对是否有内容闭环和真实数据结果");
+  return gaps.slice(0, 6);
+}
+
+function renderPotentialGapReasons(c) {
+  const gaps = buildPotentialGapReasons(c);
+  if (!gaps.length) {
+    return `<div class="title">可能不满足/待核对</div><div>暂无明显缺口。建议重点核对作品链接、真实负责范围和数据口径。</div>`;
+  }
+  return `<div class="title">可能不满足/待核对</div><ul>${gaps.map(g => `<li>${escapeHtml(g)}</li>`).join("")}</ul>`;
+}
+
 // A2: 渲染今日工作面板
 function renderTodayPanel(all) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -2060,6 +2115,7 @@ function renderDetailContent(c) {
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:10px;font-size:13px;line-height:1.7;color:#374151">
         ${escapeHtml(c.advantage || c.note || "(未读取到)")}
       </div>
+      <div class="process-gap-list" style="margin:8px 0 0">${renderPotentialGapReasons(c)}</div>
     </div>
 
     ${c.workHistory ? `
@@ -3165,6 +3221,7 @@ function showProcessCard() {
     (c.expect ? `<span style="color:#6b7280">期望：${escapeHtml(c.expect)}</span>` : "") +
     (c.pastePosition ? `<br><span style="color:#9ca3af;font-size:12px">原列表大约第 #${c.pastePosition} 位</span>` : "");
   document.getElementById("processDetail").textContent = c.advantage || c.note || "(无详情)";
+  document.getElementById("processGapReasons").innerHTML = renderPotentialGapReasons(c);
 
   // B2: AI 话术区
   const aiArea = document.getElementById("processAiArea");
