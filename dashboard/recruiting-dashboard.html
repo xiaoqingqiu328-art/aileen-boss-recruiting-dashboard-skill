@@ -56,29 +56,6 @@
   .manual-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-bottom: 10px; }
   .manual-form input, .manual-form select { padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 5px; font-size: 13px; }
   .helper-callout { background: #fef3c7; border: 1px solid #fcd34d; border-radius: 6px; padding: 8px 12px; font-size: 12px; color: #78350f; margin-top: 8px; }
-  .collector-panel { background: #fff; border: 2px solid #0369a1; border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
-  .collector-panel h2 { margin: 0 0 8px; font-size: 16px; color: #0369a1; }
-  .collector-grid { display: grid; grid-template-columns: 1.5fr repeat(3, minmax(120px, 1fr)); gap: 8px; align-items: end; }
-  .collector-grid label { display: block; color: #6b7280; font-size: 12px; margin-bottom: 4px; font-weight: 600; }
-  .collector-grid input, .collector-grid textarea, .collector-grid select { width: 100%; border: 1px solid #d1d5db; border-radius: 6px; padding: 7px 9px; font-size: 13px; font-family: inherit; min-height: auto; }
-  .collector-grid textarea { height: 36px; resize: vertical; line-height: 1.4; }
-  .collector-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
-  .collector-status { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; color: #1e3a8a; padding: 8px 10px; font-size: 12px; line-height: 1.5; margin-top: 8px; }
-  .collector-status.error { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
-  .collector-status.ok { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
-  .collector-progress { display:none; margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; }
-  .collector-progress.active { display:block; }
-  .collector-progress-head { display:flex; justify-content:space-between; gap:10px; color:#334155; font-size:12px; margin-bottom:6px; }
-  .collector-progress-track { height:8px; background:#e2e8f0; border-radius:999px; overflow:hidden; }
-  .collector-progress-fill { height:100%; width:0%; background:#00a6a7; transition:width .25s; }
-  .collector-quality { display:none; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin-top:10px; }
-  .collector-quality.active { display:grid; }
-  .collector-q-card { background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px; }
-  .collector-q-label { color:#64748b; font-size:11px; margin-bottom:4px; }
-  .collector-q-value { color:#0f172a; font-size:20px; font-weight:750; }
-  .collector-suggestions { display:none; margin-top:10px; background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:10px 12px; color:#7c2d12; font-size:12px; line-height:1.7; }
-  .collector-suggestions.active { display:block; }
-  @media (max-width: 860px) { .collector-grid { grid-template-columns: 1fr; } }
   /* 今日工作面板 */
   .today-panel { background: linear-gradient(135deg, #0369a1 0%, #00a6a7 100%); color: #fff; border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
   .today-panel h3 { margin: 0 0 10px; font-size: 16px; opacity: 0.95; }
@@ -188,6 +165,320 @@
   .sb-rejected { background: #dc2626; }
   .sb-skipped { background: #d1d5db; color: #4b5563; }
   .status-select { padding: 3px 6px; border-radius: 4px; border: 1px solid #d1d5db; font-size: 11px; background: #fff; cursor: pointer; }
+
+  /* ============================================================
+     2026 AI workspace theme
+     集中覆盖旧样式，不改变现有模板结构与交互逻辑
+     ============================================================ */
+  :root {
+    color-scheme: light;
+    --bg: #eaf0f4;
+    --surface: #ffffff;
+    --surface-2: #f2f6f8;
+    --surface-3: #e5f0f1;
+    --line: #d4dfe7;
+    --line-strong: #b7c8d5;
+    --text: #172536;
+    --muted: #617287;
+    --muted-2: #8a99aa;
+    --accent: #19a89f;
+    --accent-strong: #138f88;
+    --accent-soft: rgba(25, 168, 159, .09);
+    --blue: #3578d4;
+    --violet: #7664c9;
+    --success: #168b62;
+    --warning: #c98219;
+    --danger: #d94b61;
+    --shadow: 0 14px 34px rgba(38, 61, 82, .12);
+    --radius: 14px;
+  }
+
+  html { background: var(--bg); }
+  body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-feature-settings: "tnum" 1;
+    letter-spacing: .01em;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto;
+    height: 3px;
+    background: var(--accent);
+    z-index: 10000;
+  }
+  .wrap { max-width: 1440px; padding: 34px 28px 72px; }
+  h1 {
+    color: #132334;
+    font-size: clamp(25px, 2.2vw, 34px);
+    font-weight: 760;
+    letter-spacing: -.025em;
+  }
+  .sub { color: var(--muted); margin: 8px 0 4px; font-size: 14px; }
+  .wrap > .sub + div { color: var(--muted-2) !important; margin-bottom: 24px !important; }
+  a { color: var(--accent); }
+
+  .panel,
+  .ai-config-panel,
+  .rule,
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 2px 8px rgba(35, 55, 75, .055);
+  }
+  .panel { padding: 20px; margin-bottom: 18px; }
+  .panel h2 { color: #1b2d40; font-size: 16px; margin-bottom: 12px; }
+  .rule-band { gap: 12px; margin-bottom: 20px; }
+  .rule { padding: 13px 15px; color: var(--muted); line-height: 1.55; border-top: 3px solid #94c7c3; }
+  .rule:nth-child(2) { border-top-color: #90add3; background: #f8fbff; }
+  .rule:nth-child(3) { border-top-color: #8bc8aa; background: #f7fcf9; }
+  .rule:nth-child(4) { border-top-color: #dfb47b; background: #fffaf4; }
+  .rule strong { color: #2b4055; font-weight: 650; }
+  .kpis { gap: 12px; margin-bottom: 20px; }
+  .kpi {
+    position: relative;
+    min-height: 94px;
+    padding: 15px 16px;
+    overflow: hidden;
+    transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    border-top: 3px solid #9fb3c5;
+  }
+  .kpi:nth-child(2) { border-top-color: var(--success); }
+  .kpi:nth-child(3) { border-top-color: #2b9bb7; }
+  .kpi:nth-child(4) { border-top-color: var(--blue); }
+  .kpi:nth-child(5) { border-top-color: var(--warning); }
+  .kpi:nth-child(6) { border-top-color: var(--danger); }
+  .kpi::after {
+    content: "";
+    position: absolute;
+    right: 14px;
+    bottom: 13px;
+    width: 24px;
+    height: 2px;
+    border-radius: 99px;
+    background: var(--line-strong);
+  }
+  .kpi:hover {
+    transform: translateY(-2px);
+    border-color: rgba(82, 211, 199, .58);
+    background: var(--surface-2);
+    box-shadow: 0 12px 28px rgba(32, 64, 83, .09);
+  }
+  .kpi.active-bucket {
+    border: 1px solid var(--accent);
+    background: var(--accent-soft);
+    box-shadow: inset 0 0 0 1px rgba(82, 211, 199, .15);
+  }
+  .label { color: var(--muted); font-size: 11px; letter-spacing: .035em; }
+  .value { color: #15283a; font-size: 28px; font-weight: 720; }
+  .strong { color: var(--success); }
+  .pending { color: var(--blue); }
+  .manual { color: var(--warning); }
+  .bad { color: var(--danger); }
+
+  .ai-config-panel {
+    border-color: var(--line) !important;
+    padding: 0;
+    margin-bottom: 16px;
+    overflow: hidden;
+    border-left: 4px solid var(--accent) !important;
+  }
+  .ai-config-panel[style*="border-color"] { border-left-color: var(--warning) !important; }
+  .ai-config-header { padding: 16px 18px; }
+  .ai-config-header { background: #f8fbfc; }
+  .ai-config-header:hover { background: #eff7f7; }
+  .ai-config-header h3,
+  .ai-config-header h3[style] { color: #177d78 !important; font-size: 15px; }
+  .ai-config-body {
+    margin: 0;
+    padding: 18px;
+    border-top-color: var(--line);
+    background: #f6f9fb;
+  }
+  .ai-config-grid label,
+  .hint { color: var(--muted); }
+  .ai-score-block,
+  .greeting-output {
+    background: var(--accent-soft);
+    border-color: rgba(82, 211, 199, .3);
+    color: #176f6a;
+  }
+
+  button,
+  .ai-btn {
+    min-height: 36px;
+    border: 1px solid var(--line-strong);
+    border-radius: 9px;
+    background: var(--surface-2);
+    color: #34495d;
+    font-weight: 620;
+    transition: border-color .16s ease, background .16s ease, transform .16s ease;
+  }
+  button:hover,
+  .ai-btn:hover {
+    opacity: 1;
+    transform: translateY(-1px);
+    border-color: #91aaa9;
+    background: var(--surface-3);
+  }
+  button.primary,
+  button.big-primary,
+  .ai-btn,
+  .process-actions button.big-primary {
+    background: var(--accent-strong);
+    border-color: var(--accent-strong);
+    color: #fff;
+  }
+  button.danger { background: #fff7f8; color: #c83e55; border-color: #efb2bc; }
+  button.active { background: #29465f; color: #fff; border-color: #29465f; }
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  button:disabled { opacity: .42; cursor: not-allowed; transform: none; }
+
+  input,
+  select,
+  textarea,
+  .manual-form input,
+  .manual-form select,
+  .ai-config-grid input,
+  .ai-config-grid select,
+  .status-select,
+  .note-area,
+  .add-tag-input {
+    border: 1px solid var(--line-strong) !important;
+    border-radius: 9px !important;
+    background: #fff !important;
+    color: var(--text) !important;
+    caret-color: var(--accent);
+  }
+  input::placeholder,
+  textarea::placeholder { color: #9aa8b6; }
+  textarea { padding: 12px; }
+  input[type="checkbox"] { accent-color: var(--accent-strong); }
+  option { background: var(--surface); color: var(--text); }
+
+  .today-panel {
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #a9d5d1;
+    border-left: 5px solid var(--accent);
+    border-radius: var(--radius);
+    background: #e7f6f4;
+    color: #2b4055;
+    box-shadow: 0 12px 28px rgba(30, 99, 94, .12);
+  }
+  .today-panel h3 { color: #173a3b; }
+  .today-grid { gap: 10px; }
+  .today-card,
+  .today-card.urgent,
+  .today-card.action {
+    background: #fff;
+    border: 1px solid #c2ddda;
+    border-radius: 10px;
+  }
+  .today-card-label { color: #66798c; opacity: 1; }
+  .today-card-value { color: #172b3e; }
+  .today-card-hint { color: #75879a; opacity: 1; }
+  .funnel-row { color: #354a5e; }
+  .today-panel > div[style*="margin-top"] > div[style*="font-size"] {
+    color: #52677a !important;
+    opacity: 1 !important;
+  }
+  .today-card.action:hover { background: rgba(82, 211, 199, .11); border-color: rgba(82, 211, 199, .35); }
+  .funnel-bar { background: #c7d8df; }
+  .funnel-fill { background: var(--accent); }
+
+  .toolbar { gap: 9px; padding-bottom: 2px; }
+  .stat-bar { color: var(--muted); }
+  .stat-bar b { color: var(--accent); }
+  .table-wrap {
+    border: 1px solid var(--line-strong);
+    border-radius: 11px;
+    overflow: auto;
+  }
+  table { color: #31465b; }
+  th, td { border-bottom-color: var(--line); padding: 11px 10px; }
+  th {
+    top: 0;
+    z-index: 2;
+    background: #e9eff3;
+    color: #65778b;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+  tbody tr { transition: background .14s ease; }
+  tbody tr:hover { background: rgba(82, 211, 199, .035); }
+  .detail-row td { background: #f8fafc; border-bottom-color: var(--line-strong); }
+  .detail-item { background: var(--surface-2); border-color: var(--line); border-radius: 9px; }
+  .detail-item .k { color: var(--muted); }
+  .detail-item .v,
+  .detail-section h4 { color: #2c4155; }
+  .raw-text-content,
+  .process-detail { background: #f3f6f9; color: #52657a; }
+  .tag { background: #edf4ff; color: #356ba8; }
+  .custom-tag { background: #e8f7f5; color: #177c76; }
+  .bucket-tag,
+  .status-badge,
+  .ai-score-badge { border-radius: 99px; padding: 3px 8px; }
+  .helper-callout,
+  .process-gap-list { background: #fff9ed; border-color: #f2d7a6; color: #8f5b12; }
+
+  .process-overlay { background: rgba(2, 6, 12, .78); backdrop-filter: blur(8px); }
+  .process-card {
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 16px;
+    color: var(--text);
+    box-shadow: 0 30px 90px rgba(20, 40, 55, .24);
+  }
+  .process-card h2,
+  .process-meta { color: #334b60; }
+  .process-person-name { color: var(--accent); }
+  .process-progress,
+  .process-close { color: var(--muted); }
+  .quick-copy-row button,
+  .process-bottom-row button { background: var(--surface-2); border-color: var(--line-strong); color: #34495d; }
+
+  ::selection { background: rgba(82, 211, 199, .3); color: #fff; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: #f2f5f7; }
+  ::-webkit-scrollbar-thumb { background: #bdcad5; border: 2px solid #f2f5f7; border-radius: 99px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+  @media (max-width: 900px) {
+    .wrap { padding: 26px 16px 56px; }
+    .rule-band { grid-template-columns: 1fr 1fr; }
+    .ai-config-grid { grid-template-columns: 1fr; }
+    .ai-config-body > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+    .panel { padding: 16px; }
+  }
+  @media (max-width: 620px) {
+    .wrap { padding: 22px 12px 48px; }
+    .rule-band,
+    .kpis,
+    .today-grid { grid-template-columns: 1fr 1fr; }
+    .rule { grid-column: span 2; }
+    .kpi { min-height: 84px; }
+    .value { font-size: 24px; }
+    .toolbar > * { flex: 1 1 auto; }
+    .process-actions,
+    .quick-mark-row { grid-template-columns: 1fr 1fr; }
+    .quick-copy-row { grid-template-columns: 1fr; }
+    #qcOpenBoss { grid-column: auto !important; }
+  }
 </style>
 </head>
 <body>
@@ -230,10 +521,10 @@
   <div style="color:#9ca3af;font-size:11px;margin-bottom:14px">本地工具 · 候选人数据和 AI Key 仅保存在当前浏览器本地</div>
 
   <div class="rule-band">
-    <div class="rule"><strong>当前岗位：</strong><span id="ruleSummaryJob">海外社媒内容运营 / 内部社媒内容人员</span></div>
+    <div class="rule"><strong>当前岗位：</strong><span id="ruleSummaryJob">海外社媒转化运营 / Shopify 独立站方向</span></div>
     <div class="rule"><strong>硬性条件：</strong><span id="ruleSummaryHard">1 年以上内容/社媒/运营经验，学历不限</span></div>
-    <div class="rule"><strong>命中条件：</strong><span id="ruleSummaryDirections">强匹配需具备海外平台 + 英文本土化 + 拍摄剪辑 + 达人/UGC/反馈/数据闭环</span></div>
-    <div class="rule"><strong>排除/复核：</strong><span id="ruleSummaryExclude">只会发帖/只看粉丝/纯剪辑/纯投放降权；仅实习/在校默认淘汰</span></div>
+    <div class="rule"><strong>命中条件：</strong><span id="ruleSummaryDirections">强匹配需具备海外内容渠道 + Shopify 独立站转化链路 + 数据复盘</span></div>
+    <div class="rule"><strong>排除/复核：</strong><span id="ruleSummaryExclude">只会发帖/只看粉丝/无独立站转化意识降权；仅实习/在校默认淘汰</span></div>
   </div>
 
   <!-- B1/B2: AI 设置面板 -->
@@ -339,7 +630,7 @@
             <label><input type="checkbox" id="ruleRequireAccounting"> 是,只命中核心词才算匹配</label>
           </div>
           <div id="accountingModeHint" style="background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:6px;padding:8px 10px;font-size:12px;line-height:1.6;margin-bottom:12px">
-            当前核心方向:英文内容与本土化、图片/短视频拍剪、Instagram/TikTok/Pinterest 日常运营、达人沟通、UGC授权、用户反馈和进站数据复盘。
+            当前核心方向:Instagram/Pinterest/TikTok/Reddit/YouTube Shorts 内容分发、达人UGC、Shopify 独立站访问/加购/订单和数据复盘。
           </div>
 
           <h4 style="color:#0369a1;margin:0 0 10px">🎯 命中方向(强匹配必须满足任一)</h4>
@@ -390,67 +681,6 @@
     <div class="kpi" data-jump-bucket="待补详情"><div class="label">📝 待补详情 · 待评分/补简历</div><div class="value pending" id="kpiPending">0</div></div>
     <div class="kpi" data-jump-bucket="需人工复核"><div class="label">🔍 需人工复核 · 本地/创业</div><div class="value manual" id="kpiManual">0</div></div>
     <div class="kpi" data-jump-bucket="不符合"><div class="label">❌ 不符合 · 已淘汰</div><div class="value bad" id="kpiBad">0</div></div>
-  </div>
-
-  <div class="collector-panel">
-    <h2>本地采集器 · 已暂停自动采集</h2>
-    <div class="hint">
-      自动访问招聘平台容易触发账号/IP 限制,当前已关闭自动采集入口。保留“从采集库导入”只读取本地历史数据,不会访问平台。
-    </div>
-    <div class="collector-grid">
-      <div>
-        <label>关键词,多个用逗号分隔</label>
-        <textarea id="collectorKeywords" placeholder="例如: 小红书运营, 海外社媒运营, 内容增长"></textarea>
-      </div>
-      <div>
-        <label>城市</label>
-        <input id="collectorCity" placeholder="例如: 上海">
-      </div>
-      <div>
-        <label>经验要求</label>
-        <input id="collectorExperience" placeholder="可不填">
-      </div>
-      <div>
-        <label>每个关键词采集人数</label>
-        <input id="collectorCount" type="number" min="10" max="300" value="50">
-      </div>
-    </div>
-    <div class="collector-actions">
-      <button id="collectorHealthBtn" disabled>测试连接</button>
-      <button id="collectorLoginBtn" disabled>检查/登录平台</button>
-      <button id="collectorShowBrowserBtn" disabled>打开验证窗口</button>
-      <button class="primary" id="collectorStartBtn" disabled>自动采集已关闭</button>
-      <label style="font-size:12px;color:#047857;font-weight:600"><input type="checkbox" id="collectorOnlyQualified" checked> 只导入合格候选人</label>
-      <label style="font-size:12px;color:#7c3aed;font-weight:600" title="使用顶部 AI 智能评分面板已配置的 DeepSeek,不会重复申请 Key">
-        <input type="checkbox" id="collectorAutoAiScore" checked> 自动 AI 评分
-        <span id="collectorAiKeyHint" style="font-size:11px;color:#9ca3af;font-weight:500">· 检测中...</span>
-      </label>
-      <label style="font-size:12px;color:#0369a1;font-weight:600" title="只对强匹配评分,跳过候补精选,可省 30-50% token">
-        <input type="checkbox" id="collectorScoreStrongOnly"> 仅评强匹配(省 token)
-      </label>
-      <label style="font-size:12px;color:#0369a1;font-weight:600" title="高风险功能,公开版不推荐开启">
-        <input type="checkbox" id="collectorAutoView" checked> 获取详情直达链接(高风险,不推荐)
-      </label>
-      <button id="collectorImportQualifiedBtn">从采集库导入合格</button>
-      <button id="collectorImportAllBtn">从采集库导入全部</button>
-      <span style="flex:1"></span>
-      <span style="font-size:12px;color:#6b7280">本地 API: <b>http://127.0.0.1:8765</b></span>
-    </div>
-    <div class="collector-status error" id="collectorStatus">自动采集已暂停: 为避免触发平台访问限制,请用手动搜索/粘贴简历内容的方式继续筛选。</div>
-    <div class="collector-progress" id="collectorProgress">
-      <div class="collector-progress-head">
-        <span id="collectorProgressLabel">等待开始</span>
-        <span id="collectorProgressValue">0%</span>
-      </div>
-      <div class="collector-progress-track"><div class="collector-progress-fill" id="collectorProgressFill"></div></div>
-    </div>
-    <div class="collector-quality" id="collectorQuality">
-      <div class="collector-q-card"><div class="collector-q-label">有效候选人率</div><div class="collector-q-value" id="collectorQualityRate">--</div></div>
-      <div class="collector-q-card"><div class="collector-q-label">本批强匹配</div><div class="collector-q-value" id="collectorQualityStrong">0</div></div>
-      <div class="collector-q-card"><div class="collector-q-label">重复/已采过</div><div class="collector-q-value" id="collectorQualityDup">0</div></div>
-      <div class="collector-q-card"><div class="collector-q-label">本批质量</div><div class="collector-q-value" id="collectorQualityGrade">--</div></div>
-    </div>
-    <div class="collector-suggestions" id="collectorSuggestions"></div>
   </div>
 
   <div class="panel">
@@ -558,12 +788,13 @@ const ACCOUNTING_KEYWORDS_DEFAULT = [
 ];
 
 const OVERSEAS_SOCIAL_KEYWORDS_DEFAULT = [
-  "海外内容运营", "海外社媒内容", "海外内容增长", "海外社媒", "社媒运营", "内容运营", "内容增长", "内容营销",
+  "海外社媒转化运营", "Shopify独立站", "海外社媒获客", "海外内容渠道", "海外内容运营", "海外社媒内容", "海外内容增长", "海外社媒", "社媒运营", "社区运营", "内容运营", "内容增长", "内容营销",
   "小红书", "Instagram", "instagram", "IG", "Facebook", "facebook", "Meta", "Pinterest", "pinterest",
-  "TikTok", "tiktok", "TK", "tk",
+  "TikTok", "tiktok", "TK", "tk", "Reddit", "reddit", "YouTube Shorts", "Youtube Shorts", "Shorts", "shorts",
   "独立站", "Shopify", "shopify", "DTC", "dtc", "品牌出海", "海外市场", "英文内容", "英文文案", "本土化", "localization",
-  "种草", "笔记", "标题优化", "图文", "文案", "视觉", "审美", "拍摄", "摄影", "短视频", "剪辑", "视频剪辑", "脚本", "分镜", "Reels",
-  "评论", "私信", "用户问题", "用户反馈", "产品反馈", "网站反馈", "引流", "转化", "加购", "订单", "官网点击", "链接点击", "主页访问", "收藏", "分享", "进站数据",
+  "平台策略", "分发策略", "内容分发", "渠道策略", "用户习惯", "品牌形象", "视觉种草", "再营销", "家居灵感", "图片搜索", "长期导流", "社区话题", "话题研究", "需求洞察", "痛点挖掘", "广告测试",
+  "种草", "笔记", "标题优化", "图文", "文案", "视觉", "审美", "拍摄", "摄影", "短视频", "剪辑", "视频剪辑", "脚本", "分镜", "Reels", "产品使用场景", "内容曝光",
+  "评论", "私信", "用户问题", "用户反馈", "产品反馈", "网站反馈", "引流", "转化", "咨询", "独立站访问", "网站访问", "产品页", "浏览产品页", "加购", "下单", "订单", "官网点击", "链接点击", "主页访问", "收藏", "分享", "进站数据",
   "买家秀", "UGC", "UGC授权", "授权", "UGC短视频", "达人", "KOL", "KOC", "influencer", "达人沟通", "达人推进", "达人素材", "场景短视频", "产品细节展示", "before/after", "faq", "FAQ", "数据复盘", "账号运营", "粉丝互动",
   "AI工具", "ChatGPT", "deepseek", "Midjourney", "Canva",
   "目标行业", "消费品", "家居", "母婴", "美妆", "生活方式",
@@ -591,12 +822,12 @@ const RULES_DEFAULTS = {
   enableDirections: {
     pdd: false, tmall: false, jd: false, domestic: false,
     amazon: true, crossBorder: true, ecommerceAccounting: true,
-    xhs: true, instagram: true, facebook: true, pinterest: true, dtc: true,
+    xhs: true, instagram: true, facebook: true, pinterest: true, dtc: true, reddit: true, youtubeShorts: true,
     contentGrowth: true, conversion: true, aiContent: true, petHome: true,
     tiktok: true,
   },
   customExclude: "纯客服\n电话销售\n纯直播主播\n纯剪辑\n纯投放优化师\n纯行政\n纯财务\n会计\n出纳\n总账",
-  customBonus: "Instagram\nTikTok\nPinterest\nFacebook\nMeta\n海外社媒\n英文内容\n英文文案\n本土化\n图文\n文案\n拍摄\n短视频\n剪辑\nReels\n视觉\n审美\nUGC\nUGC授权\n达人沟通\n达人推进\n买家秀\n用户反馈\n产品反馈\n网站反馈\n链接点击\n官网点击\n主页访问\n收藏\n分享\n进站数据\n加购\n订单\n账号运营\n数据复盘\nAI工具",
+  customBonus: "Instagram\nPinterest\nTikTok\nReddit\nYouTube Shorts\nShopify\n独立站\nDTC\n海外社媒获客\n平台策略\n分发策略\n内容分发\n品牌形象\n视觉种草\n家居灵感\n图片搜索\n长期导流\n社区话题\n需求洞察\n痛点挖掘\n广告测试\n英文内容\n英文文案\n本土化\n短视频\n产品使用场景\nUGC\nUGC授权\n达人沟通\n达人推进\n用户反馈\n产品反馈\n网站反馈\n链接点击\n官网点击\n独立站访问\n进站数据\n加购\n订单\n数据复盘\nAI工具",
 };
 const RULES_STORAGE_KEY = "本地招聘筛选看板_规则_v1";
 function loadRules() {
@@ -621,14 +852,16 @@ let USER_RULES = loadRules();
 // ============================================================
 const RULES = {
   directions: {
-    // 海外社媒内容运营
+    // 海外社媒转化运营 / Shopify 独立站方向
     xhs: ["小红书", "小红书运营", "薯店", "笔记", "种草", "爆文", "蒲公英"],
     instagram: ["instagram", "Instagram", "IG", "ins", "reels", "reel", "story", "海外社媒", "海外社交媒体"],
     facebook: ["facebook", "Facebook", "FB", "Meta", "meta", "Facebook主页", "Facebook群组", "Facebook社群", "海外社媒"],
-    pinterest: ["pinterest", "Pinterest", "pin", "pins"],
-    dtc: ["独立站", "Shopify", "shopify", "DTC", "dtc", "品牌出海", "站外引流", "官网", "产品页", "落地页"],
-    contentGrowth: ["内容增长", "内容运营", "内容营销", "社媒运营", "新媒体运营", "账号运营", "内容策划", "选题", "标题优化", "文案", "英文文案", "英文内容", "本土化", "localization", "翻译", "图文", "图片", "视觉", "审美", "排版", "拍摄", "摄影", "短视频", "视频", "剪辑", "视频剪辑", "脚本", "分镜", "Reels", "买家秀", "UGC", "UGC授权", "UGC短视频", "达人素材", "场景短视频", "产品细节展示", "before/after", "使用视频", "教育型内容", "FAQ", "素材库"],
-    conversion: ["转化", "成交", "咨询", "询盘", "线索", "销售", "营销", "私信", "评论", "私域", "引流", "用户跟进", "客户跟进", "用户问题", "用户反馈", "产品反馈", "网站反馈", "话术", "复购", "加购", "下单", "订单", "官网点击", "链接点击", "主页访问", "进站数据", "收藏", "分享", "GMV", "ROI"],
+    pinterest: ["pinterest", "Pinterest", "pin", "pins", "图片搜索", "家居灵感", "长期导流"],
+    reddit: ["Reddit", "reddit", "subreddit", "社区运营", "社区话题", "话题研究", "用户洞察", "需求洞察", "痛点挖掘", "广告测试"],
+    youtubeShorts: ["YouTube Shorts", "Youtube Shorts", "youtube shorts", "Shorts", "shorts", "YouTube短视频", "Youtube短视频"],
+    dtc: ["独立站", "Shopify", "shopify", "DTC", "dtc", "品牌出海", "站外引流", "官网", "产品页", "落地页", "独立站访问", "网站访问", "产品页浏览", "Shopify后台"],
+    contentGrowth: ["内容增长", "内容运营", "内容营销", "社媒运营", "新媒体运营", "账号运营", "内容策划", "选题", "标题优化", "文案", "英文文案", "英文内容", "本土化", "localization", "翻译", "图文", "图片", "视觉", "审美", "排版", "平台策略", "分发策略", "内容分发", "渠道策略", "用户习惯", "品牌形象", "视觉种草", "再营销", "家居灵感", "图片搜索", "长期导流", "拍摄", "摄影", "短视频", "视频", "剪辑", "视频剪辑", "脚本", "分镜", "Reels", "产品使用场景", "买家秀", "UGC", "UGC授权", "UGC短视频", "达人素材", "场景短视频", "产品细节展示", "before/after", "使用视频", "教育型内容", "FAQ", "素材库"],
+    conversion: ["转化", "成交", "咨询", "询盘", "线索", "销售", "营销", "私信", "评论", "私域", "引流", "用户跟进", "客户跟进", "用户问题", "用户反馈", "产品反馈", "网站反馈", "话术", "复购", "加购", "下单", "订单", "独立站访问", "网站访问", "浏览产品页", "产品页浏览", "官网点击", "链接点击", "主页访问", "进站数据", "收藏", "分享", "GMV", "ROI", "转化路径", "转化链路"],
     aiContent: ["AI工具", "AI 工具", "ChatGPT", "chatgpt", "DeepSeek", "deepseek", "Midjourney", "Canva", "提示词", "翻译", "内容复用", "本土化"],
     creatorCollab: ["达人", "达人沟通", "达人合作", "达人推进", "红人", "KOL", "KOC", "influencer", "creator", "博主", "寄样", "测评", "UGC授权", "授权", "素材授权"],
     petHome: ["目标行业", "消费品", "家居", "家具", "母婴", "美妆", "生活方式"],
@@ -640,11 +873,11 @@ const RULES = {
     // 跨境电商平台
     amazon: ["亚马逊", "amazon", "fba", "跨境电商", "亚马逊运营", "Temu", "temu"],
     crossBorder: ["Wayfair", "wayfair", "Shopee", "shopee", "速卖通", "Lazada", "lazada", "eBay", "ebay", "阿里国际", "敦煌网"],
-    tiktok: ["TikTok", "tiktok", "TK", "tk", "TikTok Shop", "tiktok shop", "短视频带货", "直播带货", "达人带货", "达人合作", "TikTok内容", "TK内容", "Reels", "短视频"],
+    tiktok: ["TikTok", "tiktok", "TK", "tk", "TikTok Shop", "tiktok shop", "短视频带货", "直播带货", "达人带货", "达人合作", "TikTok内容", "TK内容", "Reels", "短视频", "产品使用场景"],
     // 电商会计/财务
     ecommerceAccounting: ACCOUNTING_KEYWORDS_DEFAULT,
   },
-  ecommerceExperience: ["社媒", "海外社媒", "内容运营", "内容增长", "新媒体", "小红书", "Instagram", "TikTok", "Facebook", "Meta", "Pinterest", "独立站", "Shopify", "DTC", "品牌出海", "跨境", "亚马逊", "Amazon", "Wayfair", "电商", "运营", "账号运营", "种草", "英文内容", "本土化", "拍摄", "剪辑", "短视频", "达人", "UGC", "用户反馈", "链接点击", "官网点击", "加购", "订单", "买家秀", "AI工具", "宠物", "家居"],
+  ecommerceExperience: ["社媒", "海外社媒", "内容运营", "内容增长", "社区运营", "新媒体", "小红书", "Instagram", "TikTok", "Reddit", "YouTube Shorts", "Shorts", "Facebook", "Meta", "Pinterest", "独立站", "Shopify", "DTC", "品牌出海", "跨境", "亚马逊", "Amazon", "Wayfair", "电商", "运营", "账号运营", "内容分发", "分发策略", "种草", "英文内容", "本土化", "拍摄", "剪辑", "短视频", "达人", "UGC", "用户反馈", "痛点挖掘", "广告测试", "链接点击", "官网点击", "独立站访问", "进站数据", "加购", "订单", "买家秀", "AI工具", "宠物", "家居"],
   formalWorkSignals: ["工作经历", "在职", "离职", "上一份工作", "负责", "任职", "担任", "工作经验", "岗位经验", "运营专员", "运营主管", "内容运营", "新媒体运营", "社媒运营", "海外运营", "品牌运营", "用户运营", "账号运营"],
   internshipOnlySignals: ["仅实习", "只有实习", "校招实习"],
   // 应届/在校相关词:全部命中即触发排除(除非有正式工作经历)
@@ -815,30 +1048,33 @@ function activeRecencyScore(activeText) {
 function overseasSocialRuleMatch(text, directionHits, ecommerceHits, hasFormalWork, expYears, activeText) {
   const hit = key => directionHits.includes(key);
   const t = String(text || "");
-  const hasTransferableTkContent = hit("tiktok") && /宠物|猫|家居|家具|母婴|美妆|生活方式|DTC|独立站|站外引流|达人素材|达人沟通|UGC|买家秀|场景短视频|使用视频|产品细节展示|before\/after|vertical space|教育型内容|内容种草|英文内容|本土化|拍摄|剪辑|Reels|Pinterest/i.test(t);
+  const hasTransferableTkContent = hit("tiktok") && /宠物|猫|家居|家具|母婴|美妆|生活方式|DTC|独立站|Shopify|站外引流|达人素材|达人沟通|UGC|买家秀|场景短视频|使用视频|产品使用场景|产品细节展示|before\/after|vertical space|教育型内容|内容种草|英文内容|本土化|拍摄|剪辑|Reels|Pinterest|YouTube Shorts|Shorts/i.test(t);
   const hasTkCommerceOnly = hit("tiktok") && /TikTok\s*Shop|tiktok\s*shop|直播带货|短视频带货|达人带货|达人合作|投流|投放/i.test(t) && !hasTransferableTkContent;
-  const hasPriorityOverseasPlatform = hit("instagram") || hit("pinterest") || hit("tiktok") || hit("facebook") || hit("dtc");
+  const hasPriorityOverseasPlatform = hit("instagram") || hit("pinterest") || hit("tiktok") || hit("reddit") || hit("youtubeShorts") || hit("facebook") || hit("dtc");
   const hasCoreSocialPlatform = hit("xhs") || hasPriorityOverseasPlatform;
   const hasSocialPlatform = hasCoreSocialPlatform || hasTransferableTkContent;
   const hasTikTokOnly = hit("tiktok") && !hasCoreSocialPlatform && !hit("dtc") && !hasTransferableTkContent;
   const hasContent = hit("contentGrowth");
   const hasConversion = hit("conversion");
   const hasAI = hit("aiContent");
-  const hasOverseasOrDtc = hit("instagram") || hit("facebook") || hit("pinterest") || hit("tiktok") || hit("dtc") || hit("amazon") || hit("crossBorder");
+  const hasOverseasOrDtc = hit("instagram") || hit("facebook") || hit("pinterest") || hit("tiktok") || hit("reddit") || hit("youtubeShorts") || hit("dtc") || hit("amazon") || hit("crossBorder");
   const hasCreatorCollab = hit("creatorCollab") || /达人|红人|KOL|KOC|influencer|creator|博主|寄样|测评|授权|UGC授权|达人沟通|达人推进|达人合作/i.test(t);
   const hasPetHome = hit("petHome");
   const hasEnglishLocalization = /英文|英语|本土化|localization|翻译|海外文案|英文文案|海外用户|北美|欧美|海外市场/i.test(t);
   const hasGraphicExpression = /图文|文案|标题|笔记|种草|视觉|图片|排版|审美|素材|买家秀|UGC|场景|产品细节|before\/after|Canva|PS|Photoshop|设计|拍摄|摄影|短视频|视频|剪辑|脚本|分镜|Reels/i.test(t);
-  const hasShootEdit = /拍摄|摄影|短视频|视频拍摄|视频剪辑|剪辑|脚本|分镜|Reels|TikTok内容|UGC短视频|场景短视频|产品细节展示|before\/after|CapCut|剪映|Premiere|PR|Final Cut/i.test(t);
-  const hasFeedbackLoop = /用户问题|用户反馈|产品反馈|网站反馈|FAQ|评论|私信|需求反馈|反馈给产品|反馈给网站|产品优化|页面优化|评价|review/i.test(t);
-  const hasDataOps = /数据复盘|链接点击|官网点击|主页访问|进站|进站数据|点击率|CTR|收藏|分享|加购|订单|转化率|GMV|ROI|Google Analytics|GA4|Shopify后台|后台数据/i.test(t);
-  const hasMarketingOps = /营销|转化|引流|私信|评论|用户跟进|客户跟进|复购|加购|下单|订单|数据复盘|账号运营|粉丝|互动|收藏|分享|主页访问|官网点击|链接点击|进站/i.test(t);
-  const hasSocialOps = /社媒运营|海外社媒|账号运营|新媒体运营|内容运营|运营|发布|互动|评论|私信|数据复盘|粉丝|增长|引流|Instagram|TikTok|Pinterest|Reels/i.test(t);
-  const hasSalesConversion = hasConversion || /加购|订单|官网点击|链接点击|进站|主页访问|收藏|分享|私信|评论|转化|引流|下单|复购/i.test(t);
+  const hasShootEdit = /拍摄|摄影|短视频|视频拍摄|视频剪辑|剪辑|脚本|分镜|Reels|TikTok内容|YouTube Shorts|Shorts|UGC短视频|场景短视频|产品使用场景|产品细节展示|before\/after|CapCut|剪映|Premiere|PR|Final Cut/i.test(t);
+  const hasChannelStrategy = /平台策略|分发策略|内容分发|渠道策略|用户习惯|内容矩阵|社媒矩阵|再营销|品牌形象|视觉种草|家居灵感|图片搜索|长期导流|平台逻辑/i.test(t);
+  const hasCommunityInsight = hit("reddit") || /Reddit|reddit|社区运营|社区话题|话题研究|用户洞察|需求洞察|痛点挖掘|产品痛点|广告测试|subreddit/i.test(t);
+  const hasShopifyFunnel = hit("dtc") || /Shopify|shopify|独立站|DTC|官网|产品页|落地页|独立站访问|网站访问|浏览产品页|产品页浏览|官网点击|链接点击|进站|进站数据|加购|下单|订单|成交|转化路径|转化链路/i.test(t);
+  const hasFeedbackLoop = /用户问题|用户反馈|产品反馈|网站反馈|FAQ|评论|私信|需求反馈|反馈给产品|反馈给网站|产品优化|页面优化|评价|review|痛点挖掘|需求洞察/i.test(t);
+  const hasDataOps = /数据复盘|链接点击|官网点击|主页访问|独立站访问|网站访问|进站|进站数据|点击率|CTR|收藏|分享|加购|订单|转化率|GMV|ROI|Google Analytics|GA4|Shopify后台|后台数据/i.test(t);
+  const hasMarketingOps = /营销|转化|引流|私信|评论|用户跟进|客户跟进|咨询|复购|加购|下单|订单|数据复盘|账号运营|粉丝|互动|收藏|分享|主页访问|官网点击|链接点击|独立站访问|进站/i.test(t);
+  const hasSocialOps = /社媒运营|海外社媒|账号运营|新媒体运营|内容运营|社区运营|运营|发布|互动|评论|私信|数据复盘|粉丝|增长|引流|Instagram|TikTok|Pinterest|Reddit|YouTube Shorts|Shorts|Reels/i.test(t);
+  const hasSalesConversion = hasConversion || /咨询|加购|订单|官网点击|链接点击|独立站访问|网站访问|进站|主页访问|收藏|分享|私信|评论|转化|引流|下单|复购|成交/i.test(t);
   const isXhsOnly = hit("xhs") && !hasPriorityOverseasPlatform && !hit("amazon") && !hit("crossBorder") && !hasTransferableTkContent;
-  const hasContentLoop = hasCreatorCollab || hasFeedbackLoop || hasDataOps || hasSalesConversion;
-  const contentLoopCount = [hasEnglishLocalization, hasShootEdit, hasCreatorCollab, hasFeedbackLoop, hasDataOps, hasSalesConversion].filter(Boolean).length;
-  const hasInternalContentCore = hasPriorityOverseasPlatform && hasContent && hasGraphicExpression && hasShootEdit && hasSocialOps && hasContentLoop;
+  const hasContentLoop = hasCreatorCollab || hasFeedbackLoop || hasDataOps || hasSalesConversion || hasShopifyFunnel || hasCommunityInsight;
+  const contentLoopCount = [hasChannelStrategy, hasEnglishLocalization, hasShootEdit, hasCreatorCollab, hasCommunityInsight, hasFeedbackLoop, hasDataOps, hasShopifyFunnel, hasSalesConversion].filter(Boolean).length;
+  const hasInternalContentCore = hasPriorityOverseasPlatform && hasContent && hasSocialOps && hasShopifyFunnel && hasDataOps && (hasChannelStrategy || hasShootEdit || hasCreatorCollab || hasCommunityInsight);
   const isPureContentPlanning = hasContent && !hasMarketingOps && !hasContentLoop && !hasPriorityOverseasPlatform;
   const hasBasicOps = ecommerceHits.length > 0 || hasContent || hasSocialPlatform;
   const hasEnoughExperience = hasFormalWork || expYears >= 1;
@@ -847,12 +1083,15 @@ function overseasSocialRuleMatch(text, directionHits, ecommerceHits, hasFormalWo
   const dimensions = [];
   if (hasPriorityOverseasPlatform) dimensions.push("海外平台/独立站");
   else if (hasSocialPlatform) dimensions.push("社媒平台");
+  if (hasChannelStrategy) dimensions.push("平台分发策略");
   if (hasEnglishLocalization) dimensions.push("英文/本土化");
   if (hasGraphicExpression) dimensions.push("图文/素材表达");
   else if (hasContent) dimensions.push("内容选题/文案");
   if (hasShootEdit) dimensions.push("拍摄/短视频剪辑");
   if (hasCreatorCollab) dimensions.push("达人/UGC授权");
+  if (hasCommunityInsight) dimensions.push("Reddit/社区洞察");
   if (hasFeedbackLoop) dimensions.push("评论私信/用户反馈");
+  if (hasShopifyFunnel) dimensions.push("Shopify独立站链路");
   if (hasDataOps) dimensions.push("点击进站/数据复盘");
   if (hasMarketingOps || hasSalesConversion) dimensions.push("内容效果/转化意识");
   if (hasAI) dimensions.push("AI工具");
@@ -868,11 +1107,14 @@ function overseasSocialRuleMatch(text, directionHits, ecommerceHits, hasFormalWo
   if (hasPriorityOverseasPlatform) score += 30;
   else if (hasSocialPlatform) score += 15;
   if (hasEnglishLocalization) score += 14;
+  if (hasChannelStrategy) score += 16;
   if (hasGraphicExpression) score += 18;
   else if (hasContent) score += 10;
   if (hasShootEdit) score += 18;
   if (hasCreatorCollab) score += 16;
+  if (hasCommunityInsight) score += 14;
   if (hasFeedbackLoop) score += 14;
+  if (hasShopifyFunnel) score += 22;
   if (hasDataOps) score += 18;
   if (hasMarketingOps || hasSalesConversion) score += 18;
   if (hasAI) score += 10;
@@ -895,7 +1137,10 @@ function overseasSocialRuleMatch(text, directionHits, ecommerceHits, hasFormalWo
     hasOverseasOrDtc,
     hasEnglishLocalization,
     hasShootEdit,
+    hasChannelStrategy,
     hasCreatorCollab,
+    hasCommunityInsight,
+    hasShopifyFunnel,
     hasFeedbackLoop,
     hasDataOps,
     hasContentLoop,
@@ -1009,7 +1254,7 @@ function classify(c) {
   if (requireAccounting) enabledDirHits = hasAccountingMatch ? ["ecommerceAccounting"] : [];
   const isOverseasSocialMode = USER_RULES.jobMode === "overseasSocial" && !requireAccounting;
   if (isOverseasSocialMode) {
-    const overseasDirs = new Set(["xhs", "instagram", "facebook", "pinterest", "dtc", "contentGrowth", "conversion", "aiContent", "creatorCollab", "petHome", "amazon", "crossBorder", "tiktok"]);
+    const overseasDirs = new Set(["xhs", "instagram", "facebook", "pinterest", "reddit", "youtubeShorts", "dtc", "contentGrowth", "conversion", "aiContent", "creatorCollab", "petHome", "amazon", "crossBorder", "tiktok"]);
     enabledDirHits = enabledDirHits.filter(d => overseasDirs.has(d));
   }
   // 严格的规则强匹配:命中海外社媒/内容增长方向 + 有正式经验
@@ -1027,7 +1272,7 @@ function classify(c) {
       overseasMatch.hasInternalContentCore &&
       overseasMatch.hasEnoughExperience &&
       overseasMatch.contentLoopCount >= 3 &&
-      (overseasMatch.hasEnglishLocalization || overseasMatch.hasDataOps || overseasMatch.hasCreatorCollab) &&
+      (overseasMatch.hasChannelStrategy || overseasMatch.hasCommunityInsight || overseasMatch.hasCreatorCollab || overseasMatch.hasEnglishLocalization) &&
       !overseasMatch.isPureContentPlanning &&
       flags.length === 0
     : isUnder30 && hasBachelor && enabledDirHits.length > 0 && hasFormalWork && expYears >= minExp && stability.flags.length === 0;
@@ -1038,8 +1283,8 @@ function classify(c) {
     !overseasMatch.isPureContentPlanning &&
     (overseasMatch.hasPriorityOverseasPlatform || overseasMatch.hasTransferableTkContent || (overseasMatch.isXhsOnly && overseasMatch.hasContentLoop)) &&
     overseasMatch.hasGraphicExpression &&
-    (overseasMatch.hasShootEdit || overseasMatch.hasEnglishLocalization || overseasMatch.hasCreatorCollab) &&
-    overseasMatch.hasContentLoop &&
+    (overseasMatch.hasShootEdit || overseasMatch.hasEnglishLocalization || overseasMatch.hasCreatorCollab || overseasMatch.hasChannelStrategy || overseasMatch.hasCommunityInsight) &&
+    (overseasMatch.hasShopifyFunnel || overseasMatch.hasDataOps || overseasMatch.hasContentLoop) &&
     overseasMatch.hasEnoughExperience
   );
 
@@ -1047,11 +1292,11 @@ function classify(c) {
     if (hasHardFail || hasLongGapHardFail) bucket = "不符合";
     else if (overseasMatch.hasTikTokOnly || overseasMatch.hasTkCommerceOnly) {
       bucket = overseasMatch.hasContent || overseasMatch.hasConversion ? "需人工复核" : "待补详情";
-      reasons.push("TikTok/短视频方向为主,需确认是否有 Instagram/Facebook/Pinterest/独立站经验");
+      reasons.push("TikTok/短视频方向为主,需确认是否有独立站转化链路、平台策略或 UGC 数据沉淀");
     }
     else if (overseasMatch.isXhsOnly && !overseasMatch.hasSalesConversion) {
       bucket = "需人工复核";
-      reasons.push("小红书/国内新媒体为主,需确认是否有 Ins/Facebook/Pinterest/独立站等海外社媒经验");
+      reasons.push("小红书/国内新媒体为主,需确认是否有 Instagram/Pinterest/TikTok/Reddit/YouTube Shorts 和 Shopify 独立站经验");
     }
     else if (overseasMatch.isPureContentPlanning) {
       bucket = "待补详情";
@@ -1067,10 +1312,11 @@ function classify(c) {
       bucket = reviewFlags.length ? "需人工复核" : "候补精选";
     } else if (overseasMatch.hasBasicOps || enabledDirHits.length) {
       bucket = "待补详情";
-      if (!overseasMatch.hasPriorityOverseasPlatform) reasons.push("未明确 Instagram/Facebook/Pinterest/独立站等海外平台经验");
+      if (!overseasMatch.hasPriorityOverseasPlatform) reasons.push("未明确 Instagram/Pinterest/TikTok/Reddit/YouTube Shorts 等海外内容渠道经验");
       if (!overseasMatch.hasGraphicExpression) reasons.push("未明确英文/图文/视觉素材或内容表达能力");
-      if (!overseasMatch.hasShootEdit) reasons.push("未明确图片、短视频拍摄或剪辑能力");
-      if (!overseasMatch.hasContentLoop) reasons.push("未明确达人/UGC、评论私信反馈、官网点击或进站数据复盘");
+      if (!overseasMatch.hasChannelStrategy) reasons.push("未明确按不同平台用户习惯制定内容分发策略");
+      if (!overseasMatch.hasShopifyFunnel) reasons.push("未明确 Shopify/独立站访问、产品页、加购、下单链路");
+      if (!overseasMatch.hasDataOps) reasons.push("未明确有效点击、咨询、加购、订单或独立站数据复盘");
       if (overseasMatch.activeScore.score === 0) reasons.push("活跃时间未知或较久,优先级降低");
     } else {
       bucket = "不符合";
@@ -1410,418 +1656,6 @@ function mergeIn(newCards) {
 }
 
 // ============================================================
-// 本地采集器：调用 127.0.0.1 API，把 BOSS 结构化数据导入看板
-// ============================================================
-const COLLECTOR_API = "http://127.0.0.1:8765";
-const COLLECTOR_DISABLED = true;
-const COLLECTOR_DISABLED_MESSAGE = "自动采集已暂停: 为避免触发平台访问限制,请用手动搜索/粘贴简历内容的方式继续筛选。";
-
-function setCollectorStatus(message, type = "") {
-  const el = document.getElementById("collectorStatus");
-  if (!el) return;
-  el.className = "collector-status" + (type ? ` ${type}` : "");
-  el.innerHTML = message;
-}
-
-function normalizeCollectorCandidate(c) {
-  const age = c.age || "";
-  const ageNum = Number(String(age).match(/\d+/)?.[0] || 0);
-  const exp = c.experience || "";
-  const expYearsParsed = Number(String(exp).match(/\d+/)?.[0] || 0);
-  const degree = c.education || "";
-  const expect = [c.expectCity, c.title].filter(Boolean).join(" · ");
-  const workHistory = c.workHistory || [c.company, c.title].filter(Boolean).join(" · ");
-  const education = c.educationHistory || [c.school, c.major, c.education].filter(Boolean).join(" · ");
-  const skillTags = Array.isArray(c.skills) ? c.skills.slice(0, 8) : [];
-  const fullSummary = [
-    expect && `[期望] ${expect}`,
-    c.salary && `[薪资] ${c.salary}`,
-    c.jobStatus && `[状态] ${c.jobStatus}`,
-    workHistory && `[最近经历] ${workHistory}`,
-    education && `[教育] ${education}`,
-    skillTags.length && `[技能] ${skillTags.join(" / ")}`,
-    c.fullText && `[原文] ${c.fullText}`,
-  ].filter(Boolean).join("\n\n");
-
-  return {
-    name: c.name || "未知",
-    gender: inferGender({ name: c.name || "", raw: c.fullText || JSON.stringify(c) }),
-    active: c.jobStatus || "历史采集",
-    age, ageNum,
-    exp,
-    expYearsParsed,
-    degree,
-    salary: c.salary || "",
-    expect,
-    advantage: c.fullText || "",
-    workHistory,
-    education,
-    skillTags,
-    fullSummary,
-    completeness: 45 + (c.fullText ? 10 : 0) + (workHistory ? 10 : 0) + (education ? 10 : 0),
-    raw: c.fullText || JSON.stringify(c, null, 2),
-    source: "collector",
-    addedAt: Date.now(),
-    pastePosition: 0,
-    status: "pending",
-    bossExpectId: c.expectId || "",
-    bossGeekId: c.geekId || "",
-    bossShareUrl: c.share_url || "",
-    sourceKeyword: c._source_keyword || c.source_keyword || "",
-  };
-}
-
-function splitCollectorKeywords(raw) {
-  return String(raw || "")
-    .replace(/，/g, ",")
-    .split(",")
-    .map(s => s.trim())
-    .filter(Boolean);
-}
-
-function collectorQualifiedCards(cards) {
-  const classified = cards.map(classify);
-  return {
-    classified,
-    qualified: classified.filter(c => c.bucket === "强匹配" || c.bucket === "候补精选"),
-    counts: classified.reduce((acc, c) => {
-      acc[c.bucket] = (acc[c.bucket] || 0) + 1;
-      return acc;
-    }, {}),
-  };
-}
-
-function collectorBucketCountText(counts) {
-  return buckets.filter(b => b !== "全部").map(b => `${b} ${counts[b] || 0}`).join(" / ");
-}
-
-// 采集器进度条:运行中显示模拟进度(无后端进度接口)
-let __collectorProgressTimer = null;
-function startCollectorProgress(expectedTotal, label = "采集中") {
-  const box = document.getElementById("collectorProgress");
-  const fill = document.getElementById("collectorProgressFill");
-  const lab = document.getElementById("collectorProgressLabel");
-  const val = document.getElementById("collectorProgressValue");
-  box.classList.add("active");
-  let pct = 0;
-  lab.textContent = `${label} · 预计 ${expectedTotal} 人`;
-  val.textContent = "0%";
-  fill.style.width = "0%";
-  clearInterval(__collectorProgressTimer);
-  __collectorProgressTimer = setInterval(() => {
-    // 渐近到 92%,留到完成时跳到 100
-    pct = pct + (92 - pct) * 0.06;
-    fill.style.width = pct.toFixed(1) + "%";
-    val.textContent = Math.round(pct) + "%";
-  }, 600);
-}
-function finishCollectorProgress(success = true, finalLabel = "完成") {
-  clearInterval(__collectorProgressTimer);
-  __collectorProgressTimer = null;
-  const fill = document.getElementById("collectorProgressFill");
-  const lab = document.getElementById("collectorProgressLabel");
-  const val = document.getElementById("collectorProgressValue");
-  fill.style.width = success ? "100%" : fill.style.width;
-  fill.style.background = success ? "#047857" : "#dc2626";
-  lab.textContent = finalLabel;
-  val.textContent = success ? "100%" : val.textContent;
-  setTimeout(() => { fill.style.background = "#00a6a7"; }, 2000);
-}
-
-// 采集器质量卡片 + 建议
-function renderCollectorQuality({ fetched, qualified, strong, duplicates, skippedByRules, counts }) {
-  const box = document.getElementById("collectorQuality");
-  const sug = document.getElementById("collectorSuggestions");
-  if (!fetched) { box.classList.remove("active"); sug.classList.remove("active"); return; }
-  box.classList.add("active");
-  const rate = Math.round((qualified / fetched) * 100);
-  let grade = "D";
-  if (rate >= 50) grade = "A";
-  else if (rate >= 30) grade = "B";
-  else if (rate >= 15) grade = "C";
-  const gradeColor = grade === "A" ? "#047857" : grade === "B" ? "#0369a1" : grade === "C" ? "#d97706" : "#dc2626";
-  document.getElementById("collectorQualityRate").textContent = `${rate}%`;
-  document.getElementById("collectorQualityStrong").textContent = strong;
-  document.getElementById("collectorQualityDup").textContent = duplicates;
-  const g = document.getElementById("collectorQualityGrade");
-  g.textContent = grade;
-  g.style.color = gradeColor;
-
-  // 智能建议
-  const tips = [];
-  if (rate < 15) tips.push("💡 <b>有效率偏低</b>:关键词太宽泛,试着加上行业前缀(如 <b>电商运营</b> → <b>天猫店铺运营</b>)。");
-  else if (rate < 30) tips.push("💡 有效率中等,可在<b>筛选规则设置</b>里调整年龄/经验要求,提升筛选精度。");
-  if (skippedByRules > qualified * 2) tips.push(`⚠️ 规则过滤了 <b>${skippedByRules}</b> 人,占比偏高。如果误杀过多,看下排除规则是否过严。`);
-  if (duplicates > fetched * 0.4) tips.push(`♻️ 重复率 <b>${Math.round(duplicates / fetched * 100)}%</b>,关键词重叠度高,建议换关键词或加大每个关键词的采集数。`);
-  if (strong === 0 && fetched >= 30) tips.push("⚠️ 本批<b>没有强匹配</b>。可能是关键词与岗位偏离,或方向命中范围太窄。");
-  if (rate >= 50) tips.push("🎉 <b>有效率高</b>,关键词非常精准!这批关键词可以保留下次复用。");
-  if (tips.length === 0) tips.push("✓ 本批数据质量正常,可继续 AI 评分进入处理模式。");
-  sug.innerHTML = tips.join("<br>");
-  sug.classList.add("active");
-}
-
-// 采集后:对强匹配 + 候补精选 自动 AI 评分(复用顶部 AI 配置面板的 DeepSeek)
-async function autoScoreAfterCollect(judged) {
-  // 开关 1:用户是否启用自动评分
-  const autoOn = document.getElementById("collectorAutoAiScore")?.checked;
-  if (!autoOn) return { scored: 0, failed: 0, skipped: "用户已关闭自动评分" };
-  // 开关 2:必须已配置 AI(同顶部面板的 key)
-  if (!aiIsConfigured()) return { scored: 0, failed: 0, skipped: "AI 未配置" };
-  // 开关 3:仅评强匹配?
-  const strongOnly = document.getElementById("collectorScoreStrongOnly")?.checked;
-  const pool = strongOnly
-    ? judged.qualified.filter(c => c.bucket === "强匹配")
-    : judged.qualified;
-  // 跳过已评过的 (省 token 关键)
-  const targets = pool.filter(c => c.aiScore === undefined);
-  if (!targets.length) return { scored: 0, failed: 0, skipped: "无新候选人需评分" };
-
-  const cfg = loadAiConfig();
-  setCollectorStatus(
-    `AI 自动评分中:${targets.length} 人 · 模型 <b>${escapeHtml(cfg.model)}</b>` +
-    (strongOnly ? " · 仅强匹配模式" : "") + `...`
-  );
-  let scored = 0, failed = 0;
-  for (const c of targets) {
-    try {
-      const result = await aiScoreCandidate(c);
-      const all = loadAll();
-      for (const x of all) if (fingerprint(x) === fingerprint(c)) Object.assign(x, result);
-      saveAll(all);
-      scored++;
-    } catch (e) { failed++; }
-    await new Promise(r => setTimeout(r, 300));
-  }
-  return { scored, failed };
-}
-
-// 更新采集器面板的 AI 配置状态提示
-function updateCollectorAiHint() {
-  const hint = document.getElementById("collectorAiKeyHint");
-  if (!hint) return;
-  if (aiIsConfigured()) {
-    const cfg = loadAiConfig();
-    const masked = cfg.apiKey ? cfg.apiKey.slice(0, 6) + "***" + cfg.apiKey.slice(-4) : "";
-    hint.innerHTML = `· 使用 <b>${escapeHtml(cfg.model)}</b> (${masked})`;
-    hint.style.color = "#047857";
-  } else {
-    hint.innerHTML = `· ⚠️ 未配置,请到顶部「🤖 AI 智能评分」配置 DeepSeek`;
-    hint.style.color = "#dc2626";
-  }
-}
-// 页面加载时和 AI 配置变化时刷新
-window.addEventListener("DOMContentLoaded", updateCollectorAiHint);
-setTimeout(updateCollectorAiHint, 100);
-
-async function importCollectorDb(onlyQualified = true) {
-  setCollectorStatus(`正在读取采集库,准备导入${onlyQualified ? "合格候选人" : "全部候选人"}...`);
-  try {
-    const data = await collectorFetch("/api/db?limit=5000");
-    const rawCandidates = Array.isArray(data.candidates) ? data.candidates : [];
-    const cards = rawCandidates.map(normalizeCollectorCandidate);
-    const judged = collectorQualifiedCards(cards);
-    const importCards = onlyQualified ? judged.qualified : judged.classified;
-    const { added } = mergeIn(importCards);
-    document.getElementById("addedCount").textContent = added;
-    render();
-    const duplicates = importCards.length - added;
-    const skippedByRules = cards.length - importCards.length;
-    renderCollectorQuality({
-      fetched: rawCandidates.length,
-      qualified: judged.qualified.length,
-      strong: judged.counts["强匹配"] || 0,
-      duplicates,
-      skippedByRules,
-      counts: judged.counts,
-    });
-    setCollectorStatus(
-      `采集库共 <b>${rawCandidates.length}</b> 人。规则分类: ${collectorBucketCountText(judged.counts)}。<br>` +
-      `本次${onlyQualified ? "只导入强匹配/候补精选" : "导入全部分类"}: 可导入 <b>${importCards.length}</b> 人,新增 <b>${added}</b> 人,跳过重复 <b>${duplicates}</b> 人。`,
-      "ok"
-    );
-  } catch (e) {
-    setCollectorStatus(`读取采集库失败: ${escapeHtml(e.message)}`, "error");
-  }
-}
-
-async function collectorFetch(path, options = {}) {
-  const resp = await fetch(`${COLLECTOR_API}${path}`, {
-    ...options,
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-  });
-  const data = await resp.json().catch(() => ({}));
-  if (!resp.ok || data.ok === false) throw new Error(data.error || `HTTP ${resp.status}`);
-  return data;
-}
-
-document.getElementById("collectorHealthBtn").addEventListener("click", async () => {
-  if (COLLECTOR_DISABLED) {
-    setCollectorStatus(COLLECTOR_DISABLED_MESSAGE, "error");
-    return;
-  }
-  setCollectorStatus("正在连接本地采集服务...");
-  try {
-    const data = await collectorFetch("/api/health");
-    const p = data.pipeline || {};
-    setCollectorStatus(
-      `连接成功。数据库累计 <b>${p.total || 0}</b> 人,今日新增 <b>${p.today_new || 0}</b> 人。`,
-      "ok"
-    );
-  } catch (e) {
-    setCollectorStatus(
-      `连接失败: ${escapeHtml(e.message)}<br>请先在项目目录启动: <b>python local_api.py</b>`,
-      "error"
-    );
-  }
-});
-
-document.getElementById("collectorLoginBtn").addEventListener("click", async () => {
-  if (COLLECTOR_DISABLED) {
-    setCollectorStatus(COLLECTOR_DISABLED_MESSAGE, "error");
-    return;
-  }
-  const btn = document.getElementById("collectorLoginBtn");
-  btn.disabled = true;
-  btn.textContent = "检查中...";
-  setCollectorStatus("自动采集入口已暂停。建议手动复制候选人内容后在本地筛选。");
-  try {
-    const data = await collectorFetch("/api/login", { method: "POST", body: "{}" });
-    const r = data.result || {};
-    setCollectorStatus(`${escapeHtml(r.message || "登录检查完成")}`, r.status === "success" ? "ok" : "");
-  } catch (e) {
-    setCollectorStatus(`登录检查失败: ${escapeHtml(e.message)}`, "error");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "检查/登录平台";
-  }
-});
-
-document.getElementById("collectorShowBrowserBtn").addEventListener("click", async () => {
-  if (COLLECTOR_DISABLED) {
-    setCollectorStatus(COLLECTOR_DISABLED_MESSAGE, "error");
-    return;
-  }
-  const btn = document.getElementById("collectorShowBrowserBtn");
-  btn.disabled = true;
-  btn.textContent = "打开中...";
-  setCollectorStatus("正在打开采集器专用 Chrome。请在弹出的窗口里完成安全验证/登录。");
-  try {
-    const data = await collectorFetch("/api/show-browser", { method: "POST", body: "{}" });
-    const r = data.result || {};
-    setCollectorStatus(`${escapeHtml(r.message || "已打开验证窗口")}`, "ok");
-  } catch (e) {
-    setCollectorStatus(`打开验证窗口失败: ${escapeHtml(e.message)}`, "error");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "打开验证窗口";
-  }
-});
-
-document.getElementById("collectorStartBtn").addEventListener("click", async () => {
-  if (COLLECTOR_DISABLED) {
-    setCollectorStatus(COLLECTOR_DISABLED_MESSAGE, "error");
-    return;
-  }
-  const btn = document.getElementById("collectorStartBtn");
-  const keywords = splitCollectorKeywords(document.getElementById("collectorKeywords").value);
-  const city = document.getElementById("collectorCity").value.trim();
-  const experience = document.getElementById("collectorExperience").value.trim();
-  const count = Math.max(10, Math.min(300, Number(document.getElementById("collectorCount").value) || 50));
-  const autoView = document.getElementById("collectorAutoView").checked;
-  const onlyQualified = document.getElementById("collectorOnlyQualified").checked;
-
-  if (!keywords.length) {
-    setCollectorStatus("请先填写至少 1 个关键词。", "error");
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = "采集中...";
-  setCollectorStatus(`自动采集属于高风险操作,公开版不推荐运行。关键词: ${escapeHtml(keywords.join("、"))}`);
-  startCollectorProgress(keywords.length * count, `采集 ${keywords.length} 个关键词`);
-
-  try {
-    const data = await collectorFetch("/api/multi-search", {
-      method: "POST",
-      body: JSON.stringify({
-        keywords,
-        city,
-        experience,
-        count_per_keyword: count,
-        auto_view: autoView,
-      }),
-    });
-    const result = Array.isArray(data.result) ? data.result : [];
-    const verification = result.find(x => x && x.needs_verification);
-    const accessBlocked = result.find(x => x && (x.needs_pause || x.reason === "boss_access_restricted"));
-    if (accessBlocked) {
-      finishCollectorProgress(false, "访问受限");
-      const recovery = accessBlocked.recovery_time ? `预计恢复时间: <b>${escapeHtml(accessBlocked.recovery_time)}</b>。` : "";
-      const ip = accessBlocked.current_ip ? `<br>当前 IP: ${escapeHtml(accessBlocked.current_ip)}` : "";
-      setCollectorStatus(
-        `<b>平台访问受限,请暂停采集。</b><br>${escapeHtml(accessBlocked.message || "账号/IP 被临时限制访问。")}<br>${recovery}${ip}`,
-        "error"
-      );
-      return;
-    }
-    const summary = result.find(x => x && x._stats);
-    const rawCandidates = result.filter(x => x && !x._stats && !x._keyword_stats && !x.error && !x.needs_verification);
-    const cards = rawCandidates.map(normalizeCollectorCandidate);
-    const judged = collectorQualifiedCards(cards);
-    const importCards = onlyQualified ? judged.qualified : judged.classified;
-    const { added } = mergeIn(importCards);
-    document.getElementById("addedCount").textContent = added;
-    render();
-
-    const fetched = summary?.total_fetched ?? rawCandidates.length;
-    const skippedByRules = cards.length - importCards.length;
-    const duplicates = importCards.length - added;
-    const verifyHint = verification ? "<br><b>检测到安全验证:</b> 请点上方「打开验证窗口」,在采集器专用 Chrome 完成验证后再点一次采集。" : "";
-    const countText = collectorBucketCountText(judged.counts);
-    const strongCount = judged.counts["强匹配"] || 0;
-    finishCollectorProgress(!verification, verification ? "需要安全验证" : `采集完成,${added} 人入库`);
-    renderCollectorQuality({
-      fetched,
-      qualified: judged.qualified.length,
-      strong: strongCount,
-      duplicates,
-      skippedByRules,
-      counts: judged.counts,
-    });
-    setCollectorStatus(
-      `采集完成: 抓到 <b>${fetched}</b> 条。规则分类: ${countText}。<br>` +
-      `本次${onlyQualified ? "只导入强匹配/候补精选" : "导入全部分类"}: 可导入 <b>${importCards.length}</b> 人,新增 <b>${added}</b> 人,规则过滤 <b>${skippedByRules}</b> 人,跳过重复 <b>${duplicates}</b> 人。${verifyHint}`,
-      verification ? "" : "ok"
-    );
-
-    // 自动 AI 评分(复用顶部 AI 配置)
-    if (!verification && judged.qualified.length > 0) {
-      btn.textContent = "AI 评分中...";
-      const { scored, failed, skipped } = await autoScoreAfterCollect(judged);
-      if (scored || failed) {
-        const cfg = loadAiConfig();
-        setCollectorStatus(
-          `采集 ${added} 人,AI 评分(${escapeHtml(cfg.model)}):成功 <b>${scored}</b>,失败 <b>${failed}</b>。可直接进入强匹配桶处理。`,
-          "ok"
-        );
-        render();
-      } else if (skipped) {
-        setCollectorStatus(`采集 ${added} 人,AI 评分已跳过(${skipped})。`, "ok");
-      }
-    }
-  } catch (e) {
-    finishCollectorProgress(false, "采集失败");
-    setCollectorStatus(`采集失败: ${escapeHtml(e.message)}<br>原来的粘贴解析入口仍可继续使用。`, "error");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "开始采集并导入";
-  }
-});
-
-document.getElementById("collectorImportQualifiedBtn").addEventListener("click", () => importCollectorDb(true));
-document.getElementById("collectorImportAllBtn").addEventListener("click", () => importCollectorDb(false));
-
-// ============================================================
 // 渲染
 // ============================================================
 let activeFilter = "全部";
@@ -1869,6 +1703,8 @@ function dirLabel(k) {
     instagram: "Instagram",
     facebook: "Facebook/Meta",
     pinterest: "Pinterest",
+    reddit: "Reddit社区",
+    youtubeShorts: "YouTube Shorts",
     dtc: "独立站/DTC",
     contentGrowth: "内容增长",
     conversion: "评论私信/转化",
@@ -1897,13 +1733,16 @@ function buildPotentialGapReasons(c) {
   const text = getCandidateReviewText(c);
   const directions = new Set(c.directionHits || []);
   const has = re => re.test(text);
-  const hasOverseasPlatform = directions.has("instagram") || directions.has("tiktok") || directions.has("pinterest") || directions.has("facebook") || directions.has("dtc") ||
-    has(/Instagram|IG|ins|TikTok|TK|Pinterest|Facebook|Meta|海外社媒|海外社交|独立站|Shopify|DTC/i);
+  const hasOverseasPlatform = directions.has("instagram") || directions.has("tiktok") || directions.has("pinterest") || directions.has("reddit") || directions.has("youtubeShorts") || directions.has("facebook") || directions.has("dtc") ||
+    has(/Instagram|IG|ins|TikTok|TK|Pinterest|Reddit|YouTube Shorts|Youtube Shorts|Shorts|Facebook|Meta|海外社媒|海外社交|独立站|Shopify|DTC/i);
   const hasEnglish = has(/英文|英语|本土化|localization|翻译|海外文案|英文文案|海外用户|北美|欧美|海外市场/i);
   const hasShootEdit = has(/拍摄|摄影|短视频|视频拍摄|视频剪辑|剪辑|脚本|分镜|Reels|UGC短视频|场景短视频|产品细节|before\/after|剪映|CapCut|Premiere|PR|Final Cut/i);
   const hasCreatorUgc = directions.has("creatorCollab") || has(/达人|红人|KOL|KOC|influencer|creator|博主|寄样|测评|授权|UGC授权|UGC|买家秀|达人沟通|达人推进|达人合作/i);
+  const hasChannelStrategy = has(/平台策略|分发策略|内容分发|渠道策略|用户习惯|内容矩阵|社媒矩阵|再营销|品牌形象|视觉种草|家居灵感|图片搜索|长期导流|平台逻辑/i);
+  const hasCommunityInsight = directions.has("reddit") || has(/Reddit|reddit|社区运营|社区话题|话题研究|用户洞察|需求洞察|痛点挖掘|产品痛点|广告测试|subreddit/i);
   const hasFeedback = has(/用户问题|用户反馈|产品反馈|网站反馈|FAQ|评论|私信|需求反馈|反馈给产品|反馈给网站|产品优化|页面优化|评价|review/i);
-  const hasData = has(/数据复盘|链接点击|官网点击|主页访问|进站|进站数据|点击率|CTR|收藏|分享|加购|订单|转化率|GMV|ROI|Google Analytics|GA4|Shopify后台|后台数据/i);
+  const hasShopifyFunnel = directions.has("dtc") || has(/Shopify|shopify|独立站|DTC|官网|产品页|落地页|独立站访问|网站访问|浏览产品页|产品页浏览|官网点击|链接点击|进站|进站数据|加购|下单|订单|成交|转化路径|转化链路/i);
+  const hasData = has(/数据复盘|链接点击|官网点击|主页访问|独立站访问|网站访问|进站|进站数据|点击率|CTR|收藏|分享|加购|订单|转化率|GMV|ROI|Google Analytics|GA4|Shopify后台|后台数据/i);
   const hasOnlyPostingSignal = has(/发帖|发布|涨粉|粉丝增长|曝光|种草|内容策划/i) && !hasCreatorUgc && !hasFeedback && !hasData;
 
   const gaps = [];
@@ -1917,12 +1756,15 @@ function buildPotentialGapReasons(c) {
   if ((c.flags || []).some(f => /本地|创业|稳定性|离职|频繁跳槽|非全日制|专升本|性别/.test(f))) {
     (c.flags || []).filter(f => !/^JD命中/.test(f)).forEach(add);
   }
-  if (!hasOverseasPlatform) add("未明确 Instagram/TikTok/Pinterest 等海外社媒日常运营经验");
+  if (!hasOverseasPlatform) add("未明确 Instagram/Pinterest/TikTok/Reddit/YouTube Shorts 等海外内容渠道经验");
+  if (!hasChannelStrategy) add("未明确能根据不同平台用户习惯制定内容分发策略");
   if (!hasEnglish) add("未明确英文内容策划、翻译或本土化改写能力");
   if (!hasShootEdit) add("未明确图片/短视频拍摄、剪辑、脚本或 Reels/TikTok 内容生产能力");
   if (!hasCreatorUgc) add("未明确海外达人沟通、UGC 收集或授权管理经验");
+  if (!hasCommunityInsight) add("未明确 Reddit/社区话题研究、需求洞察、产品痛点挖掘或广告测试能力");
+  if (!hasShopifyFunnel) add("未明确 Shopify 独立站访问、产品页浏览、加购、下单链路");
   if (!hasFeedback) add("未明确能整理评论、私信、用户问题并反馈给产品或网站");
-  if (!hasData) add("未明确会看链接点击、主页访问、官网点击、进站、加购或订单数据");
+  if (!hasData) add("未明确会看有效点击、官网访问、进站、加购、订单或转化数据");
   if (hasOnlyPostingSignal) add("内容经历偏发帖/曝光,还需要核对是否有内容闭环和真实数据结果");
   return gaps.slice(0, 6);
 }
@@ -2098,17 +1940,6 @@ function renderDetailContent(c) {
         <div class="detail-item"><div class="k">命中方向</div><div class="v">${(c.directionHits || []).map(dirLabel).join("、") || "—"}</div></div>
       </div>
     </div>
-
-    ${c.source === "collector" ? `
-    <div class="detail-section">
-      <h4>平台定位/联系</h4>
-      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:10px;font-size:12px;color:#1e3a8a;line-height:1.7">
-        <div><b>去平台找这个人:</b> 打开候选人页,按姓名搜索/页面查找,用姓名 + 年龄 + 学历核对。</div>
-        <div style="margin-top:4px">姓名: <b>${escapeHtml(c.name)}</b> · ${escapeHtml(c.age || "")} · ${escapeHtml(c.degree || "")} · ${escapeHtml(c.expect || "")}</div>
-        <div style="color:#64748b">expectId: ${escapeHtml(c.bossExpectId || "无")} · geekId: ${escapeHtml(c.bossGeekId || "无")}</div>
-        <button class="ai-btn" data-copy-boss-fp="${fp}" style="margin-top:6px;background:#0369a1">复制定位信息</button>
-      </div>
-    </div>` : ""}
 
     <div class="detail-section">
       <h4>✨ 优势/简历摘要</h4>
@@ -2347,24 +2178,6 @@ function render() {
       if (c?.aiGreeting) {
         navigator.clipboard.writeText(c.aiGreeting).then(() => showToast("✓ 话术已复制"));
       }
-    });
-  });
-
-  document.querySelectorAll("[data-copy-boss-fp]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const fp = btn.dataset.copyBossFp;
-      const c = loadAll().find(c => fingerprint(c) === fp);
-      if (!c) return;
-      const text = [
-        `姓名:${c.name}`,
-        `年龄:${c.age || ""}`,
-        `学历:${c.degree || ""}`,
-        `期望:${c.expect || ""}`,
-        `来源关键词:${c.sourceKeyword || ""}`,
-        `expectId:${c.bossExpectId || ""}`,
-        `geekId:${c.bossGeekId || ""}`,
-      ].join("\n");
-      navigator.clipboard.writeText(text).then(() => showToast("✓ 定位信息已复制"));
     });
   });
 
@@ -2912,21 +2725,21 @@ function buildScoringPrompt(c) {
   }
   const sys = `你是一个资深 HR 招聘顾问,正在帮一家公司筛选候选人。
 公司:请按使用者在规则设置中填写的业务背景理解,不要假设具体公司名称。
-岗位:海外社媒内容运营 / 内部社媒内容人员(示例岗位,使用者可按自己的 JD 修改规则和关键词)
-业务:示例为面向海外市场的消费品/电商品牌,通过 Instagram、TikTok、Pinterest 等社媒内容获取真实用户反馈和官网流量。
+岗位:海外社媒转化运营 / Shopify 独立站方向(示例岗位,使用者可按自己的 JD 修改规则和关键词)
+业务:示例为从 0 到 1 启动海外社媒与 Shopify 独立站项目,通过 Instagram、Pinterest、TikTok、Reddit、YouTube Shorts 等海外内容渠道获客,并导流到 Shopify 独立站转化。
 
 岗位核心目标:
-不是只会发 Instagram 或单纯追粉丝数,而是能持续做英文内容策划和本土化,完成图片/短视频内容生产,日常运营 Instagram/TikTok/Pinterest,推进海外达人与 UGC,并把评论、私信、用户问题、链接点击和进站数据反馈给产品与网站团队。
+不是单纯发社媒内容,也不是单纯维护独立站。核心是围绕"内容曝光 → 独立站访问 → 产品页浏览 → 咨询/加购 → 下单成交 → 数据复盘优化"的完整链路,通过海外内容渠道进行内容种草、用户触达、达人合作和流量获取,最终推动 Shopify 独立站咨询、加购和订单。
 
 硬性要求:
-1. 优先匹配做过 Instagram / TikTok / Pinterest 日常运营的人,Facebook/Meta/独立站/DTC/Shopify 是加分,但不是唯一核心。
-2. 必须有英文内容策划和本土化能力:英文文案、海外用户表达、选题、标题、翻译、本土化改写。
-3. 必须有内容生产能力:图片拍摄、短视频拍摄、剪辑、脚本、分镜、Reels/TikTok/Pinterest video pin、产品场景表达。
-4. 加分且很重要:与海外达人沟通、达人推进、收集 UGC、管理 UGC/买家秀授权、沉淀素材库。
-5. 加分且很重要:能把评论、私信、用户问题反馈给产品与网站,能看链接点击、主页访问、官网点击、进站数据、加购、订单,而不只看粉丝数。
-6. 只会发帖、只做品牌曝光、只剪辑、只投放、只追粉丝增长,但没有内容闭环/达人UGC/用户反馈/数据意识,不能高分。
-7. 能使用 AI 工具提升选题、英文文案、翻译、本土化、内容复用、FAQ、评论私信整理、数据复盘效率。
-8. 能理解消费者购买产品时关心的尺寸、稳定性、颜值、价格、使用场景、发货、退换货等问题。
+1. 必须了解 Instagram、Pinterest、TikTok、Reddit、YouTube Shorts 等海外内容平台的基本运营逻辑,能按不同平台用户习惯制定内容分发策略。
+2. 平台理解要具体:Instagram 偏品牌形象/视觉种草/再营销;Pinterest 偏家居灵感/图片搜索/长期导流;TikTok 和 YouTube Shorts 偏短视频传播/产品使用场景/UGC 素材沉淀;Reddit 偏海外用户需求洞察/社区话题研究/产品痛点挖掘/广告测试。
+3. 必须有 Shopify/独立站转化意识:关注内容是否带来有效点击、网站访问、产品页浏览、咨询、加购和订单,而不是只关注粉丝数、点赞和曝光。
+4. 必须有内容种草和内容生产能力:英文内容策划、本土化、图片/短视频拍摄剪辑、脚本、分镜、产品使用场景表达。
+5. 加分且重要:海外达人沟通、达人推进、UGC 收集、UGC/买家秀授权管理、素材沉淀。
+6. 加分且重要:能把评论、私信、用户问题反馈给产品与网站,并根据数据优化内容方向、平台策略和独立站转化路径。
+7. 只会发帖、只做品牌曝光、只追粉丝增长、只做纯剪辑或纯投放,但没有独立站转化链路和数据复盘意识,不能高分。
+8. 能使用 AI 工具提升选题、英文文案、翻译、本土化、内容复用、FAQ、评论私信整理、数据复盘效率。
 9. 应届/在校/仅实习/完全没有社媒内容或运营经验,通常不合适。
 
 活跃度权重:
@@ -2937,28 +2750,28 @@ function buildScoringPrompt(c) {
 
 ⚡ 重要评分原则(请严格遵守,避免保守评分):
 
-1. **不要因为学历、年龄不明就淘汰**。本岗位更看重英文内容、本土化、拍摄剪辑、社媒运营、达人UGC、用户反馈和数据意识。
+1. **不要因为学历、年龄不明就淘汰**。本岗位更看重海外内容渠道理解、Shopify 独立站转化链路、内容分发策略、达人UGC、用户洞察和数据复盘。
 
 2. **基础合格就是 B 级 (75-85)**:
-   - 有 Instagram/TikTok/Pinterest/海外社媒经验,但达人UGC、数据复盘或用户反馈信息不完整
-   - 或有小红书/新媒体/内容运营经验,同时能看到图文/短视频内容生产 + 评论私信/用户反馈/数据意识
+   - 有 Instagram/Pinterest/TikTok/Reddit/YouTube Shorts/海外社媒经验,但 Shopify 独立站转化、数据复盘或达人UGC信息不完整
+   - 或有小红书/新媒体/内容运营经验,同时能看到短视频/图文内容生产 + 平台分发策略 + 点击/进站/加购/订单意识
    - 有运营或内容经验 1 年以上
-   - 只有平台名或只有内容策划,看不到拍摄剪辑、达人UGC、反馈或数据闭环,只能 C 级
+   - 只有平台名或只有内容策划,看不到 Shopify 链路、点击进站、加购订单或数据复盘,只能 C 级
 
 3. **A 级 / 强匹配 (90-100) 必须更严格**:
-   - 必须同时看到:Instagram/TikTok/Pinterest 等海外社媒平台经验 + 英文内容/本土化 + 图片或短视频拍摄剪辑 + 日常账号运营
-   - 还至少要看到达人沟通/UGC授权/用户反馈/链接点击/官网点击/进站数据/加购订单中的两类以上
-   - 只有小红书/国内新媒体/泛内容运营,但没有海外平台、英文内容或可迁移的短视频/UGC/数据经验,不要给 A 级
-   - 只有 TikTok Shop、直播带货或投放,没有内容生产、达人UGC或数据反馈闭环,不要给 A 级
+   - 必须同时看到:海外内容平台经验(Instagram/Pinterest/TikTok/Reddit/YouTube Shorts 至少其一) + 内容分发/平台策略 + Shopify/独立站访问链路 + 点击/咨询/加购/订单等数据复盘
+   - 还至少要看到达人合作/UGC沉淀/Reddit社区洞察/产品痛点挖掘/短视频场景内容中的两类以上
+   - 只有小红书/国内新媒体/泛内容运营,但没有海外平台或独立站转化链路,不要给 A 级
+   - 只有 TikTok Shop、直播带货或投放,没有内容种草、独立站导流、UGC素材或数据复盘,不要给 A 级
 
 4. **C 级 (60-74) 只给真正"信息不足"的**:
-   - 有运营/电商/客服/文案背景,但看不清是否做过海外社媒运营
-   - 只看得到平台名,看不到英文内容、拍摄剪辑、达人UGC、用户反馈或数据复盘能力
+   - 有运营/电商/客服/文案背景,但看不清是否做过海外内容渠道和 Shopify 独立站转化
+   - 只看得到平台名,看不到平台策略、独立站访问、加购订单或数据复盘能力
    - 可能合适,但需要补完整简历或追问项目细节
 
 4.5. **区分两类 TikTok/TK 人才**:
-   - 内容型 TK 可考虑:做过英文内容、本土化、拍摄剪辑、UGC短视频、达人素材、场景短视频、产品细节展示、买家秀、before/after 或教育型内容,这些能力可迁移到 Instagram Reels、Pinterest video pin 和官网素材,可按 B/A 级判断
-   - 交易/投放型 TK 要降权:只有 TikTok Shop / 直播带货 / 达人带货 / 投流投放经验,没有内容生产、品类审美、达人UGC、用户反馈或数据闭环,最多给 C 级或 D 级
+   - 内容型 TK 可考虑:做过英文内容、本土化、短视频场景、UGC短视频、达人素材、产品使用场景、买家秀、before/after 或教育型内容,并能导流到 Shopify/独立站或复用到 YouTube Shorts/Pinterest,可按 B/A 级判断
+   - 交易/投放型 TK 要降权:只有 TikTok Shop / 直播带货 / 达人带货 / 投流投放经验,没有内容种草、独立站导流、UGC素材或数据复盘,最多给 C 级或 D 级
 
 ⚠️ **严重信息不足直接给 D 级 30-45 分**(不要默认 65/70):
    - 只有"您好/可以聊吗/感兴趣"这类模板问候,无任何具体经验/能力描述
@@ -2968,15 +2781,15 @@ function buildScoringPrompt(c) {
 
 5. **D 级 (<60) 给明显不匹配的人**:
    - 纯会计/财务/行政/人事/仓库/采购,没有内容或运营经验
-   - 纯客服但没有社媒内容、用户反馈整理、评论私信或数据复盘能力
-   - 纯剪辑/设计/内容策划但没有账号运营、达人UGC、反馈或数据意识
-   - 纯广告投放优化师,不愿做内容、评论私信整理、UGC或数据反馈
+   - 纯客服但没有社媒内容、用户反馈整理、独立站转化或数据复盘能力
+   - 纯剪辑/设计/内容策划但没有平台策略、独立站导流、达人UGC、反馈或数据意识
+   - 纯广告投放优化师,不愿做内容种草、社区洞察、UGC或独立站转化复盘
    - 应届/在校/仅实习且无可验证社媒项目
 
 6. **请充分使用 0-100 全部分数范围**,不要扎堆 65 分
 
 7. ${isUnread ? `这是【未读消息】场景,信息更有限:
-   - 从消息内容判断:有具体自荐经验(如"做过IG/TikTok/Pinterest内容、英文内容、短视频拍剪、UGC或达人沟通")→ B 级以上
+   - 从消息内容判断:有具体自荐经验(如"做过IG/TikTok/Pinterest/Reddit/YouTube Shorts内容、Shopify独立站导流、UGC达人、点击加购订单复盘")→ B 级以上
    - 模板问候"您好可以聊聊吗"且无经验信息 → D 级 35-45
    - 暴露应届/仅实习/方向完全不符 → D 级` : `这是【推荐页】场景,信息相对完整,请按上述标准果断评分`}
 
@@ -2988,7 +2801,7 @@ function buildScoringPrompt(c) {
 5. 数组用 [],分数是数字不要带引号
 
 JSON 结构(请按这个填):
-{"score":88,"grade":"B","verdict":"推荐","strengths":["有海外社媒内容经验","能做短视频/UGC素材"],"concerns":["未看到链接点击或进站数据复盘"],"summary":"一句话总结是否适合内部海外社媒内容岗位"}`;
+{"score":88,"grade":"B","verdict":"推荐","strengths":["有海外内容渠道经验","能做短视频/UGC素材并关注独立站导流"],"concerns":["未看到 Shopify 加购/订单数据复盘"],"summary":"一句话总结是否适合海外社媒转化运营｜Shopify 独立站方向"}`;
   // 工作稳定性分析(给 AI 参考)
   const stab = analyzeWorkStability(c.workHistory || c.raw || "");
   const stabilityHint = stab.flags.length ?
@@ -3080,7 +2893,7 @@ async function aiGenerateGreeting(c) {
     ? "电商会计/电商财务"
     : "天猫/拼多多/亚马逊/跨境电商或平台运营";
   const roleIntro = USER_RULES.jobMode === "overseasSocial"
-    ? "我们正在招聘海外社媒内容运营,会负责英文内容本土化、图片/短视频内容、IG/TikTok/Pinterest日常运营、达人UGC、用户反馈和数据复盘"
+    ? "我们正在招聘海外社媒转化运营(Shopify独立站方向),会负责海外内容渠道分发、达人UGC、独立站访问/加购/订单和数据复盘"
     : `我们正在招聘${legacyRole}`;
   const sys = `你是一个有招聘经验的 HR,要给候选人写一段个性化的初次沟通话术。要求:
 1. 称呼对方姓名,显得真诚
@@ -3134,7 +2947,6 @@ function initAiConfigPanel() {
     };
     saveAiConfig(newCfg);
     updateAiStatusDisplay(false);
-    if (typeof updateCollectorAiHint === "function") updateCollectorAiHint();
     showToast("✓ 设置已保存(建议测试连接)");
   });
 
@@ -3149,7 +2961,6 @@ function initAiConfigPanel() {
     if (res.ok) {
       const cfg = loadAiConfig(); cfg.tested = true; saveAiConfig(cfg);
       updateAiStatusDisplay(true);
-      if (typeof updateCollectorAiHint === "function") updateCollectorAiHint();
       showToast("✓ AI 连接成功!现在可以用 AI 评分了");
     }
   });
@@ -3558,10 +3369,10 @@ initAiConfigPanel();
     const accountingMode = r.jobMode === "accounting" || r.requireAccounting;
     const genderText = r.genderPreference === "female" ? "、女生优先" : r.genderPreference === "male" ? "、男生优先" : "";
     if (r.jobMode === "overseasSocial" && !accountingMode) {
-      $("ruleSummaryJob").textContent = "海外社媒内容运营 / 内部社媒内容人员";
+      $("ruleSummaryJob").textContent = "海外社媒转化运营 / Shopify 独立站方向";
       $("ruleSummaryHard").textContent = `${r.minExpYears || 0} 年以上内容/社媒/运营经验，${r.minDegree === "any" ? "学历不限" : "学历需达标"}${genderText}`;
-      $("ruleSummaryDirections").textContent = "强匹配需具备海外平台 + 英文本土化 + 拍摄剪辑 + 达人/UGC/反馈/数据闭环";
-      $("ruleSummaryExclude").textContent = `${r.excludeFresh ? "应届/在校淘汰、" : ""}${r.excludeIntern ? "仅实习淘汰；" : ""}只会发帖/只看粉丝/纯剪辑/纯投放降权`;
+      $("ruleSummaryDirections").textContent = "强匹配需具备海外内容渠道 + Shopify 独立站转化链路 + 数据复盘";
+      $("ruleSummaryExclude").textContent = `${r.excludeFresh ? "应届/在校淘汰、" : ""}${r.excludeIntern ? "仅实习淘汰；" : ""}只会发帖/只看粉丝/无独立站转化意识降权`;
     } else {
       $("ruleSummaryJob").textContent = accountingMode ? "会计/财务专招" : "电商运营综合";
       $("ruleSummaryHard").textContent = `${r.maxAge || 30} 岁以下、${r.minDegree === "junior" ? "大专及以上" : r.minDegree === "any" ? "学历不限" : "本科及以上"}、${r.minExpYears || 0} 年以上经验${genderText}`;
