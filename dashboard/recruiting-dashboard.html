@@ -520,6 +520,17 @@
   <div class="sub">通用本地候选人筛选工具 · 岗位和规则可在下方「筛选规则设置」中自定义</div>
   <div style="color:#9ca3af;font-size:11px;margin-bottom:14px">本地工具 · 候选人数据和 AI Key 仅保存在当前浏览器本地</div>
 
+  <div id="workspaceBar" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border:2px solid #0f766e;padding:12px 14px;margin-bottom:14px;border-radius:8px">
+    <strong style="color:#0f766e">当前岗位工作区</strong>
+    <div id="workspaceTabs" style="display:flex;gap:8px;flex-wrap:wrap">
+      <button type="button" class="workspace-tab" data-workspace="overseasSocial">海外社媒 <span class="workspace-count">0</span></button>
+      <button type="button" class="workspace-tab" data-workspace="accounting">会计/财务 <span class="workspace-count">0</span></button>
+      <button type="button" class="workspace-tab" data-workspace="ecommerce">电商运营 <span class="workspace-count">0</span></button>
+      <button type="button" class="workspace-tab" data-workspace="customerService">电商客服 <span class="workspace-count">0</span></button>
+    </div>
+    <span style="color:#6b7280;font-size:12px">每个岗位的候选人、筛选规则和处理状态彼此独立</span>
+  </div>
+
   <div class="rule-band">
     <div class="rule"><strong>当前岗位：</strong><span id="ruleSummaryJob">海外社媒内容运营 / 内容增长方向</span></div>
     <div class="rule"><strong>硬性条件：</strong><span id="ruleSummaryHard">1 年以上内容/社媒/运营经验，学历不限</span></div>
@@ -621,10 +632,11 @@
           <h4 style="color:#0369a1;margin:0 0 10px">🎯 招聘岗位模式</h4>
           <div style="display:grid;grid-template-columns:130px 1fr;gap:8px 12px;align-items:center;margin-bottom:12px">
             <label>当前岗位:</label>
-            <select id="ruleJobMode" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px">
+            <select id="ruleJobMode" disabled title="请在页面顶部切换岗位工作区" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px;background:#f3f4f6">
               <option value="overseasSocial">海外社媒增长</option>
               <option value="accounting">会计/财务专招</option>
               <option value="ecommerce">电商运营综合</option>
+              <option value="customerService">电商客服专招</option>
             </select>
             <label>核心词强制命中:</label>
             <label><input type="checkbox" id="ruleRequireAccounting"> 是,只命中核心词才算匹配</label>
@@ -659,7 +671,7 @@
       <div style="margin-top:18px;display:flex;gap:10px;align-items:center">
         <button class="ai-btn" id="rulesSaveBtn" style="background:#047857;padding:8px 16px">💾 保存设置并重新分类</button>
         <button class="ai-btn" id="rulesResetBtn" style="padding:8px 16px">🔄 恢复默认</button>
-        <span style="color:#9ca3af;font-size:12px">💡 设置只在你浏览器本地保存,改了立刻生效</span>
+        <span style="color:#9ca3af;font-size:12px">💡 设置只作用于当前岗位；请在页面顶部切换其他岗位</span>
       </div>
     </div>
   </div>
@@ -801,6 +813,14 @@ const OVERSEAS_SOCIAL_KEYWORDS_DEFAULT = [
   "Amazon", "amazon", "Wayfair", "wayfair"
 ];
 
+const CUSTOMER_SERVICE_KEYWORDS_DEFAULT = [
+  "电商客服", "在线客服", "售前客服", "售后客服", "客服专员", "天猫客服", "淘宝客服", "拼多多客服", "京东客服", "抖音客服",
+  "售前", "售后", "在线接待", "客户咨询", "顾客咨询", "询单", "促单", "催付", "订单转化", "销售转化", "关联销售", "客单价",
+  "退换货", "退款", "投诉处理", "客诉", "纠纷", "物流异常", "售后跟踪", "回访", "复购", "客户关系", "客户维护",
+  "客户反馈", "顾客反馈", "需求分析", "话术", "客服话术", "服务流程", "店铺评分", "动态评分", "DSR", "满意度", "响应时长", "接待量",
+  "千牛", "旺旺", "咚咚", "飞鸽", "天猫", "淘宝", "拼多多", "京东", "抖音", "小红书", "私域"
+];
+
 const RULES_DEFAULTS = {
   jobMode: "overseasSocial",    // overseasSocial / accounting / ecommerce
   requireAccounting: false,
@@ -829,12 +849,97 @@ const RULES_DEFAULTS = {
   customExclude: "纯客服\n电话销售\n纯直播主播\n纯剪辑\n纯投放优化师\n纯行政\n纯财务\n会计\n出纳\n总账",
   customBonus: "Instagram\nPinterest\nTikTok\nReddit\nYouTube Shorts\nShopify\n独立站\nDTC\n海外社媒获客\n平台策略\n分发策略\n内容分发\n品牌形象\n视觉种草\n家居灵感\n图片搜索\n长期导流\n社区话题\n需求洞察\n痛点挖掘\n广告测试\n英文内容\n英文文案\n本土化\n短视频\n产品使用场景\nUGC\nUGC授权\n达人沟通\n达人推进\n用户反馈\n产品反馈\n网站反馈\n链接点击\n官网点击\n独立站访问\n进站数据\n加购\n订单\n数据复盘\nAI工具",
 };
-const RULES_STORAGE_KEY = "本地招聘筛选看板_规则_v1";
-function loadRules() {
-  try { return { ...RULES_DEFAULTS, ...JSON.parse(localStorage.getItem(RULES_STORAGE_KEY) || "{}") }; }
-  catch { return { ...RULES_DEFAULTS }; }
+
+const WORKSPACES = {
+  overseasSocial: { label: "海外社媒", jobMode: "overseasSocial" },
+  accounting: { label: "会计/财务", jobMode: "accounting" },
+  ecommerce: { label: "电商运营", jobMode: "ecommerce" },
+  customerService: { label: "电商客服", jobMode: "customerService" },
+};
+const ACTIVE_WORKSPACE_KEY = "本地招聘筛选看板_当前岗位_v2";
+const LEGACY_RULES_STORAGE_KEY = "本地招聘筛选看板_规则_v1";
+const LEGACY_DATA_STORAGE_KEY = "本地招聘筛选看板_v1";
+let ACTIVE_WORKSPACE = localStorage.getItem(ACTIVE_WORKSPACE_KEY) || "overseasSocial";
+if (!WORKSPACES[ACTIVE_WORKSPACE]) ACTIVE_WORKSPACE = "overseasSocial";
+
+function workspaceRulesKey(id = ACTIVE_WORKSPACE) { return `本地招聘筛选看板_规则_v2_${id}`; }
+function workspaceDataKey(id = ACTIVE_WORKSPACE) {
+  const scopedKey = `本地招聘筛选看板_候选人_v2_${id}`;
+  if (id === "overseasSocial" && !localStorage.getItem(scopedKey) && localStorage.getItem(LEGACY_DATA_STORAGE_KEY)) {
+    return LEGACY_DATA_STORAGE_KEY;
+  }
+  return scopedKey;
 }
-function saveRules(r) { localStorage.setItem(RULES_STORAGE_KEY, JSON.stringify(r)); }
+function safeLocalStorageSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+    return true;
+  } catch (error) {
+    console.warn("本地存储写入失败", key, error);
+    return false;
+  }
+}
+function defaultsForWorkspace(id = ACTIVE_WORKSPACE) {
+  const base = { ...RULES_DEFAULTS, enableDirections: { ...RULES_DEFAULTS.enableDirections } };
+  if (id === "accounting") return {
+    ...base, jobMode: "accounting", requireAccounting: true,
+    accountingKeywords: ACCOUNTING_KEYWORDS_DEFAULT.join("\n"), maxAge: 30,
+    minDegree: "bachelor", requireFulltime: true, minBachelorYears: 3,
+    excludeNonFulltime: true, customExclude: "", customBonus: "",
+    enableDirections: { ...base.enableDirections, pdd: false, tmall: false, jd: false, domestic: false, amazon: false, crossBorder: false, facebook: false, ecommerceAccounting: true },
+  };
+  if (id === "ecommerce") return {
+    ...base, jobMode: "ecommerce", requireAccounting: false,
+    accountingKeywords: ACCOUNTING_KEYWORDS_DEFAULT.join("\n"), maxAge: 30,
+    minDegree: "bachelor", requireFulltime: true, minBachelorYears: 3,
+    excludeNonFulltime: true, customExclude: "",
+    customBonus: "天猫\n拼多多\n亚马逊\n京东\n抖音\n小红书\n跨境\n店铺运营\n数据复盘",
+    enableDirections: { ...base.enableDirections, pdd: true, tmall: true, jd: true, domestic: true, amazon: true, crossBorder: true, facebook: false, ecommerceAccounting: false },
+  };
+  if (id === "customerService") return {
+    ...base, jobMode: "customerService", requireAccounting: false,
+    accountingKeywords: CUSTOMER_SERVICE_KEYWORDS_DEFAULT.join("\n"), maxAge: 50,
+    minDegree: "any", requireFulltime: false, minExpYears: 1, minBachelorYears: 0,
+    excludeFresh: true, excludeIntern: true, excludeNonFulltime: false,
+    customExclude: "纯电话销售\n催收\n纯外呼\n前台\n纯行政",
+    customBonus: "电商客服\n售前客服\n售后客服\n天猫客服\n淘宝客服\n拼多多客服\n京东客服\n抖音客服\n千牛\n旺旺\n询单\n促单\n订单转化\n关联销售\n复购\n退换货\n客诉\n投诉处理\n物流异常\n店铺评分\nDSR\n客户反馈\n话术优化\n数据复盘\n宠物用品",
+    enableDirections: { ...base.enableDirections, pdd: true, tmall: true, jd: true, domestic: true, amazon: false, crossBorder: false, facebook: false, ecommerceAccounting: true },
+  };
+  return base;
+}
+function migrateLegacyWorkspaceData() {
+  const socialRulesKey = workspaceRulesKey("overseasSocial");
+  if (!localStorage.getItem(socialRulesKey) && localStorage.getItem(LEGACY_RULES_STORAGE_KEY)) {
+    safeLocalStorageSet(socialRulesKey, localStorage.getItem(LEGACY_RULES_STORAGE_KEY));
+  }
+  // 候选人数据可能很大。不要在初始化时把旧库复制到多个岗位，避免超过 localStorage 容量。
+  // 旧库原样保留；新岗位从独立空库开始，后续粘贴的数据只进入当前岗位。
+}
+function reclaimExactLegacySocialCopy() {
+  const legacyRaw = localStorage.getItem(LEGACY_DATA_STORAGE_KEY);
+  const socialKey = "本地招聘筛选看板_候选人_v2_overseasSocial";
+  const socialRaw = localStorage.getItem(socialKey);
+  if (!legacyRaw || !socialRaw) return;
+  try {
+    const legacy = JSON.parse(legacyRaw);
+    const social = JSON.parse(socialRaw);
+    if (!Array.isArray(legacy) || !Array.isArray(social)) return;
+    const legacyItems = new Set(legacy.filter(x => x && typeof x === "object").map(x => JSON.stringify(x)));
+    const isUnchangedGeneratedCopy = social.every(x => x && typeof x === "object" && legacyItems.has(JSON.stringify(x)));
+    if (isUnchangedGeneratedCopy) localStorage.removeItem(socialKey);
+  } catch {}
+}
+reclaimExactLegacySocialCopy();
+migrateLegacyWorkspaceData();
+
+function loadRules() {
+  const defaults = defaultsForWorkspace();
+  try {
+    const saved = JSON.parse(localStorage.getItem(workspaceRulesKey()) || "{}");
+    return { ...defaults, ...saved, jobMode: WORKSPACES[ACTIVE_WORKSPACE].jobMode, enableDirections: { ...defaults.enableDirections, ...(saved.enableDirections || {}) } };
+  } catch { return defaults; }
+}
+function saveRules(r) { return safeLocalStorageSet(workspaceRulesKey(), JSON.stringify({ ...r, jobMode: WORKSPACES[ACTIVE_WORKSPACE].jobMode })); }
 function splitRuleWords(value) {
   return String(value || "").split(/[\\n,，、]+/).map(s => s.trim()).filter(Boolean);
 }
@@ -1173,8 +1278,50 @@ function overseasSocialRuleMatch(text, directionHits, ecommerceHits, hasFormalWo
   };
 }
 
+function customerServiceRuleMatch(text, expYears, activeText) {
+  const t = String(text || "");
+  const hasDirectRole = /电商客服|网络客服|在线客服|售前客服|售后客服|客服专员|天猫客服|淘宝客服|拼多多客服|京东客服|抖音客服|客服主管|客服组长|客服经理/i.test(t);
+  const hasEcommercePlatform = /天猫|淘宝|拼多多|京东|抖音|小红书|私域|千牛|旺旺|咚咚|飞鸽|电商平台|网店|国内电商运营|电商运营/i.test(t);
+  const hasSalesConversion = /询单|促单|催付|成交|订单转化|销售转化|转化率|关联销售|客单价|销售目标|推荐产品/i.test(t);
+  const hasAfterSales = /售后|退换货|退款|投诉|客诉|纠纷|物流异常|补发|售后跟踪|店铺评分|动态评分|DSR/i.test(t);
+  const hasRetention = /复购|客户关系|客户维护|回访|满意度|会员|私域|老客/i.test(t);
+  const hasFeedback = /客户反馈|顾客反馈|用户反馈|需求分析|收集.{0,6}(问题|需求|建议)|同步.{0,8}(运营|产品|仓储)|跨部门|服务方案/i.test(t);
+  const hasServiceData = /接待量|响应时长|转化率|满意度|店铺评分|动态评分|DSR|客服数据|数据复盘|询单率|售后率/i.test(t);
+  const hasCommunication = /沟通能力|表达能力|服务意识|耐心|情绪稳定|投诉处理|团队合作|执行力/i.test(t);
+  const isNonEcommerceService = /物业客服|银行客服|保险客服|游戏客服|政务客服|前台客服|行政客服|呼叫中心|电话客服/i.test(t) && !hasEcommercePlatform;
+  const activeScore = activeRecencyScore(activeText);
+  const dimensions = [];
+  if (hasDirectRole) dimensions.push("电商客服经历");
+  if (hasEcommercePlatform) dimensions.push("国内电商平台");
+  if (hasSalesConversion) dimensions.push("售前询单/促单");
+  if (hasAfterSales) dimensions.push("售后/客诉处理");
+  if (hasRetention) dimensions.push("复购/客户维护");
+  if (hasFeedback) dimensions.push("客户反馈/跨部门协同");
+  if (hasServiceData) dimensions.push("客服数据/店铺评分");
+  if (hasCommunication) dimensions.push("沟通服务能力");
+  if (activeScore.score >= 10) dimensions.push(activeScore.label);
+  let score = 0;
+  if (hasDirectRole) score += 35;
+  if (hasEcommercePlatform) score += 20;
+  if (hasSalesConversion) score += 25;
+  if (hasAfterSales) score += 14;
+  if (hasRetention) score += 10;
+  if (hasFeedback) score += 12;
+  if (hasServiceData) score += 12;
+  if (hasCommunication) score += 6;
+  if (expYears >= (USER_RULES.minExpYears ?? 1)) score += 10;
+  score += activeScore.score;
+  if (isNonEcommerceService) score -= 25;
+  const hasEnoughExperience = expYears >= (USER_RULES.minExpYears ?? 1);
+  const hasStrongAfterSales = hasAfterSales && [hasRetention, hasFeedback, hasServiceData].filter(Boolean).length >= 1;
+  const isStrong = hasDirectRole && hasEcommercePlatform && hasEnoughExperience &&
+    (hasSalesConversion || hasStrongAfterSales);
+  return { score, dimensions, hasDirectRole, hasEcommercePlatform, hasSalesConversion, hasAfterSales, hasRetention, hasFeedback, hasServiceData, hasCommunication, isNonEcommerceService, hasEnoughExperience, isStrong, activeScore };
+}
+
 function classify(c) {
-  const text = [c.name, c.job, c.city, c.message, c.detailText, c.note, c.advantage, c.workHistory, c.education].filter(Boolean).join("\n");
+  c = enrichCandidateTimeline(c);
+  const text = [c.name, c.job, c.city, c.message, c.detailText, c.note, c.advantage, c.workHistory, c.education, c.fullSummary, c.raw].filter(Boolean).join("\n");
   const accountingHits = matchedWords(text, activeAccountingWords());
   const directionEntries = { ...RULES.directions, ecommerceAccounting: activeAccountingWords() };
   const directionHits = Object.entries(directionEntries).filter(([, w]) => includesAny(text, w)).map(([k]) => k);
@@ -1218,8 +1365,10 @@ function classify(c) {
   if (ageNum && !isUnder30) reasons.push(`${ageNum}岁（超 ${USER_RULES.maxAge || 45} 岁）`);
   if (USER_RULES.minDegree !== "any" && isDegreeBelow) reasons.push(`学历 ${educationBelowHits[0] || degreeStr}（未达要求）`);
   else if (USER_RULES.minDegree !== "any" && !hasBachelor && degreeStr) reasons.push("学历未达到要求");
+  const isCustomerServiceMode = USER_RULES.jobMode === "customerService";
   if (requireAccounting && !hasAccountingMatch) reasons.push("未命中当前岗位核心方向");
-  else if (!ecommerceHits.length && !directionHits.length) reasons.push("未发现海外社媒/内容增长/转化相关经验");
+  else if (isCustomerServiceMode && !/客服|售前|售后|询单|促单|客诉|退换货/i.test(text)) reasons.push("未发现电商客服、售前或售后相关经验");
+  else if (!isCustomerServiceMode && !ecommerceHits.length && !directionHits.length) reasons.push("未发现当前岗位相关经验");
   if (internshipHits.length) reasons.push("疑似仅实习");
   if (isExcludedGraduate) reasons.push(isFutureGraduate ? "未毕业/未来届应届" : "应届/在校");
   const flags = [];
@@ -1271,6 +1420,9 @@ function classify(c) {
   const overseasMatch = isOverseasSocialMode
     ? overseasSocialRuleMatch(text, enabledDirHits, ecommerceHits, hasFormalWork, expYears, c.active)
     : null;
+  const customerServiceMatch = isCustomerServiceMode
+    ? customerServiceRuleMatch(text, expYears, c.active)
+    : null;
   const hasStrongBonus = overseasMatch && (
     overseasMatch.hasAI ||
     overseasMatch.hasPetHome ||
@@ -1292,7 +1444,9 @@ function classify(c) {
       !overseasMatch.isPureContentPlanning
     )) &&
       flags.length === 0
-    : isUnder30 && hasBachelor && enabledDirHits.length > 0 && hasFormalWork && expYears >= minExp && stability.flags.length === 0;
+    : isCustomerServiceMode
+      ? customerServiceMatch.isStrong && hasFormalWork && flags.length === 0
+      : isUnder30 && hasBachelor && enabledDirHits.length > 0 && hasFormalWork && expYears >= minExp && stability.flags.length === 0;
   const overseasBackupGate = !isOverseasSocialMode || (
     overseasMatch &&
     !hasHardFail &&
@@ -1339,6 +1493,26 @@ function classify(c) {
       reasons.push("未命中海外社媒内容增长岗位核心能力");
     }
     if (overseasMatch.dimensions.length) flags.push(`JD命中:${overseasMatch.dimensions.join("、")}`);
+  } else if (isCustomerServiceMode) {
+    if (hasHardFail || hasLongGapHardFail) bucket = "不符合";
+    else if (hasStabilityHardFail) bucket = "需人工复核";
+    else if (customerServiceMatch.isStrong) bucket = "强匹配";
+    else if (customerServiceMatch.isNonEcommerceService) {
+      bucket = "需人工复核";
+      reasons.push("有客服经验但未明确国内电商平台经验");
+    } else if (customerServiceMatch.score >= 60 && customerServiceMatch.hasDirectRole) {
+      bucket = reviewFlags.length ? "需人工复核" : "候补精选";
+      if (!customerServiceMatch.hasSalesConversion) reasons.push("未明确售前询单、促单或成交转化能力");
+      if (!customerServiceMatch.hasAfterSales) reasons.push("未明确退换货、投诉或售后问题处理能力");
+    } else if (customerServiceMatch.hasDirectRole || customerServiceMatch.hasEcommercePlatform) {
+      bucket = "待补详情";
+      if (!customerServiceMatch.hasDirectRole) reasons.push("有电商平台经历,但未明确客服接待经验");
+      if (!customerServiceMatch.hasServiceData) reasons.push("未明确客服数据、满意度或店铺评分维护经验");
+    } else {
+      bucket = "不符合";
+      reasons.push("未命中电商客服岗位核心能力");
+    }
+    if (customerServiceMatch.dimensions.length) flags.push(`JD命中:${customerServiceMatch.dimensions.join("、")}`);
   } else if (requireAccounting && !hasAccountingMatch) bucket = "不符合";
   else if (hasHardFail || hasLongGapHardFail) bucket = "不符合";
   else if (hasStabilityHardFail) bucket = "不符合";
@@ -1355,10 +1529,12 @@ function classify(c) {
   //   不符合 = AI D 级 + 硬淘汰
   const aiMatchesCurrentJob = c.aiGrade && (
     c.aiJobMode === USER_RULES.jobMode ||
-    (USER_RULES.jobMode !== "overseasSocial" && !c.aiJobMode)
+    (!["overseasSocial", "customerService"].includes(USER_RULES.jobMode) && !c.aiJobMode)
   );
   if (aiMatchesCurrentJob) {
     if (isOverseasSocialMode && (hasHardFail || hasLongGapHardFail)) {
+      bucket = "不符合";
+    } else if (isCustomerServiceMode && (hasHardFail || hasLongGapHardFail)) {
       bucket = "不符合";
     } else if (requireAccounting && !hasAccountingMatch) {
       bucket = "不符合";
@@ -1366,6 +1542,9 @@ function classify(c) {
       if (isOverseasSocialMode && !isRuleStrong) {
         bucket = overseasBackupGate ? (reviewFlags.length ? "需人工复核" : "候补精选") : (reviewFlags.length ? "需人工复核" : "待补详情");
         reasons.push("AI评分较高,但未同时满足海外平台、图文表达、运营承接和转化销售硬门槛");
+      } else if (isCustomerServiceMode && !customerServiceMatch.isStrong) {
+        bucket = customerServiceMatch.hasDirectRole ? "候补精选" : "待补详情";
+        reasons.push("AI评分较高,但电商平台、售前促单或售后处理证据不完整");
       } else {
         bucket = "强匹配";
       }
@@ -1385,7 +1564,8 @@ function classify(c) {
   // 没 AI 评分:保留规则的判断结果(强匹配/待补/复核/不符合)
   // 等 AI 评分后,A 级会自动升级,D 级会降级,B/C 各归其位
 
-  return { ...c, gender: c.gender || inferredGender, bucket, directionHits, ecommerceHits, accountingHits, reasons, flags, ageNum, expYears, hasBachelor, isUnder30 };
+  const displayDirectionHits = isCustomerServiceMode && customerServiceMatch ? customerServiceMatch.dimensions : directionHits;
+  return { ...c, gender: c.gender || inferredGender, bucket, directionHits: displayDirectionHits, ecommerceHits, accountingHits, reasons, flags, ageNum, expYears, hasBachelor, isUnder30 };
 }
 
 // ============================================================
@@ -1532,6 +1712,89 @@ function parseUnreadList(text) {
   return cards;
 }
 
+// BOSS 推荐卡片的时间轴在复制时可能有三种顺序:
+// 日期与公司同一行、日期/公司交替两行、整列日期后再整列公司。
+// 统一按出现顺序配对，避免右侧工作经历在粘贴后丢失。
+const TIMELINE_DATE_SOURCE = "(?:19|20)\\d{2}(?:[./]\\d{1,2})?\\s*(?:(?:[-–—~]\\s*)?(?:至今|现在)|(?:[-–—~至]\\s*)(?:19|20)\\d{2}(?:[./]\\d{1,2})?)";
+
+function normalizeTimelineText(value) {
+  return String(value || "")
+    .replace(/\u00a0/g, " ")
+    .replace(/[\t ]+/g, " ")
+    .replace(/^\s*[·•|]+\s*/, "")
+    .trim();
+}
+
+function isLikelyTimelineDetail(value) {
+  const text = normalizeTimelineText(value);
+  if (!text || text.length < 2 || text.length > 220) return false;
+  if (/^(优势|期望|最近关注|打招呼|在线|刚刚活跃|今日活跃|本周活跃|本月活跃|月内活跃|随时到岗|招聘规范|招聘数据)/.test(text)) return false;
+  return /[·•]/.test(text) ||
+    /(客服|运营|销售|会计|财务|出纳|主管|经理|专员|助理|设计|剪辑|策划|主播|采购|产品|市场|商务|工程师|技术|顾问|店长|组长|负责人)/.test(text) ||
+    /(大学|学院|学校|高中|中专|职业技术|本科|大专|专科|硕士|博士)/.test(text) ||
+    /(公司|科技|信息|电商|电子商务|集团|商贸|贸易|家居|用品|品牌|网络)/.test(text);
+}
+
+function extractTimelineEntries(rawText) {
+  const text = String(rawText || "").replace(/\r/g, "");
+  const lines = text.split(/\n+/).map(normalizeTimelineText).filter(Boolean);
+  const dates = [];
+  const details = [];
+  let timelineStarted = false;
+
+  for (const line of lines) {
+    const dateRegex = new RegExp(TIMELINE_DATE_SOURCE, "g");
+    const matches = [...line.matchAll(dateRegex)];
+    if (matches.length) {
+      timelineStarted = true;
+      matches.forEach((match, index) => {
+        const nextStart = matches[index + 1]?.index ?? line.length;
+        const tail = normalizeTimelineText(line.slice((match.index || 0) + match[0].length, nextStart));
+        dates.push(normalizeTimelineText(match[0]).replace(/\s+/g, " "));
+        if (isLikelyTimelineDetail(tail)) details.push(tail);
+      });
+      continue;
+    }
+    if (timelineStarted && isLikelyTimelineDetail(line)) details.push(line);
+  }
+
+  if (!dates.length) return { workEntries: [], educationEntries: [], workHistory: "", education: "" };
+
+  // 常见 DOM 复制顺序下，日期和说明的数量相同；按顺序配对最可靠。
+  // 数量不足时保留已获得的信息，但不把未知内容硬猜成某一段经历。
+  const pairedCount = Math.min(dates.length, details.length);
+  const workEntries = [];
+  const educationEntries = [];
+  for (let i = 0; i < pairedCount; i++) {
+    const detail = details[i];
+    const entry = `${dates[i]} ${detail}`.trim();
+    const isEducation = /(大学|学院|学校|高中|中专|职业技术)/.test(detail) &&
+      /(本科|大专|专科|硕士|博士|中专|高职|专业)/.test(detail);
+    if (isEducation) educationEntries.push(entry);
+    else workEntries.push(entry);
+  }
+
+  return {
+    workEntries: workEntries.slice(0, 12),
+    educationEntries: educationEntries.slice(0, 6),
+    workHistory: workEntries.slice(0, 12).join("\n"),
+    education: educationEntries.slice(0, 6).join("\n"),
+  };
+}
+
+function enrichCandidateTimeline(candidate) {
+  if (!candidate || !candidate.raw) return candidate;
+  const timeline = extractTimelineEntries(candidate.raw);
+  const workHistory = candidate.workHistory || timeline.workHistory;
+  const education = candidate.education || timeline.education;
+  if (workHistory === candidate.workHistory && education === candidate.education) return candidate;
+
+  const summaryParts = [candidate.fullSummary || ""];
+  if (workHistory && !String(candidate.fullSummary || "").includes("[工作经历]")) summaryParts.push(`[工作经历]\n${workHistory}`);
+  if (education && !String(candidate.fullSummary || "").includes("[教育经历]")) summaryParts.push(`[教育经历]\n${education}`);
+  return { ...candidate, workHistory, education, fullSummary: summaryParts.filter(Boolean).join("\n\n") };
+}
+
 function parseRawText(text) {
   if (!text) return [];
 
@@ -1584,25 +1847,10 @@ function parseRawText(text) {
     const advMatch = ch.match(/优势[\s:：]*([^\n]+(?:\n(?!\d{4}|工作经历|教育经历|期望)[^\n]+)*?)(?=\n*(?:\d{4}|工作经历|教育经历|$))/);
     const advantage = advMatch ? advMatch[1].trim().replace(/\s+/g, ' ').slice(0, 500) : "";
 
-    // ★ 工作经历:抓所有 "YYYY.MM - YYYY.MM 公司·岗位" 段落
-    const workEntries = [];
-    const workRegex = /(\d{4}\.\d{1,2}\s*[-—]\s*(?:至今|\d{4}\.\d{1,2}))\s+([^\n·•\d]{1,40}[··•]+[^\n\d]{1,40})/g;
-    let wm;
-    while ((wm = workRegex.exec(ch)) !== null) {
-      workEntries.push(`${wm[1]} ${wm[2].trim()}`);
-      if (workEntries.length >= 10) break;
-    }
-    const workHistory = workEntries.join("\n");
-
-    // ★ 教育经历:抓 "YYYY - YYYY 学校·专业·学历" 段落
-    const eduEntries = [];
-    const eduRegex = /(\d{4}\s*[-—]\s*\d{4})\s+([^\n\d]{2,50}(?:学院|大学|学校|高中|中专|职业技术)[^\n\d]{0,30}(?:本科|大专|硕士|博士|专科|中专|高职)?)/g;
-    let em;
-    while ((em = eduRegex.exec(ch)) !== null) {
-      eduEntries.push(`${em[1]} ${em[2].trim()}`);
-      if (eduEntries.length >= 5) break;
-    }
-    const education = eduEntries.join("\n");
+    // ★ 工作/教育经历:兼容同一行、交替两行和两列复制三种格式
+    const timeline = extractTimelineEntries(ch);
+    const workHistory = timeline.workHistory;
+    const education = timeline.education;
 
     // ★ 技能标签:抓 "记账会计 SAP 电商" 这种简短词
     // 在工作经历下方,通常有几个 2-6 字短标签
@@ -1634,7 +1882,7 @@ function parseRawText(text) {
       skillTags,         // ★ 技能标签
       fullSummary,       // ★ 完整简历摘要(给 AI 用)
       completeness,      // ★ 信息完整度
-      raw: ch.slice(0, 2000),  // 保留原始文本更长,详情面板能看
+      raw: ch.slice(0, 4000),  // 保留右侧时间轴,供后续重新分类和详情展示
       source: "paste",
       addedAt: Date.now(),
       pastePosition: cards.length + 1,
@@ -1646,15 +1894,19 @@ function parseRawText(text) {
 // ============================================================
 // 状态：localStorage 持久化 + 指纹去重
 // ============================================================
-const STORAGE_KEY = "本地招聘筛选看板_v1";
 function fingerprint(c) {
   return `${c.name}|${c.ageNum || c.age}|${c.degree || ""}|${(c.expect || "").slice(0, 8)}`;
 }
 function loadAll() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch { return []; }
+  try { return JSON.parse(localStorage.getItem(workspaceDataKey()) || "[]"); } catch { return []; }
 }
 function saveAll(arr) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  if (!safeLocalStorageSet(workspaceDataKey(), JSON.stringify(arr))) {
+    alert("浏览器本地存储空间不足，当前修改未保存。请先导出候选人数据备份，再清理不再使用的岗位数据。");
+    return false;
+  }
+  updateWorkspaceCounts();
+  return true;
 }
 function mergeIn(newCards) {
   const all = loadAll();
@@ -1749,6 +2001,23 @@ function buildPotentialGapReasons(c) {
   const text = getCandidateReviewText(c);
   const directions = new Set(c.directionHits || []);
   const has = re => re.test(text);
+  if (USER_RULES.jobMode === "customerService") {
+    const gaps = [];
+    const add = reason => {
+      const normalized = String(reason || "").replace(/[，。；;,.]/g, "").trim();
+      if (normalized && !gaps.some(x => x.replace(/[，。；;,.]/g, "").trim() === normalized)) gaps.push(String(reason).trim());
+    };
+    (c.aiConcerns || []).forEach(add);
+    (c.reasons || []).forEach(add);
+    if (!has(/电商客服|网络客服|在线客服|售前客服|售后客服|天猫客服|淘宝客服|拼多多客服|京东客服|抖音客服|客服主管|客服组长|客服经理/i)) add("未明确国内电商在线客服经验");
+    if (!has(/天猫|淘宝|拼多多|京东|抖音|千牛|旺旺|咚咚|飞鸽|电商平台|国内电商运营|电商运营/i)) add("未明确使用过的电商平台或客服工具");
+    if (!has(/询单|促单|催付|成交|订单转化|转化率|关联销售|客单价|推荐产品/i)) add("未明确售前询单、促单和订单转化能力");
+    if (!has(/售后|退换货|退款|投诉|客诉|纠纷|物流异常|补发|店铺评分|DSR/i)) add("未明确退换货、物流异常、投诉或客诉处理能力");
+    if (!has(/复购|客户关系|客户维护|回访|满意度|老客|私域/i)) add("未明确客户维护、回访或促进复购经验");
+    if (!has(/客户反馈|顾客反馈|需求分析|跨部门|同步.{0,8}(运营|产品|仓储)|服务方案/i)) add("未明确整理客户反馈并与运营、产品或仓储协同的能力");
+    if (!has(/接待量|响应时长|转化率|满意度|店铺评分|DSR|客服数据|数据复盘|询单率|售后率/i)) add("未明确客服数据复盘、满意度或店铺评分维护经验");
+    return gaps.slice(0, 6);
+  }
   const hasIgOrFacebook = has(/Instagram|instagram|\bIG\b|\bins\b|Reels|reels|Facebook|facebook|\bFB\b|Meta|meta/i);
   const hasOverseasPlatform = directions.has("instagram") || directions.has("tiktok") || directions.has("pinterest") || directions.has("reddit") || directions.has("youtubeShorts") || directions.has("facebook") || directions.has("dtc") ||
     has(/Instagram|\bIG\b|\bins\b|TikTok|TK|Pinterest|Reddit|YouTube|YouTube Shorts|Youtube Shorts|Shorts|Facebook|Meta|海外社媒|海外社交|独立站|Shopify|DTC/i);
@@ -2598,8 +2867,8 @@ document.getElementById("importFile").addEventListener("change", e => {
 });
 
 document.getElementById("resetBtn").addEventListener("click", () => {
-  if (!confirm("⚠️ 清空所有累积的候选人记录？此操作不可恢复。")) return;
-  localStorage.removeItem(STORAGE_KEY);
+  if (!confirm(`⚠️ 清空「${WORKSPACES[ACTIVE_WORKSPACE].label}」岗位的全部候选人？其他岗位不受影响。此操作不可恢复。`)) return;
+  localStorage.removeItem(workspaceDataKey());
   document.getElementById("addedCount").textContent = 0;
   render();
 });
@@ -2736,8 +3005,39 @@ ${c.fullResume ? `\n完整简历:\n${c.fullResume.slice(0, 3000)}` : ''}`;
   return { sys, user };
 }
 
+function buildCustomerServiceScoringPrompt(c, isUnread) {
+  const sys = `你是资深电商招聘顾问,正在筛选国内电商客服候选人。
+岗位:电商客服专员(售前+售后),综合薪资 6K-8K。
+
+核心职责:负责天猫、淘宝、拼多多、京东、抖音等平台在线接待;理解顾客需求并促成订单;处理退换货、物流异常、投诉和售后跟进;维护客户关系和复购;收集客户反馈并同步运营、产品、仓储团队;关注响应时长、询单转化、满意度和店铺评分。
+
+评分标准:
+- A 90-100: 售前优先。1年以上明确电商客服经历,熟悉至少一个国内电商平台,有在线接待、询单、促单、催付或订单转化经验即可作为强信号;同时有售后、复购、数据复盘或店铺评分经验更佳。以售后为主的人,若客诉处理扎实且具备复购、反馈协同或客服数据能力,也可进入 A 级。
+- B 75-89: 有明确电商客服经验;售前转化证据不够具体,或以售后为主但复购、反馈协同和数据经验不完整。
+- C 60-74: 有普通客服/销售/电商经验,可能可迁移,但未明确在线接待、促单或售后能力,需要补充简历。
+- D <60: 纯电话销售、催收、外呼、前台/行政客服,或没有客户服务相关经验。
+
+注意:学历和性别不是硬门槛;年龄未知不要淘汰。应届、在校或仅实习且没有可验证电商客服经验通常不合适。活跃时间越近,同等条件下优先。不要只因出现“客服”二字就给高分,必须区分电商在线客服与非电商客服。
+${isUnread ? "未读消息只有模板问候且无具体经验时给 D 级 35-45。" : "推荐页信息相对完整,请按简历证据评分。"}
+
+只输出 JSON:
+{"score":85,"grade":"B","verdict":"推荐","strengths":["电商客服经验"],"concerns":["待确认点"],"summary":"一句话总结"}`;
+  const user = `候选人信息:
+姓名:${c.name || ""}
+年龄:${c.age || "未知"} 经验:${c.exp || "未知"} 学历:${c.degree || "未知"}
+活跃:${c.active || "未知"} 期望:${c.expect || "未知"}
+优势:${c.advantage || c.note || "(无)"}
+工作经历:${c.workHistory || "(未读取到)"}
+技能:${(c.skillTags || []).join(" / ") || "(未读取到)"}
+${c.fullResume ? `完整简历:${c.fullResume.slice(0, 3000)}` : ""}`;
+  return { sys, user };
+}
+
 function buildScoringPrompt(c) {
   const isUnread = c.source === "unread";
+  if (USER_RULES.jobMode === "customerService") {
+    return buildCustomerServiceScoringPrompt(c, isUnread);
+  }
   if (USER_RULES.jobMode !== "overseasSocial") {
     return buildLegacyScoringPrompt(c, isUnread);
   }
@@ -2888,7 +3188,7 @@ async function aiScoreCandidate(c, maxRetries = 3) {
         aiScore: score,
         aiGrade: grade,
         aiJobMode: USER_RULES.jobMode,
-        aiPromptVersion: USER_RULES.jobMode === "overseasSocial" ? "overseas_social_v1" : "legacy_v1",
+        aiPromptVersion: USER_RULES.jobMode === "overseasSocial" ? "overseas_social_v1" : (USER_RULES.jobMode === "customerService" ? "customer_service_v1" : "legacy_v1"),
         aiVerdict: result.verdict || "",
         aiStrengths: Array.isArray(result.strengths) ? result.strengths : (result.strengths ? [result.strengths] : []),
         aiConcerns: Array.isArray(result.concerns) ? result.concerns : (result.concerns ? [result.concerns] : []),
@@ -2913,7 +3213,9 @@ async function aiGenerateGreeting(c) {
     : "天猫/拼多多/亚马逊/跨境电商或平台运营";
   const roleIntro = USER_RULES.jobMode === "overseasSocial"
     ? "我们正在招聘海外社媒内容运营/内容增长方向,会负责 Instagram/Facebook 等海外社媒内容产出、图文短视频、达人UGC、评论私信和内容数据复盘"
-    : `我们正在招聘${legacyRole}`;
+    : USER_RULES.jobMode === "customerService"
+      ? "我们正在招聘电商客服专员,负责国内电商平台售前接待、促成订单、售后客诉处理、复购维护和客户反馈整理,综合薪资6K-8K"
+      : `我们正在招聘${legacyRole}`;
   const sys = `你是一个有招聘经验的 HR,要给候选人写一段个性化的初次沟通话术。要求:
 1. 称呼对方姓名,显得真诚
 2. 提到对方简历里 1-2 个亮点(让 ta 知道你看过简历)
@@ -3375,8 +3677,17 @@ initAiConfigPanel();
     customBonus: $("ruleCustomBonus").value,
   });
   function updateRulesModeUi() {
-    const accountingMode = $("ruleJobMode").value === "accounting" || $("ruleRequireAccounting").checked;
-    $("accountingModeHint").style.display = accountingMode ? "block" : "none";
+    const mode = $("ruleJobMode").value;
+    const accountingMode = mode === "accounting" || $("ruleRequireAccounting").checked;
+    const hint = $("accountingModeHint");
+    hint.style.display = "block";
+    hint.textContent = mode === "customerService"
+      ? "当前核心方向:国内电商在线客服、售前询单与促单、售后退换货/投诉处理、复购维护、客户反馈整理、客服数据和店铺评分。"
+      : mode === "overseasSocial"
+        ? "当前核心方向:Instagram/Facebook/Pinterest/TikTok/YouTube 等海外社媒内容产出、拍摄剪辑、图文/短视频、达人UGC和内容数据复盘。"
+        : accountingMode
+          ? "当前核心方向:会计、财务、总账、出纳、应收应付、税务、ERP、金蝶/用友等岗位经验。"
+          : "当前核心方向:天猫、淘宝、拼多多、京东、亚马逊等电商平台运营和数据复盘。";
     for (const id of ["dirPdd", "dirTmall", "dirJd", "dirDomestic", "dirAmazon", "dirCrossBorder", "dirFacebook"]) {
       $(id).disabled = accountingMode;
       $(id).parentElement.style.opacity = accountingMode ? "0.45" : "1";
@@ -3392,6 +3703,11 @@ initAiConfigPanel();
       $("ruleSummaryHard").textContent = `${r.minExpYears || 0} 年以上内容/社媒/运营经验，${r.minDegree === "any" ? "学历不限" : "学历需达标"}${genderText}`;
       $("ruleSummaryDirections").textContent = "强匹配优先看 Instagram/Facebook 等海外社媒经验 + 内容产出能力";
       $("ruleSummaryExclude").textContent = `${r.excludeFresh ? "应届/在校淘汰、" : ""}${r.excludeIntern ? "仅实习淘汰；" : ""}只会机械发帖/只看粉丝/无内容产出或数据复盘降权`;
+    } else if (r.jobMode === "customerService") {
+      $("ruleSummaryJob").textContent = "电商客服专员（售前 + 售后）";
+      $("ruleSummaryHard").textContent = `${r.minExpYears || 0} 年以上相关经验，学历不限${genderText}`;
+      $("ruleSummaryDirections").textContent = "售前询单、促单和转化经验优先；售后客诉经验也可匹配";
+      $("ruleSummaryExclude").textContent = `${r.excludeFresh ? "应届/在校淘汰、" : ""}${r.excludeIntern ? "仅实习淘汰；" : ""}纯电话销售/催收/外呼降权或淘汰`;
     } else {
       $("ruleSummaryJob").textContent = accountingMode ? "会计/财务专招" : "电商运营综合";
       $("ruleSummaryHard").textContent = `${r.maxAge || 30} 岁以下、${r.minDegree === "junior" ? "大专及以上" : r.minDegree === "any" ? "学历不限" : "本科及以上"}、${r.minExpYears || 0} 年以上经验${genderText}`;
@@ -3403,10 +3719,16 @@ initAiConfigPanel();
     const r = USER_RULES;
     const customized = JSON.stringify(r) !== JSON.stringify(RULES_DEFAULTS);
     const accountingMode = r.jobMode === "accounting" || r.requireAccounting;
-    $("rulesStatus").textContent = r.jobMode === "overseasSocial" && !accountingMode ? "· 海外社媒增长规则" : (accountingMode ? "· 核心词强制命中已启用" : (customized ? "· ⚠️ 已自定义" : "· 当前为默认规则"));
-    $("rulesStatus").style.color = r.jobMode === "overseasSocial" && !accountingMode ? "#047857" : (accountingMode ? "#047857" : (customized ? "#dc2626" : "#92400e"));
+    $("rulesStatus").textContent = r.jobMode === "overseasSocial" && !accountingMode ? "· 海外社媒增长规则" : (r.jobMode === "customerService" ? "· 电商客服规则" : (accountingMode ? "· 核心词强制命中已启用" : (customized ? "· ⚠️ 已自定义" : "· 当前为默认规则")));
+    $("rulesStatus").style.color = ["overseasSocial", "customerService"].includes(r.jobMode) ? "#047857" : (accountingMode ? "#047857" : (customized ? "#dc2626" : "#92400e"));
     updateRuleSummary();
   }
+
+  window.__reloadWorkspaceRules = function() {
+    fillForm();
+    updateRulesModeUi();
+    updateRulesStatus();
+  };
 
   fillForm();
   updateRulesModeUi();
@@ -3454,6 +3776,28 @@ initAiConfigPanel();
       $("dirEcomAcc").checked = false;
       $("ruleCustomExclude").value = "";
       $("ruleCustomBonus").value = "天猫\n拼多多\n亚马逊\n京东\n抖音\n小红书\n跨境\n店铺运营\n数据复盘";
+    } else if (mode === "customerService") {
+      const preset = defaultsForWorkspace("customerService");
+      $("ruleRequireAccounting").checked = false;
+      $("ruleAccountingKeywords").value = preset.accountingKeywords;
+      $("ruleMaxAge").value = preset.maxAge;
+      $("ruleGenderPreference").value = preset.genderPreference;
+      $("ruleGenderUnknownReview").checked = true;
+      $("ruleMinDegree").value = preset.minDegree;
+      $("ruleFulltime").checked = false;
+      $("ruleMinExpYears").value = preset.minExpYears;
+      $("ruleMinBachelorYears").value = 0;
+      $("ruleExcludeNonFulltime").checked = false;
+      $("dirPdd").checked = true;
+      $("dirTmall").checked = true;
+      $("dirJd").checked = true;
+      $("dirDomestic").checked = true;
+      $("dirAmazon").checked = false;
+      $("dirCrossBorder").checked = false;
+      $("dirFacebook").checked = false;
+      $("dirEcomAcc").checked = true;
+      $("ruleCustomExclude").value = preset.customExclude;
+      $("ruleCustomBonus").value = preset.customBonus;
     } else {
       $("ruleRequireAccounting").checked = false;
       $("ruleAccountingKeywords").value = OVERSEAS_SOCIAL_KEYWORDS_DEFAULT.join("\n");
@@ -3501,11 +3845,45 @@ initAiConfigPanel();
 
   $("rulesResetBtn").addEventListener("click", () => {
     if (!confirm("确定恢复默认规则?")) return;
-    USER_RULES = { ...RULES_DEFAULTS };
+    USER_RULES = defaultsForWorkspace();
     saveRules(USER_RULES);
     fillForm();
     render();
     showToast("✓ 已恢复默认规则");
+  });
+})();
+
+function updateWorkspaceCounts() {
+  document.querySelectorAll(".workspace-tab").forEach(btn => {
+    const id = btn.dataset.workspace;
+    let count = 0;
+    try { count = JSON.parse(localStorage.getItem(workspaceDataKey(id)) || "[]").length; } catch {}
+    const countEl = btn.querySelector(".workspace-count");
+    if (countEl) countEl.textContent = count;
+    const active = id === ACTIVE_WORKSPACE;
+    btn.style.background = active ? "#0f766e" : "#fff";
+    btn.style.color = active ? "#fff" : "#374151";
+    btn.style.borderColor = active ? "#0f766e" : "#d1d5db";
+    btn.style.fontWeight = active ? "700" : "600";
+  });
+}
+
+(function initWorkspaceTabs() {
+  updateWorkspaceCounts();
+  document.querySelectorAll(".workspace-tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const next = btn.dataset.workspace;
+      if (!WORKSPACES[next] || next === ACTIVE_WORKSPACE) return;
+      ACTIVE_WORKSPACE = next;
+      safeLocalStorageSet(ACTIVE_WORKSPACE_KEY, next);
+      USER_RULES = loadRules();
+      activeFilter = "全部";
+      window.__statusStageFilter = null;
+      if (window.__reloadWorkspaceRules) window.__reloadWorkspaceRules();
+      updateWorkspaceCounts();
+      render();
+      showToast(`✓ 已切换到「${WORKSPACES[next].label}」岗位，候选人和规则已独立加载`);
+    });
   });
 })();
 
