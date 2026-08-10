@@ -121,7 +121,7 @@
   .process-progress { color: #6b7280; font-size: 13px; margin-bottom: 14px; }
   .process-person-name { font-size: 32px; font-weight: 750; color: #0369a1; margin: 16px 0 4px; word-break: break-all; }
   .process-meta { color: #374151; font-size: 14px; margin-bottom: 12px; }
-  .process-detail { background: #f3f4f6; border-radius: 6px; padding: 10px 12px; font-size: 12px; color: #374151; max-height: 180px; overflow-y: auto; margin-bottom: 14px; line-height: 1.6; }
+  .process-detail { background: #f3f4f6; border-radius: 6px; padding: 10px 12px; font-size: 12px; color: #374151; max-height: 260px; overflow-y: auto; margin-bottom: 14px; line-height: 1.6; }
   .process-gap-list { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px; padding: 9px 12px; margin: -4px 0 14px; font-size: 12px; color: #7c2d12; line-height: 1.55; }
   .process-gap-list .title { font-weight: 750; color: #c2410c; margin-bottom: 4px; }
   .process-gap-list ul { margin: 0; padding-left: 18px; }
@@ -441,6 +441,8 @@
     border-radius: 16px;
     color: var(--text);
     box-shadow: 0 30px 90px rgba(20, 40, 55, .24);
+    max-height: 92vh;
+    overflow-y: auto;
   }
   .process-card h2,
   .process-meta { color: #334b60; }
@@ -2309,6 +2311,9 @@ function render() {
   function getCandidateContent(c) {
     return (c.advantage || c.message || c.note || c.fullSummary || "").trim();
   }
+  function getWorkPreview(c) {
+    return String(c.workHistory || "").split(/\n+/).map(s => s.trim()).filter(Boolean).slice(0, 2).join("；");
+  }
   // 状态筛选(来自漏斗点击)
   const stageFilter = window.__statusStageFilter;
   const rows = all
@@ -2365,7 +2370,12 @@ function render() {
       </td>
       <td>${escapeHtml(c.age || "")} · ${escapeHtml(c.exp || "")}<br><span style="color:#6b7280">${escapeHtml(c.degree || "")} ${escapeHtml(c.status || "")}</span></td>
       <td><span style="color:#6b7280">${escapeHtml(c.expect || "")}</span></td>
-      <td style="color:#374151;font-size:12px">${escapeHtml((c.advantage || c.note || c.message || "").slice(0, 120))}</td>
+      <td style="color:#374151;font-size:12px">
+        <div>${escapeHtml((c.advantage || c.note || c.message || "").slice(0, 120))}</div>
+        ${c.workHistory
+          ? `<div style="margin-top:6px;color:#0f766e;font-size:11px;line-height:1.5"><b>公司经历：</b>${escapeHtml(getWorkPreview(c))}</div>`
+          : `<div style="margin-top:6px;color:#9ca3af;font-size:11px">公司经历：本次复制未读取到</div>`}
+      </td>
       <td>${(c.directionHits || []).map(k => `<span class="tag">${dirLabel(k)}</span>`).join("") || '<span style="color:#9ca3af">—</span>'}</td>
       <td>
         ${c.reasons && c.reasons.length ? `<div class="reason">${escapeHtml(c.reasons.join("；"))}</div>` : ""}
@@ -3352,7 +3362,19 @@ function showProcessCard() {
     `${escapeHtml(c.age || "")} · ${escapeHtml(c.exp || "")} · ${escapeHtml(c.degree || "")} · ${escapeHtml(c.status || "")}<br>` +
     (c.expect ? `<span style="color:#6b7280">期望：${escapeHtml(c.expect)}</span>` : "") +
     (c.pastePosition ? `<br><span style="color:#9ca3af;font-size:12px">原列表大约第 #${c.pastePosition} 位</span>` : "");
-  document.getElementById("processDetail").textContent = c.advantage || c.note || "(无详情)";
+  const processIntro = c.advantage || c.note || c.message || "(无简介)";
+  const processWork = String(c.workHistory || "").trim();
+  const processEducation = String(c.education || "").trim();
+  document.getElementById("processDetail").innerHTML = `
+    <div><b style="color:#334b60">个人简介</b><div style="margin-top:4px;white-space:pre-wrap">${escapeHtml(processIntro)}</div></div>
+    <div style="border-top:1px solid #d7e0e7;margin-top:9px;padding-top:8px">
+      <b style="color:#0f766e">公司/工作经历</b>
+      ${processWork
+        ? `<div style="margin-top:4px;white-space:pre-wrap">${escapeHtml(processWork)}</div>`
+        : `<div style="margin-top:4px;color:#b45309">本次粘贴内容未读取到公司经历；该候选人可能是旧数据，或复制时公司时间轴未包含在文本中。</div>`}
+    </div>
+    ${processEducation ? `<div style="border-top:1px solid #d7e0e7;margin-top:9px;padding-top:8px"><b style="color:#334b60">教育经历</b><div style="margin-top:4px;white-space:pre-wrap">${escapeHtml(processEducation)}</div></div>` : ""}
+  `;
   document.getElementById("processGapReasons").innerHTML = renderPotentialGapReasons(c);
 
   // B2: AI 话术区
