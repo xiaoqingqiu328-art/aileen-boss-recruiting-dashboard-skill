@@ -121,11 +121,11 @@
   .process-progress { color: #6b7280; font-size: 13px; margin-bottom: 14px; }
   .process-person-name { font-size: 32px; font-weight: 750; color: #0369a1; margin: 16px 0 4px; word-break: break-all; }
   .process-meta { color: #374151; font-size: 14px; margin-bottom: 12px; }
-  .process-detail { background: #f3f4f6; border-radius: 6px; padding: 10px 12px; font-size: 12px; color: #374151; max-height: 260px; overflow-y: auto; margin-bottom: 14px; line-height: 1.6; }
-  .process-gap-list { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px; padding: 9px 12px; margin: -4px 0 14px; font-size: 12px; color: #7c2d12; line-height: 1.55; }
+  .process-detail { background: #f3f4f6; border-radius: 6px; padding: 10px 12px; font-size: 12px; color: #374151; max-height: 220px; overflow-y: auto; margin-bottom: 10px; line-height: 1.55; }
+  .process-gap-list { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 6px; padding: 8px 12px; margin: -2px 0 8px; font-size: 12px; color: #7c2d12; line-height: 1.45; }
   .process-gap-list .title { font-weight: 750; color: #c2410c; margin-bottom: 4px; }
   .process-gap-list ul { margin: 0; padding-left: 18px; }
-  .process-gap-list li { margin: 2px 0; }
+  .process-gap-list li { margin: 1px 0; }
   .process-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 16px; }
   .process-actions button { padding: 12px; font-size: 14px; font-weight: 600; }
   .process-actions button.big-primary { background: #00a6a7; color: #fff; border-color: #00a6a7; }
@@ -2059,7 +2059,7 @@ function buildPotentialGapReasons(c) {
 }
 
 function renderPotentialGapReasons(c) {
-  const gaps = buildPotentialGapReasons(c);
+  const gaps = buildPotentialGapReasons(c).slice(0, 3);
   if (!gaps.length) {
     return `<div class="title">可能不满足/待核对</div><div>暂无明显缺口。建议重点核对作品链接、真实负责范围和数据口径。</div>`;
   }
@@ -3363,8 +3363,7 @@ function showProcessCard() {
     (c.expect ? `<span style="color:#6b7280">期望：${escapeHtml(c.expect)}</span>` : "") +
     (c.pastePosition ? `<br><span style="color:#9ca3af;font-size:12px">原列表大约第 #${c.pastePosition} 位</span>` : "");
   const processIntro = c.advantage || c.note || c.message || "(无简介)";
-  const processWork = String(c.workHistory || "").trim();
-  const processEducation = String(c.education || "").trim();
+  const processWork = String(c.workHistory || "").split(/\n+/).map(s => s.trim()).filter(Boolean).slice(0, 2).join("\n");
   document.getElementById("processDetail").innerHTML = `
     <div><b style="color:#334b60">个人简介</b><div style="margin-top:4px;white-space:pre-wrap">${escapeHtml(processIntro)}</div></div>
     <div style="border-top:1px solid #d7e0e7;margin-top:9px;padding-top:8px">
@@ -3373,13 +3372,13 @@ function showProcessCard() {
         ? `<div style="margin-top:4px;white-space:pre-wrap">${escapeHtml(processWork)}</div>`
         : `<div style="margin-top:4px;color:#b45309">本次粘贴内容未读取到公司经历；该候选人可能是旧数据，或复制时公司时间轴未包含在文本中。</div>`}
     </div>
-    ${processEducation ? `<div style="border-top:1px solid #d7e0e7;margin-top:9px;padding-top:8px"><b style="color:#334b60">教育经历</b><div style="margin-top:4px;white-space:pre-wrap">${escapeHtml(processEducation)}</div></div>` : ""}
   `;
   document.getElementById("processGapReasons").innerHTML = renderPotentialGapReasons(c);
 
   // B2: AI 话术区
   const aiArea = document.getElementById("processAiArea");
   if (c.aiGreeting) {
+    aiArea.style.display = "block";
     aiArea.innerHTML = `
       <div style="background:#f0fdfa;border:1px solid #5eead4;border-radius:6px;padding:10px;font-size:13px;line-height:1.7;color:#134e4a">
         ${escapeHtml(c.aiGreeting)}
@@ -3392,10 +3391,12 @@ function showProcessCard() {
       navigator.clipboard.writeText(c.aiGreeting).then(() => showToast("✓ 话术已复制"));
     document.getElementById("processRegenGreetingBtn").onclick = () => generateProcessGreeting();
   } else if (aiIsConfigured()) {
+    aiArea.style.display = "block";
     aiArea.innerHTML = `<button class="ai-btn" id="processGenGreetingBtn" style="background:#7c3aed;width:100%;padding:8px">💬 让 AI 写专属打招呼话术</button>`;
     document.getElementById("processGenGreetingBtn").onclick = () => generateProcessGreeting();
   } else {
-    aiArea.innerHTML = `<div style="color:#9ca3af;font-size:12px;text-align:center">💡 配置 AI 后,这里能让 AI 写专属话术</div>`;
+    aiArea.innerHTML = "";
+    aiArea.style.display = "none";
   }
 
   async function generateProcessGreeting() {
@@ -3418,26 +3419,25 @@ function showProcessCard() {
   const copyGreetBtn = document.getElementById("qcCopyGreeting");
   if (copyGreetBtn) {
     copyGreetBtn.disabled = !c.aiGreeting;
-    copyGreetBtn.style.opacity = c.aiGreeting ? "1" : "0.5";
-    copyGreetBtn.style.cursor = c.aiGreeting ? "pointer" : "not-allowed";
+    copyGreetBtn.style.display = c.aiGreeting ? "block" : "none";
   }
-  // BOSS 直达按钮:无 share_url 则灰掉并提示
+  // BOSS 直达按钮:没有链接时直接隐藏,避免无效控件占用页面高度。
   const openBossBtn = document.getElementById("qcOpenBoss");
   if (openBossBtn) {
     if (c.bossShareUrl) {
+      openBossBtn.style.display = "block";
       openBossBtn.disabled = false;
       openBossBtn.style.opacity = "1";
       openBossBtn.style.cursor = "pointer";
       openBossBtn.textContent = "🔗 打开此人详情页";
       openBossBtn.title = c.bossShareUrl;
     } else {
+      openBossBtn.style.display = "none";
       openBossBtn.disabled = true;
-      openBossBtn.style.opacity = "0.5";
-      openBossBtn.style.cursor = "not-allowed";
-      openBossBtn.textContent = "🔗 没有详情链接(采集时请勾选「同时尝试获取分享链接」)";
-      openBossBtn.title = "此候选人采集时未抓取分享链接";
     }
   }
+  const quickCopyRow = document.querySelector(".quick-copy-row");
+  if (quickCopyRow) quickCopyRow.style.gridTemplateColumns = c.aiGreeting ? "1fr 1fr" : "1fr";
   document.getElementById("processOverlay").classList.add("active");
 }
 
